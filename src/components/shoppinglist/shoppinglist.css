@@ -1,0 +1,368 @@
+.list-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.list-item {
+  background: #f7f7fb;
+  padding: 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.list-item strong {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.list-status-badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #92400e;
+  background: #fef3c7;
+  border: 1px solid #f59e0b;
+  border-radius: 999px;
+  padding: 0.1rem 0.45rem;
+}
+
+.list-item:hover {
+  background: #eef2ff;
+}
+
+.list-count {
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.back-button {
+  background: transparent;
+  border: none;
+  color: #667eea;
+  cursor: pointer;
+  margin-bottom: 10px;
+  font-size: 0.95rem;
+}
+
+.archive-list-btn {
+  border: 1px solid #cbd5e1;
+  background: #f8fafc;
+  color: #334155;
+  border-radius: 6px;
+  padding: 0.35rem 0.7rem;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.archive-list-btn:hover {
+  background: #eef2ff;
+  border-color: #818cf8;
+  color: #3730a3;
+}
+
+.list-name-input {
+  width: 100%;
+  padding: 8px 10px;
+  font-size: 1.1rem;
+  margin-bottom: 12px;
+  border: 1px solid #e6e6f2;
+  border-radius: 6px;
+}
+
+.products-edit {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.shopping-bought-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #334155;
+  font-size: 0.9rem;
+}
+
+.shopping-bought-toggle input {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+.shopping-bought-toggle.list-toggle {
+  margin-bottom: 0.35rem;
+}
+
+.shopping-bought-toggle.product-toggle {
+  margin-right: 0.1rem;
+}
+
+.product-edit {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.product-edit input.small {
+  padding: 6px 8px;
+  border: 1px solid #e6e6f2;
+  border-radius: 6px;
+}
+
+.product-edit input.small.bought {
+  text-decoration: line-through;
+  color: #94a3b8;
+  background: #f8fafc;
+}
+
+.product-edit .input-name {
+  flex: 1.2;
+}
+.product-edit .input-qty {
+  width: 70px;
+}
+.product-edit .input-weight {
+  width: 100px;
+}
+
+.remove-btn {
+  background: #ff6b6b;
+  color: white;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.add-product-form {
+  display: block;
+  margin-top: 10px;
+}
+
+.product-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 0;
+  align-items: center;
+}
+
+.remove-list-btn {
+  position: relative;
+  background: transparent;
+  border: none;
+  padding: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.remove-list-btn .minus {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #e53e3e;
+  color: white;
+  font-weight: 700;
+  font-size: 18px;
+  line-height: 1;
+}
+
+.add-list-form {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+  align-items: center;
+}
+
+.add-list-form input {
+  padding: 8px 10px;
+  border: 1px solid #e6e6f2;
+  border-radius: 6px;
+}
+
+.add-list-btn {
+  background: #667eea;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.card-header h2 {
+  margin: 0;
+  color: #667eea;
+  flex: 1;
+}
+
+.add-list-plus {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #2f855a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(47, 133, 90, 0.18);
+  border: none;
+  user-select: none;
+  outline: none;
+}
+
+.add-list-plus .plus {
+  font-size: 22px;
+  line-height: 1;
+  font-weight: 700;
+}
+
+/* make add and remove wheels same size */
+.remove-list-btn,
+.add-list-plus {
+  width: 40px;
+  height: 40px;
+}
+
+.remove-list-btn .minus {
+  width: 24px;
+  height: 24px;
+  font-size: 18px;
+}
+
+.show-more-btn {
+  background: transparent;
+  border: 1px dashed #cfd6f7;
+  color: #4456b2;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.show-more-btn:hover {
+  background: #eef2ff;
+}
+
+.list-status-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin: 0.6rem 0 0.85rem;
+}
+
+.list-status-filter-btn {
+  border: 1px solid #cbd5e1;
+  background: #fff;
+  color: #475569;
+  border-radius: 999px;
+  padding: 0.32rem 0.75rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.list-status-filter-btn:hover {
+  background: #f1f5f9;
+  border-color: #94a3b8;
+}
+
+.list-status-filter-btn.active {
+  background: #eef2ff;
+  border-color: #818cf8;
+  color: #3730a3;
+}
+
+.list-view-title {
+  text-align: center;
+  color: #dde0e6;
+  margin: 0 0 12px 0;
+  font-size: 1.5rem;
+}
+
+/* animate list grid when switching views */
+.list-grid {
+  animation: fadeInUp var(--view-duration) var(--view-ease) both;
+}
+
+/* title enter/exit for subtle stagger */
+.list-view-title.enter {
+  animation: fadeInUp calc(var(--view-duration) - 160ms) var(--view-ease) both;
+}
+.list-view-title.exit {
+  animation: fadeOutDown var(--view-duration) var(--view-ease) both;
+}
+
+/* helper to apply view transitions when toggling classes */
+.view-transition {
+  transition:
+    transform var(--view-duration) var(--view-ease),
+    opacity var(--view-duration) var(--view-ease);
+  will-change: transform, opacity;
+}
+
+/* product action icons */
+.remove-product-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #e53e3e;
+  color: white;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.remove-product-icon .minus {
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 1;
+}
+
+/* Selected list enter/exit animations */
+.list-detail.enter {
+  animation: slideIn var(--view-duration) var(--view-ease) both;
+}
+
+.list-detail.exit {
+  animation: slideOut var(--view-duration) var(--view-ease) both;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(12px) translateZ(0);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) translateZ(0);
+  }
+}
+
+@keyframes slideOut {
+  from {
+    opacity: 1;
+    transform: translateX(0) translateZ(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(12px) translateZ(0);
+  }
+}

@@ -1,0 +1,97 @@
+.container {
+  text-align: center;
+  color: white;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.container h1 {
+  font-size: 3rem;
+  margin-bottom: 10px;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.container p {
+  font-size: 1.2rem;
+  margin-bottom: 30px;
+  opacity: 0.9;
+}
+
+.card {
+  background: white;
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  color: #333;
+  min-height: 180px;
+}
+
+.card h2 {
+  margin-bottom: 20px;
+  color: #667eea;
+}
+
+.card p {
+  font-size: 1.5rem;
+  margin-bottom: 20px;
+  color: #666;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px) translateZ(0);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) translateZ(0);
+  }
+}
+
+@keyframes fadeOutDown {
+  from {
+    opacity: 1;
+    transform: translateY(0) translateZ(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(8px) translateZ(0);
+  }
+}
+
+:root {
+  --view-ease: cubic-bezier(0.16, 0.84, 0.24, 1);
+  --view-duration: 420ms;
+}
+
+/* main title enter/exit animations */
+.app-main-title.enter {
+  animation: fadeInUp calc(var(--view-duration) - 120ms) var(--view-ease) both;
+  font-size: 2.8rem;
+  margin: 0;
+  color: white;
+  text-shadow: 2px 4px 8px rgba(0, 0, 0, 0.35);
+}
+.app-main-title.exit {
+  animation: fadeOutDown var(--view-duration) var(--view-ease) both;
+}
+
+.app-subtitle.enter,
+.app-subtitle.exit {
+  /* keep subtitle invisible but ensure layout stability */
+  height: 10px;
+}
+
+.card {
+  animation: fadeInUp var(--view-duration) var(--view-ease) both;
+  will-change: transform, opacity;
+  backface-visibility: hidden;
+}
+
+.view-transition {
+  transition:
+    transform var(--view-duration) var(--view-ease),
+    opacity var(--view-duration) var(--view-ease);
+  will-change: transform, opacity;
+}

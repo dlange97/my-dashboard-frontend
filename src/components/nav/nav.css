@@ -1,0 +1,219 @@
+/* ── Top Navigation Bar ────────────────────────────────────── */
+.top-nav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0 1.5rem;
+  height: 60px;
+  background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.18);
+}
+
+/* ── Brand ─────────────────────────────────────────────────── */
+.nav-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+  flex-shrink: 0;
+}
+
+.nav-brand-icon {
+  font-size: 1.3rem;
+}
+
+.nav-brand-name {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #fff;
+  white-space: nowrap;
+}
+
+/* ── Desktop Links ─────────────────────────────────────────── */
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  flex: 1;
+  margin-left: 1rem;
+}
+
+.nav-link {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 0.9rem;
+  border-radius: 8px;
+  text-decoration: none;
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.65);
+  transition:
+    background 0.15s,
+    color 0.15s;
+  white-space: nowrap;
+}
+
+.nav-link:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.nav-link.active {
+  background: rgba(99, 102, 241, 0.35);
+  color: #c7d2fe;
+  font-weight: 600;
+}
+
+.nav-link-icon {
+  font-size: 1rem;
+}
+
+/* ── User Area ─────────────────────────────────────────────── */
+.nav-user-area {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-left: auto;
+}
+
+.nav-user-email {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.8rem;
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.nav-logout-btn {
+  background: rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  padding: 0.35rem 0.85rem;
+  border-radius: 7px;
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: background 0.15s;
+  white-space: nowrap;
+}
+
+.nav-logout-btn:hover {
+  background: rgba(255, 255, 255, 0.22);
+}
+
+.nav-settings-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  text-decoration: none;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  transition: background 0.15s;
+}
+
+.nav-settings-btn:hover,
+.nav-settings-btn.active {
+  background: rgba(99, 102, 241, 0.35);
+}
+
+/* ── Hamburger (mobile) ────────────────────────────────────── */
+.nav-hamburger {
+  display: none;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: #fff;
+  border-radius: 7px;
+  padding: 0.35rem 0.65rem;
+  font-size: 1.1rem;
+  cursor: pointer;
+}
+
+/* ── Mobile Menu ───────────────────────────────────────────── */
+.nav-mobile-menu {
+  display: none;
+  flex-direction: column;
+  position: absolute;
+  top: 60px;
+  left: 0;
+  right: 0;
+  background: #1e293b;
+  padding: 0.75rem 1rem;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+  z-index: 99;
+  gap: 0.25rem;
+}
+
+.nav-mobile-link {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.65rem 0.75rem;
+  border-radius: 8px;
+  text-decoration: none;
+  font-size: 0.95rem;
+  color: rgba(255, 255, 255, 0.75);
+  transition: background 0.15s;
+}
+
+.nav-mobile-link:hover,
+.nav-mobile-link.active {
+  background: rgba(99, 102, 241, 0.3);
+  color: #c7d2fe;
+}
+
+.nav-mobile-logout {
+  margin-top: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.65rem 0.75rem;
+  border: none;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.95rem;
+  cursor: pointer;
+  border-radius: 8px;
+  text-align: left;
+  transition: background 0.15s;
+  width: 100%;
+}
+
+.nav-mobile-logout:hover {
+  background: rgba(239, 68, 68, 0.2);
+}
+
+/* ── Responsive ────────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .nav-links {
+    display: none;
+  }
+
+  .nav-user-email {
+    display: none;
+  }
+
+  .nav-logout-btn {
+    display: none;
+  }
+
+  .nav-settings-btn {
+    display: none;
+  }
+
+  .nav-hamburger {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .nav-mobile-menu {
+    display: flex;
+  }
+}

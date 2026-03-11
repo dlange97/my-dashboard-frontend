@@ -1,0 +1,24 @@
+button {
+  background: #667eea;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  margin: 0 10px;
+  border-radius: 5px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+button:hover {
+  background: #764ba2;
+}
+
+/* avoid active scaling globally to prevent shifting */
+button:active {
+  transform: none;
+}
+
+button:focus {
+  outline: none;
+}

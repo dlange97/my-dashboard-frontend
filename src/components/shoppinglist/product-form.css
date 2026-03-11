@@ -1,0 +1,105 @@
+/* ── Product Form — Modern Design ──────────────────────────── */
+
+.product-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.product-name-field {
+  width: 100%;
+}
+
+/* Second row: qty + weight + submit button side-by-side */
+.product-form-row {
+  display: flex;
+  gap: 0.6rem;
+  align-items: flex-end;
+}
+
+.product-form-row .form-field {
+  flex: 1;
+  min-width: 0;
+}
+
+.product-form-row .form-field:first-child {
+  max-width: 90px;
+}
+
+/* Inherit form-field styles from search.css */
+.product-form .form-field label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #64748b;
+  display: block;
+  margin-bottom: 0.3rem;
+}
+
+.optional {
+  font-weight: 400;
+  text-transform: none;
+  color: #94a3b8;
+  letter-spacing: 0;
+}
+
+.product-form input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.55rem 0.75rem;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  color: #1e293b;
+  background: #f8fafc;
+  outline: none;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
+}
+
+.product-form input:focus {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
+  background: #fff;
+}
+
+.add-product-btn {
+  background: linear-gradient(135deg, #6366f1 0%, #818cf8 100%);
+  color: white;
+  border: none;
+  padding: 0.55rem 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  white-space: nowrap;
+  font-size: 0.88rem;
+  font-weight: 600;
+  align-self: flex-end;
+  transition:
+    opacity 0.18s,
+    transform 0.15s;
+}
+
+.add-product-btn:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.add-product-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #28a745;
+  color: white;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.add-product-icon .plus {
+  font-weight: 700;
+  font-size: 18px;
+}

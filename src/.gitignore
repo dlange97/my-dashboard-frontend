@@ -1,0 +1,24 @@
+# Ignore build and cache
+/dist
+/node_modules
+/.env
+/.env.*
+/.DS_Store
+/.idea
+/coverage
+
+# Ignore editor files
+*.swp
+*.swo
+*.bak
+
+# Ignore test outputs
+/test-output
+
+# Ignore Vite and frontend artifacts
+*.log
+*.tmp
+*.map
+
+# Ignore system files
+Thumbs.db

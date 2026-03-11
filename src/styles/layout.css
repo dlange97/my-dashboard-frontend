@@ -1,0 +1,35 @@
+.split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+/* legacy split layout kept for backward compat - shopping/todo pages */
+.split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  padding-bottom: 8px;
+  margin-bottom: 4px;
+}
+
+/* Center shopping list view when a list is open */
+.split.list-open {
+  grid-template-columns: 1fr;
+  justify-items: center;
+}
+
+.split.list-open .card {
+  width: 700px;
+  max-width: 94%;
+}

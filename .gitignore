@@ -1,0 +1,16 @@
+# .gitignore for my-dashboard-frontend
+/dist
+/node_modules
+/.env
+/.env.*
+/.DS_Store
+/.idea
+/coverage
+*.swp
+*.swo
+*.bak
+/test-output
+*.log
+*.tmp
+*.map
+Thumbs.db

@@ -1,0 +1,379 @@
+/* ─── Settings Page ─────────────────────────────────────────────────────── */
+.settings-page {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 0 0 40px;
+}
+
+.settings-page > h1 {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 24px;
+}
+
+/* ─── Accordion Sections ─────────────────────────────────────────────────── */
+.settings-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.settings-section {
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #fff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+}
+
+.settings-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 16px 20px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1e293b;
+  transition: background 0.15s;
+  text-align: left;
+}
+
+.settings-section-header:hover {
+  background: #f8fafc;
+}
+
+.settings-section.open .settings-section-header {
+  background: #f1f5f9;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.settings-section-arrow {
+  font-size: 0.75rem;
+  color: #64748b;
+  transition: transform 0.2s;
+}
+
+.settings-section.open .settings-section-arrow {
+  transform: rotate(180deg);
+}
+
+.settings-section-body {
+  padding: 0;
+  animation: settingsFadeIn 0.15s ease;
+}
+
+@keyframes settingsFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ─── Role Cards ────────────────────────────────────────────────────────── */
+.access-settings-inner {
+  padding: 20px;
+}
+
+.access-settings-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.access-settings-header h3 {
+  flex: 1;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0;
+}
+
+.access-settings-header .btn-add-role {
+  padding: 7px 14px;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  background: #6366f1;
+  color: #fff;
+  transition: background 0.15s;
+}
+
+.access-settings-header .btn-add-role:hover {
+  background: #4f46e5;
+}
+
+.roles-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
+}
+
+.role-card {
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 16px;
+  background: #fafafa;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.role-card.system {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+}
+
+.role-card-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.role-card-title {
+  flex: 1;
+  min-width: 0;
+}
+
+.role-card-name {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #1e293b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.role-card-slug {
+  font-size: 0.72rem;
+  color: #64748b;
+  font-family: monospace;
+  margin-top: 2px;
+}
+
+.role-badge-system {
+  font-size: 0.65rem;
+  padding: 2px 6px;
+  background: #e2e8f0;
+  color: #475569;
+  border-radius: 999px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.role-badge-custom {
+  font-size: 0.65rem;
+  padding: 2px 6px;
+  background: #dbeafe;
+  color: #1d4ed8;
+  border-radius: 999px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.role-card-actions {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.role-card-actions button {
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border: 1px solid;
+  cursor: pointer;
+  transition: background 0.12s;
+}
+
+.btn-duplicate {
+  background: #fff;
+  border-color: #6366f1;
+  color: #6366f1;
+}
+
+.btn-duplicate:hover {
+  background: #eef2ff;
+}
+
+.btn-rename {
+  background: #fff;
+  border-color: #0891b2;
+  color: #0891b2;
+}
+
+.btn-rename:hover {
+  background: #ecfeff;
+}
+
+.btn-delete-role {
+  background: #fff;
+  border-color: #ef4444;
+  color: #ef4444;
+}
+
+.btn-delete-role:hover {
+  background: #fef2f2;
+}
+
+.role-permissions-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 2px;
+}
+
+.perm-tag {
+  font-size: 0.68rem;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: #e2e8f0;
+  color: #334155;
+  font-weight: 500;
+}
+
+.perm-tag.active {
+  background: #dcfce7;
+  color: #166534;
+}
+
+/* ─── Role Modal ─────────────────────────────────────────────────────────── */
+.role-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 16px;
+}
+
+.role-modal {
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+  padding: 28px;
+  width: 100%;
+  max-width: 520px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.role-modal h3 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0 0 20px;
+}
+
+.role-modal label {
+  display: block;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 5px;
+}
+
+.role-modal input[type="text"] {
+  width: 100%;
+  padding: 9px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  margin-bottom: 16px;
+  box-sizing: border-box;
+}
+
+.role-modal input[type="text"]:focus {
+  outline: none;
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+}
+
+.perm-checkboxes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px 16px;
+  margin-bottom: 20px;
+}
+
+.perm-checkbox-item {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 0.8rem;
+  color: #374151;
+  cursor: pointer;
+}
+
+.perm-checkbox-item input[type="checkbox"] {
+  accent-color: #6366f1;
+  width: 15px;
+  height: 15px;
+  cursor: pointer;
+}
+
+.role-modal-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+
+.role-modal-actions .btn-primary {
+  padding: 9px 20px;
+  background: #6366f1;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.role-modal-actions .btn-primary:hover {
+  background: #4f46e5;
+}
+
+.role-modal-actions .btn-secondary {
+  padding: 9px 20px;
+  background: transparent;
+  color: #64748b;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.role-modal-actions .btn-secondary:hover {
+  background: #f8fafc;
+}
+
+.role-modal-error {
+  color: #dc2626;
+  font-size: 0.82rem;
+  margin-bottom: 12px;
+  background: #fef2f2;
+  border: 1px solid #fca5a5;
+  border-radius: 6px;
+  padding: 8px 12px;
+}
+
+/* ─── Notification Settings Inner ───────────────────────────────────────── */
+.notification-settings-inner {
+  padding: 20px;
+}

@@ -1,0 +1,455 @@
+.container {
+  text-align: center;
+  color: white;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.container h1 {
+  font-size: 3rem;
+  margin-bottom: 10px;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.container p {
+  font-size: 1.2rem;
+  margin-bottom: 30px;
+  opacity: 0.9;
+}
+
+.card {
+  background: white;
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  color: #333;
+  min-height: 180px;
+}
+
+.card h2 {
+  margin-bottom: 20px;
+  color: #667eea;
+}
+
+.card p {
+  font-size: 1.5rem;
+  margin-bottom: 20px;
+  color: #666;
+}
+
+button {
+  background: #667eea;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  margin: 0 10px;
+  border-radius: 5px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+button:hover {
+  background: #764ba2;
+}
+
+/* don't apply a global transform on button active to avoid jumpy controls */
+button:active {
+  transform: none;
+}
+
+.split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  position: relative;
+}
+.product-name {
+  font-weight: 600;
+}
+
+.product-qty {
+  color: #666;
+}
+
+.todo-list {
+  list-style: none;
+  padding: 0;
+}
+
+.todo-list li {
+  padding: 8px 12px;
+  border-bottom: 1px solid #efefef;
+}
+
+.list-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.list-item {
+  background: #f7f7fb;
+  padding: 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.list-item:hover {
+  background: #eef2ff;
+}
+
+.list-count {
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.back-button {
+  background: transparent;
+  border: none;
+  color: #667eea;
+  cursor: pointer;
+  margin-bottom: 10px;
+  font-size: 0.95rem;
+}
+
+.list-name-input {
+  width: 100%;
+  padding: 8px 10px;
+  font-size: 1.1rem;
+  margin-bottom: 12px;
+  border: 1px solid #e6e6f2;
+  border-radius: 6px;
+}
+
+.products-edit {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.product-edit {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.product-edit input.small {
+  padding: 6px 8px;
+  border: 1px solid #e6e6f2;
+  border-radius: 6px;
+}
+
+.product-edit .input-name {
+  flex: 1.2;
+}
+.product-edit .input-qty {
+  width: 70px;
+}
+.product-edit .input-weight {
+  width: 100px;
+}
+
+.remove-btn {
+  background: #ff6b6b;
+  color: white;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.add-product-form {
+  display: block;
+  margin-top: 10px;
+}
+
+.product-form {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.product-form input {
+  padding: 6px 8px;
+  border: 1px solid #e6e6f2;
+  border-radius: 6px;
+}
+
+.product-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 0;
+  align-items: center;
+}
+
+.remove-list-btn {
+  position: relative;
+  background: transparent;
+  border: none;
+  padding: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.remove-list-btn .minus {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #e53e3e;
+  color: white;
+  font-weight: 700;
+  font-size: 18px;
+  line-height: 1;
+}
+
+/* remove-list tooltip removed; delete button is icon-only */
+
+.add-list-form {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+  align-items: center;
+}
+
+.add-list-form input {
+  padding: 8px 10px;
+  border: 1px solid #e6e6f2;
+  border-radius: 6px;
+}
+
+.add-list-btn {
+  background: #667eea;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  position: relative;
+}
+
+.card-header h2 {
+  margin: 0;
+  color: #667eea;
+}
+
+.add-list-plus {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #2f855a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(47, 133, 90, 0.18);
+  border: none;
+  user-select: none;
+  outline: none;
+}
+
+.add-list-plus .plus {
+  font-size: 22px;
+  line-height: 1;
+  font-weight: 700;
+}
+
+/* add-list tooltip removed; add button is icon-only */
+
+/* Modal styles for NewShoppingList */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.35);
+  z-index: 40;
+}
+
+.modal {
+  background: white;
+  color: #333;
+  padding: 20px;
+  border-radius: 10px;
+  width: 360px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.modal input {
+  padding: 8px 10px;
+  border: 1px solid #e6e6f2;
+  border-radius: 6px;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.btn-muted {
+  background: #eef0f6;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.btn-primary {
+  background: #667eea;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+/* hover tooltip removed */
+
+/* --- Overrides for modal and product form layout --- */
+.modal {
+  background: white;
+  color: #333;
+  padding: 24px;
+  border-radius: 10px;
+  width: 520px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.modal input {
+  padding: 8px 10px;
+  border: 1px solid #e6e6f2;
+  border-radius: 6px;
+}
+
+.modal-products {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: stretch;
+}
+
+.modal-products h4 {
+  margin: 0 0 6px 0;
+  text-align: center;
+  font-weight: 700;
+}
+
+.product-form input {
+  padding: 8px 10px;
+  border: 1px solid #e6e6f2;
+  border-radius: 6px;
+}
+
+.product-form input:nth-child(1) {
+  flex: 1.6;
+}
+
+.product-form input:nth-child(2) {
+  width: 72px;
+}
+
+.product-form input:nth-child(3) {
+  width: 110px;
+}
+
+.add-product-btn {
+  background: #28a745;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+/* make add and remove wheels same size */
+.remove-list-btn,
+.add-list-plus {
+  width: 40px;
+  height: 40px;
+}
+
+.remove-list-btn .minus {
+  width: 24px;
+  height: 24px;
+  font-size: 18px;
+}
+
+/* Center shopping list view when a list is open */
+.split.list-open {
+  grid-template-columns: 1fr;
+  justify-items: center;
+}
+
+.split.list-open .card {
+  width: 700px;
+  max-width: 94%;
+}
+
+/* Prevent add/remove buttons from visually shifting on click */
+.add-list-plus,
+.remove-list-btn,
+.add-product-btn,
+button.add-list-btn {
+  transform-origin: center center;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+.add-list-plus:active,
+.remove-list-btn:active,
+.add-product-btn:active,
+button.add-list-btn:active {
+  transform: none !important;
+}
+
+.add-list-plus:focus,
+.remove-list-btn:focus,
+.add-product-btn:focus,
+button.add-list-btn:focus {
+  outline: none;
+}

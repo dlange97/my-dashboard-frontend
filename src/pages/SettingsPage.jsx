@@ -1,27 +1,42 @@
 import React, { useState } from "react";
 import NavBar from "../components/nav/NavBar";
 import AccessSettings from "../components/auth/AccessSettings";
+import JwtSessionSettings from "../components/auth/JwtSessionSettings";
 import NotificationSettings from "../components/notifications/NotificationSettings";
 import InboxSidebar from "../components/notifications/InboxSidebar";
+import { useAuth } from "../context/AuthContext";
 import "../styles/settings.css";
 
-const SECTIONS = [
-  {
-    id: "access",
-    label: "🔐 Dostęp i Role",
-    subtitle: "Zarządzaj rolami i uprawnieniami",
-    component: <AccessSettings />,
-  },
-  {
-    id: "notifications",
-    label: "🔔 Powiadomienia",
-    subtitle: "Szablony wiadomości i kanały dostarczania",
-    component: <NotificationSettings />,
-  },
-];
-
 export default function SettingsPage() {
+  const { user } = useAuth();
   const [openSection, setOpenSection] = useState("access");
+  const isAdmin =
+    Array.isArray(user?.roles) && user.roles.includes("ROLE_ADMIN");
+
+  const sections = [
+    {
+      id: "access",
+      label: "🔐 Dostęp i Role",
+      subtitle: "Zarządzaj rolami i uprawnieniami",
+      component: <AccessSettings />,
+    },
+    ...(isAdmin
+      ? [
+          {
+            id: "jwt-session",
+            label: "🪪 Sesja JWT",
+            subtitle: "Konfiguracja czasu ważności tokenu",
+            component: <JwtSessionSettings />,
+          },
+        ]
+      : []),
+    {
+      id: "notifications",
+      label: "🔔 Powiadomienia",
+      subtitle: "Szablony wiadomości i kanały dostarczania",
+      component: <NotificationSettings />,
+    },
+  ];
 
   function toggle(id) {
     setOpenSection((prev) => (prev === id ? null : id));
@@ -37,7 +52,7 @@ export default function SettingsPage() {
             <h1>⚙️ Ustawienia</h1>
 
             <div className="settings-sections">
-              {SECTIONS.map((section) => {
+              {sections.map((section) => {
                 const isOpen = openSection === section.id;
                 return (
                   <div

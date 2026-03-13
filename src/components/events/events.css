@@ -931,6 +931,7 @@
   border-radius: 4px;
   margin-bottom: 0.4rem;
   border-left: 3px solid #6366f1;
+  cursor: pointer;
 }
 
 .saved-route-item strong {
@@ -943,6 +944,22 @@
 .route-stats {
   font-size: 0.8rem;
   color: #64748b;
+}
+
+.saved-route-actions {
+  margin-top: 0.45rem;
+  display: flex;
+  gap: 0.4rem;
+}
+
+.route-danger-btn {
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+  background: #fff;
+}
+
+.route-danger-btn:hover {
+  background: #fef2f2;
 }
 
 /* Route Form Styles */

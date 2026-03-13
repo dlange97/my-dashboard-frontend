@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import api from "../../api/api";
 import { useAuth } from "../../context/AuthContext";
+import { ConfirmModal } from "../ui";
 
 export default function InboxSidebar() {
   const { isAuthenticated } = useAuth();
@@ -9,6 +10,7 @@ export default function InboxSidebar() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [collapsed, setCollapsed] = useState(true);
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
 
   const topItems = useMemo(() => items.slice(0, 12), [items]);
 
@@ -47,6 +49,18 @@ export default function InboxSidebar() {
     }
   }
 
+  async function handleClearInbox() {
+    try {
+      await api.clearInboxNotifications();
+      setItems([]);
+      setUnreadCount(0);
+      setShowClearConfirm(false);
+    } catch (err) {
+      setError(err.message || "Nie udało się wyczyścić inbox.");
+      setShowClearConfirm(false);
+    }
+  }
+
   return (
     <aside className={`inbox-sidebar${collapsed ? " collapsed" : ""}`}>
       {collapsed ? (
@@ -79,6 +93,16 @@ export default function InboxSidebar() {
             </button>
           </div>
 
+          {!loading && topItems.length > 0 && (
+            <button
+              type="button"
+              className="inbox-clear-btn"
+              onClick={() => setShowClearConfirm(true)}
+            >
+              Wyczyść wiadomości
+            </button>
+          )}
+
           {loading ? (
             <div className="inbox-empty">Ładowanie…</div>
           ) : error ? (
@@ -106,6 +130,17 @@ export default function InboxSidebar() {
             </div>
           )}
         </>
+      )}
+
+      {showClearConfirm && (
+        <ConfirmModal
+          title="Wyczyścić inbox?"
+          message="Ta operacja usunie wszystkie wiadomości z inboxa dla bieżącego użytkownika."
+          confirmLabel="Wyczyść"
+          cancelLabel="Anuluj"
+          onConfirm={handleClearInbox}
+          onCancel={() => setShowClearConfirm(false)}
+        />
       )}
     </aside>
   );

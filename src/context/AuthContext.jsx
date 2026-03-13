@@ -11,10 +11,32 @@ const TOKEN_KEY = "dashboard_token";
 const USER_KEY = "dashboard_user";
 
 export function AuthProvider({ children }) {
-  const [token, setToken] = useState(() => localStorage.getItem(TOKEN_KEY));
+  const [token, setToken] = useState(() => {
+    const storedUser = localStorage.getItem(USER_KEY);
+    if (!storedUser) {
+      return localStorage.getItem(TOKEN_KEY);
+    }
+
+    try {
+      JSON.parse(storedUser);
+      return localStorage.getItem(TOKEN_KEY);
+    } catch {
+      localStorage.removeItem(USER_KEY);
+      localStorage.removeItem(TOKEN_KEY);
+      return null;
+    }
+  });
   const [user, setUser] = useState(() => {
     const stored = localStorage.getItem(USER_KEY);
-    return stored ? JSON.parse(stored) : null;
+    if (!stored) return null;
+
+    try {
+      return JSON.parse(stored);
+    } catch {
+      localStorage.removeItem(USER_KEY);
+      localStorage.removeItem(TOKEN_KEY);
+      return null;
+    }
   });
 
   const login = useCallback((newToken, newUser) => {
@@ -25,6 +47,7 @@ export function AuthProvider({ children }) {
       firstName: newUser?.firstName ?? claims.firstName,
       lastName: newUser?.lastName ?? claims.lastName,
       roles: newUser?.roles ?? claims.roles ?? ["ROLE_USER"],
+      status: newUser?.status ?? claims.status ?? "active",
       permissions: newUser?.permissions ?? claims.permissions ?? [],
     };
 

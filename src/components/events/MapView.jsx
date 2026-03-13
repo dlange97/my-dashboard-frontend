@@ -212,6 +212,21 @@ export function FullMap({ events = [], canManageRoutes = false }) {
     return saved;
   };
 
+  const handleRouteUpdate = async (routeId, routeData) => {
+    const updated = await api.updateRoute(routeId, routeData);
+    setRoutes((prev) =>
+      prev.map((route) =>
+        route.id === routeId ? { ...route, ...updated } : route,
+      ),
+    );
+    return updated;
+  };
+
+  const handleRouteDelete = async (routeId) => {
+    await api.deleteRoute(routeId);
+    setRoutes((prev) => prev.filter((route) => route.id !== routeId));
+  };
+
   return (
     <div style={{ display: "flex", height: "100%", flexDirection: "column" }}>
       <div className="map-filter-panel">
@@ -353,6 +368,8 @@ export function FullMap({ events = [], canManageRoutes = false }) {
           {showRouteDrawing && canManageRoutes && (
             <RouteDrawing
               onRouteSave={handleRouteSave}
+              onRouteUpdate={handleRouteUpdate}
+              onRouteDelete={handleRouteDelete}
               onCancel={() => setShowRouteDrawing(false)}
               existingRoutes={routes}
             />

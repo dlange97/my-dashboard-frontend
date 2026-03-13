@@ -344,6 +344,105 @@
   cursor: pointer;
 }
 
+/* ─── JWT Session Settings ─────────────────────────────────────────────── */
+.jwt-session-settings {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.jwt-session-header h3 {
+  margin: 0;
+  font-size: 1rem;
+  color: #1e293b;
+}
+
+.jwt-session-header p {
+  margin: 6px 0 0;
+  color: #64748b;
+  font-size: 0.85rem;
+}
+
+.jwt-session-error {
+  border: 1px solid #fecaca;
+  color: #b91c1c;
+  background: #fef2f2;
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 0.85rem;
+}
+
+.jwt-session-create {
+  display: grid;
+  grid-template-columns: 1fr 140px auto;
+  gap: 10px;
+}
+
+.jwt-session-create input,
+.jwt-session-table input {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 0.86rem;
+}
+
+.jwt-session-create button,
+.jwt-session-actions button {
+  border: 1px solid #6366f1;
+  background: #6366f1;
+  color: #fff;
+  border-radius: 8px;
+  padding: 8px 12px;
+  cursor: pointer;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.jwt-session-actions button.danger {
+  border-color: #ef4444;
+  background: #ef4444;
+}
+
+.jwt-session-table-wrap {
+  overflow-x: auto;
+}
+
+.jwt-session-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.jwt-session-table th,
+.jwt-session-table td {
+  border-bottom: 1px solid #e2e8f0;
+  text-align: left;
+  padding: 8px;
+  font-size: 0.84rem;
+}
+
+.jwt-session-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.jwt-session-empty {
+  color: #64748b;
+  text-align: center;
+}
+
+@media (max-width: 760px) {
+  .jwt-session-create {
+    grid-template-columns: 1fr;
+  }
+
+  .jwt-session-actions {
+    flex-direction: column;
+  }
+}
+
 .role-modal-actions .btn-primary:hover {
   background: #4f46e5;
 }

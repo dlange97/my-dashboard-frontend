@@ -2,7 +2,8 @@ import React, { useEffect, useRef, useState } from "react";
 import { useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet-draw/dist/leaflet.draw.css";
-import { getDistanceInMeters, polylineDistance } from "../../utils/routeUtils";
+import { polylineDistance } from "../../utils/routeUtils";
+import { ConfirmModal } from "../ui";
 
 async function ensureLeafletDrawLoaded() {
   if (typeof window === "undefined") return;
@@ -13,6 +14,8 @@ async function ensureLeafletDrawLoaded() {
 
 export default function RouteDrawing({
   onRouteSave,
+  onRouteUpdate,
+  onRouteDelete,
   onCancel,
   existingRoutes = [],
 }) {
@@ -28,6 +31,9 @@ export default function RouteDrawing({
   const [error, setError] = useState("");
   const [drawLoadError, setDrawLoadError] = useState("");
   const [savedRoutes, setSavedRoutes] = useState(existingRoutes);
+  const [editingRouteId, setEditingRouteId] = useState(null);
+  const [activeRouteId, setActiveRouteId] = useState(null);
+  const [pendingDeleteRoute, setPendingDeleteRoute] = useState(null);
 
   useEffect(() => {
     setSavedRoutes(existingRoutes);
@@ -161,7 +167,15 @@ export default function RouteDrawing({
     }
 
     const drawLayer = drawLayerRef.current;
-    if (!drawLayer || drawLayer.getLayers().length === 0) {
+    const editedRoute =
+      editingRouteId !== null
+        ? (savedRoutes.find((route) => route.id === editingRouteId) ?? null)
+        : null;
+
+    if (
+      (!drawLayer || drawLayer.getLayers().length === 0) &&
+      editingRouteId === null
+    ) {
       setError("Narysuj trasę na mapie przed zapisem.");
       return;
     }
@@ -194,7 +208,7 @@ export default function RouteDrawing({
       waypoints = coordinates.map(([lon, lat]) => [lat, lon]);
     });
 
-    if (features.length === 0) {
+    if (features.length === 0 && editingRouteId === null) {
       setError("Trasa musi zawierać minimum dwa punkty.");
       return;
     }
@@ -202,31 +216,79 @@ export default function RouteDrawing({
     const payload = {
       name: routeName.trim(),
       description: routeDescription.trim(),
-      geoJson: {
-        type: "FeatureCollection",
-        features,
-      },
-      distanceMeters: Math.round(totalDistance),
-      durationMinutes: Math.max(1, Math.ceil(totalDistance / 1400)),
-      waypoints,
+      geoJson:
+        features.length > 0
+          ? {
+              type: "FeatureCollection",
+              features,
+            }
+          : editedRoute?.geoJson,
+      distanceMeters:
+        features.length > 0
+          ? Math.round(totalDistance)
+          : (editedRoute?.distanceMeters ?? null),
+      durationMinutes:
+        features.length > 0
+          ? Math.max(1, Math.ceil(totalDistance / 1400))
+          : (editedRoute?.durationMinutes ?? null),
+      waypoints:
+        features.length > 0 ? waypoints : (editedRoute?.waypoints ?? []),
     };
 
     try {
       setSaving(true);
-      const saved = await onRouteSave(payload);
+      const saved =
+        editingRouteId !== null
+          ? await onRouteUpdate(editingRouteId, payload)
+          : await onRouteSave(payload);
 
       setRouteName("");
       setRouteDescription("");
       setShowForm(false);
+      setEditingRouteId(null);
       drawLayer.clearLayers();
 
       if (saved) {
-        setSavedRoutes((prev) => [...prev, saved]);
+        setSavedRoutes((prev) => {
+          if (editingRouteId !== null) {
+            return prev.map((route) =>
+              route.id === editingRouteId ? { ...route, ...saved } : route,
+            );
+          }
+
+          return [...prev, saved];
+        });
       }
     } catch (err) {
       setError(err.message || "Nie udało się zapisać trasy.");
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleEditRoute = (route) => {
+    setEditingRouteId(route.id ?? null);
+    setRouteName(route.name ?? "");
+    setRouteDescription(route.description ?? "");
+    setShowForm(true);
+    setError("");
+  };
+
+  const handleDeleteRoute = async () => {
+    if (!pendingDeleteRoute?.id) {
+      setPendingDeleteRoute(null);
+      return;
+    }
+
+    try {
+      await onRouteDelete(pendingDeleteRoute.id);
+      setSavedRoutes((prev) =>
+        prev.filter((route) => route.id !== pendingDeleteRoute.id),
+      );
+    } catch (err) {
+      setError(err.message || "Nie udało się usunąć trasy.");
+    } finally {
+      setPendingDeleteRoute(null);
     }
   };
 
@@ -267,12 +329,41 @@ export default function RouteDrawing({
                   <div
                     key={route.id ?? `${route.name}-${index}`}
                     className="saved-route-item"
+                    onClick={() =>
+                      setActiveRouteId((current) =>
+                        current === route.id ? null : route.id,
+                      )
+                    }
                   >
                     <strong>{route.name}</strong>
                     <div className="route-stats">
                       📏 {((route.distanceMeters ?? 0) / 1000).toFixed(2)} km |
                       ⏱️ {route.durationMinutes ?? 0} min
                     </div>
+                    {activeRouteId === route.id && (
+                      <div className="saved-route-actions">
+                        <button
+                          type="button"
+                          className="btn-secondary"
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            handleEditRoute(route);
+                          }}
+                        >
+                          Edytuj
+                        </button>
+                        <button
+                          type="button"
+                          className="btn-secondary route-danger-btn"
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            setPendingDeleteRoute(route);
+                          }}
+                        >
+                          Usuń
+                        </button>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
@@ -306,6 +397,7 @@ export default function RouteDrawing({
               onClick={() => {
                 setError("");
                 setShowForm(false);
+                setEditingRouteId(null);
               }}
               disabled={saving}
             >
@@ -314,6 +406,17 @@ export default function RouteDrawing({
           </div>
         )}
       </div>
+
+      {pendingDeleteRoute && (
+        <ConfirmModal
+          title="Usunąć trasę?"
+          message={`Trasa \"${pendingDeleteRoute.name}\" zostanie trwale usunięta.`}
+          confirmLabel="Usuń"
+          cancelLabel="Anuluj"
+          onConfirm={handleDeleteRoute}
+          onCancel={() => setPendingDeleteRoute(null)}
+        />
+      )}
     </div>
   );
 }

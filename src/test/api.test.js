@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
-// ── Helpers ──────────────────────────────────────────────────────────────
 function mockFetch(status, body) {
   return vi.fn().mockResolvedValue({
     status,
@@ -9,13 +8,8 @@ function mockFetch(status, body) {
   });
 }
 
-// We import the module after patching globalThis.fetch so the module
-// picks up the mock on every call.
-
-// ── request() basic behaviour ─────────────────────────────────────────────
 describe("api request helper", () => {
   beforeEach(() => {
-    // Clear cached token between tests
     localStorage.clear();
   });
 
@@ -32,8 +26,6 @@ describe("api request helper", () => {
       });
     });
 
-    // Re-import to pick up patched fetch – but since api.js is cached we
-    // just verify the header using our mock.
     const { default: api } = await import("../api/api.js");
     await api.getTodos();
 
@@ -85,7 +77,6 @@ describe("api request helper", () => {
   });
 });
 
-// ── API method smoke-tests (shape of calls) ──────────────────────────────
 describe("api method shapes", () => {
   beforeEach(() => {
     localStorage.setItem("dashboard_token", "tok");
@@ -113,28 +104,62 @@ describe("api method shapes", () => {
     return capturedOptions;
   }
 
-  it("createRoute sends POST to /api/routes", async () => {
+  it("createRoute sends POST to /events/routes", async () => {
     const payload = { name: "Test", geoJson: {}, distanceMeters: 100 };
-    const opts = await spyRequest("createRoute", "/api/routes", [payload]);
+    const opts = await spyRequest("createRoute", "/events/routes", [payload]);
     expect(opts.method).toBe("POST");
-    expect(opts.url).toContain("/api/routes");
+    expect(opts.url).toContain("/events/routes");
     expect(JSON.parse(opts.body)).toMatchObject({ name: "Test" });
   });
 
-  it("updateListStatus sends PATCH to /api/shopping-lists/{id}/status", async () => {
+  it("updateListStatus sends PATCH to /dashboard/shopping-lists/{id}/status", async () => {
     const opts = await spyRequest(
       "updateListStatus",
-      "/api/shopping-lists/5/status",
+      "/dashboard/shopping-lists/5/status",
       [5, "archived"],
     );
     expect(opts.method).toBe("PATCH");
-    expect(opts.url).toContain("/api/shopping-lists/5/status");
+    expect(opts.url).toContain("/dashboard/shopping-lists/5/status");
     expect(JSON.parse(opts.body)).toEqual({ status: "archived" });
   });
 
-  it("deleteRoute sends DELETE to /api/routes/{id}", async () => {
-    const opts = await spyRequest("deleteRoute", "/api/routes/3", [3]);
+  it("deleteRoute sends DELETE to /events/routes/{id}", async () => {
+    const opts = await spyRequest("deleteRoute", "/events/routes/3", [3]);
     expect(opts.method).toBe("DELETE");
-    expect(opts.url).toContain("/api/routes/3");
+    expect(opts.url).toContain("/events/routes/3");
+  });
+
+  it("updateUser sends PATCH to /auth/users/{id}", async () => {
+    const opts = await spyRequest("updateUser", "/auth/users/u-1", [
+      "u-1",
+      { firstName: "A", lastName: "B", email: "a@b.pl", role: "ROLE_USER" },
+    ]);
+
+    expect(opts.method).toBe("PATCH");
+    expect(opts.url).toContain("/auth/users/u-1");
+    expect(JSON.parse(opts.body)).toMatchObject({
+      firstName: "A",
+      lastName: "B",
+      email: "a@b.pl",
+      role: "ROLE_USER",
+    });
+  });
+
+  it("deleteUser sends DELETE to /auth/users/{id}", async () => {
+    const opts = await spyRequest("deleteUser", "/auth/users/u-2", ["u-2"]);
+
+    expect(opts.method).toBe("DELETE");
+    expect(opts.url).toContain("/auth/users/u-2");
+  });
+
+  it("clearInboxNotifications sends DELETE to /notification/inbox", async () => {
+    const opts = await spyRequest(
+      "clearInboxNotifications",
+      "/notification/inbox",
+      [],
+    );
+
+    expect(opts.method).toBe("DELETE");
+    expect(opts.url).toContain("/notification/inbox");
   });
 });

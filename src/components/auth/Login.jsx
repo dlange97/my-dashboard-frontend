@@ -57,7 +57,7 @@ export default function Login() {
         message: requestMessage.trim(),
       });
       setRequestSuccess("Request access sent. Admin will review your request.");
-      setShowRequestForm(false);
+      setView("login");
       setFirstName("");
       setLastName("");
       setRequestMessage("");

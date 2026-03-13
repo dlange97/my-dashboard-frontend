@@ -1,4 +1,18 @@
-const API_BASE = "/api";
+function resolveApiBase() {
+  const envBase = (import.meta.env.VITE_API_BASE_URL ?? "").trim();
+  if (envBase) return envBase.replace(/\/$/, "");
+
+  if (typeof window !== "undefined") {
+    const { protocol, hostname, port } = window.location;
+    if (port === "5173" || port === "3000") {
+      return `${protocol}//${hostname}:8081`;
+    }
+  }
+
+  return "";
+}
+
+const API_BASE = resolveApiBase();
 const TOKEN_KEY = "dashboard_token";
 
 function getToken() {
@@ -36,33 +50,40 @@ async function request(method, path, body) {
 }
 
 export const api = {
-  getLists: () => request("GET", "/shopping-lists"),
-  createList: (payload) => request("POST", "/shopping-lists", payload),
-  updateList: (id, payload) => request("PUT", `/shopping-lists/${id}`, payload),
+  getLists: () => request("GET", "/dashboard/shopping-lists"),
+  createList: (payload) =>
+    request("POST", "/dashboard/shopping-lists", payload),
+  updateList: (id, payload) =>
+    request("PUT", `/dashboard/shopping-lists/${id}`, payload),
   updateListStatus: (id, status) =>
-    request("PATCH", `/shopping-lists/${id}/status`, { status }),
-  deleteList: (id) => request("DELETE", `/shopping-lists/${id}`),
+    request("PATCH", `/dashboard/shopping-lists/${id}/status`, { status }),
+  deleteList: (id) => request("DELETE", `/dashboard/shopping-lists/${id}`),
   addProduct: (listId, product) =>
-    request("POST", `/shopping-lists/${listId}/products`, product),
+    request("POST", `/dashboard/shopping-lists/${listId}/products`, product),
   removeProduct: (listId, productId) =>
-    request("DELETE", `/shopping-lists/${listId}/products/${productId}`),
+    request(
+      "DELETE",
+      `/dashboard/shopping-lists/${listId}/products/${productId}`,
+    ),
 
-  getTodos: () => request("GET", "/todos"),
-  createTodo: (payload) => request("POST", "/todos", payload),
-  toggleTodo: (id) => request("PATCH", `/todos/${id}/toggle`),
-  updateTodo: (id, payload) => request("PATCH", `/todos/${id}`, payload),
-  deleteTodo: (id) => request("DELETE", `/todos/${id}`),
+  getTodos: () => request("GET", "/dashboard/todos"),
+  createTodo: (payload) => request("POST", "/dashboard/todos", payload),
+  toggleTodo: (id) => request("PATCH", `/dashboard/todos/${id}/toggle`),
+  updateTodo: (id, payload) =>
+    request("PATCH", `/dashboard/todos/${id}`, payload),
+  deleteTodo: (id) => request("DELETE", `/dashboard/todos/${id}`),
 
   getEvents: () => request("GET", "/events"),
   createEvent: (payload) => request("POST", "/events", payload),
   updateEvent: (id, payload) => request("PUT", `/events/${id}`, payload),
   deleteEvent: (id) => request("DELETE", `/events/${id}`),
 
-  getRoutes: () => request("GET", "/routes"),
-  getRoutesByEvent: (eventId) => request("GET", `/routes/event/${eventId}`),
-  createRoute: (payload) => request("POST", "/routes", payload),
-  updateRoute: (id, payload) => request("PUT", `/routes/${id}`, payload),
-  deleteRoute: (id) => request("DELETE", `/routes/${id}`),
+  getRoutes: () => request("GET", "/events/routes"),
+  getRoutesByEvent: (eventId) =>
+    request("GET", `/events/routes/event/${eventId}`),
+  createRoute: (payload) => request("POST", "/events/routes", payload),
+  updateRoute: (id, payload) => request("PUT", `/events/routes/${id}`, payload),
+  deleteRoute: (id) => request("DELETE", `/events/routes/${id}`),
 
   login: (email, password) =>
     request("POST", "/auth/login", { email, password }),
@@ -72,24 +93,38 @@ export const api = {
   me: () => request("GET", "/auth/me"),
 
   getUsers: () => request("GET", "/auth/users"),
+  getUserById: (userId) => request("GET", `/auth/users/${userId}`),
   createUser: (payload) => request("POST", "/auth/users", payload),
+  updateUser: (userId, payload) =>
+    request("PATCH", `/auth/users/${userId}`, payload),
+  deleteUser: (userId) => request("DELETE", `/auth/users/${userId}`),
   assignUserRole: (userId, role) =>
     request("PATCH", `/auth/users/${userId}/role`, { role }),
 
   getAccessSettings: () => request("GET", "/auth/settings/access"),
+  getJwtSessionSettings: () => request("GET", "/auth/settings/jwt-session"),
+  getJwtSessionSetting: (id) =>
+    request("GET", `/auth/settings/jwt-session/${id}`),
+  createJwtSessionSetting: (payload) =>
+    request("POST", "/auth/settings/jwt-session", payload),
+  updateJwtSessionSetting: (id, payload) =>
+    request("PATCH", `/auth/settings/jwt-session/${id}`, payload),
+  deleteJwtSessionSetting: (id) =>
+    request("DELETE", `/auth/settings/jwt-session/${id}`),
 
   getRoles: () => request("GET", "/auth/roles"),
   createRole: (payload) => request("POST", "/auth/roles", payload),
   updateRole: (id, payload) => request("PUT", `/auth/roles/${id}`, payload),
   deleteRole: (id) => request("DELETE", `/auth/roles/${id}`),
 
-  getInboxNotifications: () => request("GET", "/notifications/inbox"),
+  getInboxNotifications: () => request("GET", "/notification/inbox"),
+  clearInboxNotifications: () => request("DELETE", "/notification/inbox"),
   markInboxRead: (notificationId) =>
-    request("PATCH", `/notifications/inbox/${notificationId}/read`),
+    request("PATCH", `/notification/inbox/${notificationId}/read`),
   getNotificationTemplate: () =>
-    request("GET", "/notifications/settings/template/request-access"),
+    request("GET", "/notification/settings/template/request-access"),
   updateNotificationTemplate: (payload) =>
-    request("PUT", "/notifications/settings/template/request-access", payload),
+    request("PUT", "/notification/settings/template/request-access", payload),
 };
 
 export default api;

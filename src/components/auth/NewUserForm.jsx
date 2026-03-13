@@ -1,8 +1,14 @@
 import React, { useEffect, useState } from "react";
 import api from "../../api/api";
+import { Button } from "../ui";
 import "./auth.css";
 
-export default function NewUserForm() {
+function getDefaultRole(roles) {
+  return roles.includes("ROLE_USER") ? "ROLE_USER" : (roles[0] ?? "ROLE_USER");
+}
+
+export default function NewUserForm({ onCancel, onCreated }) {
+  const [roles, setRoles] = useState(["ROLE_USER"]);
   const [form, setForm] = useState({
     firstName: "",
     lastName: "",
@@ -14,7 +20,6 @@ export default function NewUserForm() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
-  const [roles, setRoles] = useState(["ROLE_USER"]);
 
   useEffect(() => {
     api
@@ -22,17 +27,26 @@ export default function NewUserForm() {
       .then((data) => {
         if (Array.isArray(data?.roles) && data.roles.length > 0) {
           setRoles(data.roles);
+          setForm((current) => ({
+            ...current,
+            role: data.roles.includes(current.role)
+              ? current.role
+              : getDefaultRole(data.roles),
+          }));
         }
       })
       .catch(() => {});
   }, []);
 
-  function handleChange(e) {
-    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  function handleChange(event) {
+    setForm((current) => ({
+      ...current,
+      [event.target.name]: event.target.value,
+    }));
   }
 
-  async function handleSubmit(e) {
-    e.preventDefault();
+  async function handleSubmit(event) {
+    event.preventDefault();
     setError("");
     setSuccess("");
 
@@ -48,7 +62,7 @@ export default function NewUserForm() {
 
     setLoading(true);
     try {
-      await api.createUser({
+      const data = await api.createUser({
         email: form.email.trim(),
         password: form.password,
         firstName: form.firstName.trim(),
@@ -63,8 +77,10 @@ export default function NewUserForm() {
         email: "",
         password: "",
         confirm: "",
-        role: "ROLE_USER",
+        role: getDefaultRole(roles),
       });
+
+      onCreated?.(data.user);
     } catch (err) {
       setError(err.message || "Failed to create user.");
     } finally {
@@ -74,10 +90,11 @@ export default function NewUserForm() {
 
   return (
     <section className="auth-manage-section">
-      <div className="auth-manage-card">
+      <div className="auth-manage-card auth-manage-card-embedded">
         <h1>Create New User</h1>
         <p className="auth-manage-subtitle">
-          Add a new application account from inside the dashboard.
+          Add a new application account only when you need it, then return to
+          the selected profile view.
         </p>
 
         <form className="auth-form" onSubmit={handleSubmit}>
@@ -170,13 +187,14 @@ export default function NewUserForm() {
             </select>
           </div>
 
-          <button
-            className="auth-btn auth-btn-dark"
-            type="submit"
-            disabled={loading}
-          >
-            {loading ? "Creating user…" : "Create User"}
-          </button>
+          <div className="auth-manage-actions">
+            <Button variant="secondary" onClick={onCancel} type="button">
+              Cancel
+            </Button>
+            <Button loading={loading} type="submit">
+              {loading ? "Creating user…" : "Create user"}
+            </Button>
+          </div>
         </form>
       </div>
     </section>

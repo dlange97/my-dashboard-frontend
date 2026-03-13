@@ -136,6 +136,23 @@
   color: #64748b;
 }
 
+.inbox-clear-btn {
+  width: 100%;
+  margin-bottom: 0.55rem;
+  border: 1px solid #fecaca;
+  color: #b91c1c;
+  background: #fff;
+  border-radius: 8px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 0.35rem 0.55rem;
+  cursor: pointer;
+}
+
+.inbox-clear-btn:hover {
+  background: #fef2f2;
+}
+
 .inbox-list {
   display: grid;
   gap: 0.55rem;

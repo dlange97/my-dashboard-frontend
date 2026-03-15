@@ -10,6 +10,8 @@ import {
 import MapPage from "../pages/MapPage";
 
 let fullMapLastProps = null;
+let fullMapMountCount = 0;
+let fullMapUnmountCount = 0;
 
 const { apiMock, authMock } = vi.hoisted(() => ({
   apiMock: {
@@ -34,6 +36,14 @@ vi.mock("../components/notifications/InboxSidebar", () => ({
 
 vi.mock("../components/events/MapView", () => ({
   FullMap: (props) => {
+    React.useEffect(() => {
+      fullMapMountCount += 1;
+
+      return () => {
+        fullMapUnmountCount += 1;
+      };
+    }, []);
+
     fullMapLastProps = props;
 
     return (
@@ -91,6 +101,8 @@ vi.mock("../context/AuthContext", () => ({
 describe("MapPage", () => {
   beforeEach(() => {
     fullMapLastProps = null;
+    fullMapMountCount = 0;
+    fullMapUnmountCount = 0;
     apiMock.getEvents.mockReset();
     apiMock.createEvent.mockReset();
     apiMock.updateEvent.mockReset();
@@ -215,5 +227,20 @@ describe("MapPage", () => {
     });
 
     expect(fullMapLastProps.events).toHaveLength(1);
+  });
+
+  it("resets map by remounting FullMap instance", async () => {
+    render(<MapPage />);
+
+    await waitFor(() => {
+      expect(fullMapMountCount).toBe(1);
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Reset mapy" }));
+
+    await waitFor(() => {
+      expect(fullMapMountCount).toBe(2);
+      expect(fullMapUnmountCount).toBe(1);
+    });
   });
 });

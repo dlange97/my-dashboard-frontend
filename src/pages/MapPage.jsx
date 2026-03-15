@@ -20,6 +20,7 @@ export default function MapPage() {
   const [editingEvent, setEditingEvent] = useState(null);
   const [seedLocation, setSeedLocation] = useState(null);
   const [seedTitle, setSeedTitle] = useState("");
+  const [mapResetKey, setMapResetKey] = useState(0);
 
   useEffect(() => {
     api
@@ -71,6 +72,14 @@ export default function MapPage() {
     setSeedTitle("");
   };
 
+  const handleResetMap = () => {
+    setMapResetKey((prev) => prev + 1);
+    setShowForm(false);
+    setEditingEvent(null);
+    setSeedLocation(null);
+    setSeedTitle("");
+  };
+
   return (
     <div
       className="page-shell"
@@ -85,9 +94,19 @@ export default function MapPage() {
             <span style={{ fontSize: "0.85rem", color: "#64748b" }}>
               {events.filter((e) => e.location?.lat).length} event(s) on map
             </span>
+            <button
+              type="button"
+              className="map-filter-clear-btn"
+              onClick={handleResetMap}
+              title="Odśwież mapę, gdy przestanie odpowiadać"
+              style={{ marginLeft: "auto" }}
+            >
+              Reset mapy
+            </button>
           </div>
           <div className="map-full-container">
             <FullMap
+              key={`full-map-${mapResetKey}`}
               events={events}
               canManageRoutes={canManageRoutes}
               canManageEvents={canManageEvents}

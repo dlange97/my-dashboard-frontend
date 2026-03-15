@@ -1,13 +1,14 @@
-import React, { useEffect, useState } from "react";
+import React, { Suspense, lazy, useEffect, useState } from "react";
 import NavBar from "../components/nav/NavBar";
 import EventCalendar from "../components/events/EventCalendar";
 import EventForm from "../components/events/EventForm";
 import EventItem from "../components/events/EventItem";
-import { MapModal } from "../components/events/MapView";
 import InboxSidebar from "../components/notifications/InboxSidebar";
 import api from "../api/api";
 import { useAuth } from "../context/AuthContext";
 import "../components/events/events.css";
+
+const MapModal = lazy(() => import("../components/events/MapModal"));
 
 export default function EventsPage() {
   const { hasPermission } = useAuth();
@@ -138,11 +139,13 @@ export default function EventsPage() {
           )}
 
           {mapEvent && (
-            <MapModal
-              location={mapEvent.location}
-              title={mapEvent.title}
-              onClose={() => setMapEvent(null)}
-            />
+            <Suspense fallback={null}>
+              <MapModal
+                location={mapEvent.location}
+                title={mapEvent.title}
+                onClose={() => setMapEvent(null)}
+              />
+            </Suspense>
           )}
         </main>
       </div>

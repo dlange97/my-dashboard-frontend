@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import LocationPicker from "./LocationPicker";
 
 const EMPTY = {
@@ -11,7 +11,13 @@ const EMPTY = {
   location: null,
 };
 
-export default function EventForm({ initial, onSave, onCancel }) {
+export default function EventForm({
+  initial,
+  seedLocation = null,
+  seedTitle = "",
+  onSave,
+  onCancel,
+}) {
   const [form, setForm] = useState(() => {
     if (!initial) return EMPTY;
     return {
@@ -24,6 +30,18 @@ export default function EventForm({ initial, onSave, onCancel }) {
       location: initial.location ?? null,
     };
   });
+
+  useEffect(() => {
+    if (initial) {
+      return;
+    }
+
+    setForm((prev) => ({
+      ...prev,
+      location: seedLocation ?? prev.location,
+      title: prev.title.trim() ? prev.title : seedTitle,
+    }));
+  }, [initial, seedLocation, seedTitle]);
 
   const set = (field, val) => setForm((f) => ({ ...f, [field]: val }));
 

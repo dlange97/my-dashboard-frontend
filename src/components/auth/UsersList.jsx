@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
 import api from "../../api/api";
-import { useAuth } from "../../context/AuthContext";
 import "./auth.css";
 
 export default function UsersList({
@@ -11,15 +10,29 @@ export default function UsersList({
   refreshKey = 0,
   selectedUserId,
 }) {
-  const { hasPermission } = useAuth();
   const [users, setUsers] = useState([]);
-  const [roles, setRoles] = useState(["ROLE_USER"]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [pendingIds, setPendingIds] = useState([]);
   const [openMenuUserId, setOpenMenuUserId] = useState(null);
+  const [page, setPage] = useState(1);
+  const [perPage] = useState(10);
+  const [searchInput, setSearchInput] = useState("");
+  const [search, setSearch] = useState("");
+  const [pagination, setPagination] = useState({
+    total: 0,
+    page: 1,
+    perPage,
+    totalPages: 1,
+  });
 
-  const canAssignRoles = hasPermission("users.assign_roles");
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      setPage(1);
+      setSearch(searchInput.trim());
+    }, 300);
+
+    return () => clearTimeout(timeoutId);
+  }, [searchInput]);
 
   useEffect(() => {
     async function loadData() {
@@ -27,16 +40,27 @@ export default function UsersList({
       setError("");
 
       try {
-        const [usersData, settingsData] = await Promise.all([
-          api.getUsers(),
-          api.getAccessSettings(),
-        ]);
-        setUsers(Array.isArray(usersData) ? usersData : []);
-        if (
-          Array.isArray(settingsData?.roles) &&
-          settingsData.roles.length > 0
-        ) {
-          setRoles(settingsData.roles);
+        const usersData = await api.getUsers({ page, perPage, search });
+
+        if (Array.isArray(usersData)) {
+          setUsers(usersData);
+          setPagination({
+            total: usersData.length,
+            page,
+            perPage,
+            totalPages: 1,
+          });
+        } else {
+          setUsers(Array.isArray(usersData?.items) ? usersData.items : []);
+          setPagination({
+            total: Number(usersData?.pagination?.total ?? 0),
+            page: Number(usersData?.pagination?.page ?? page),
+            perPage: Number(usersData?.pagination?.perPage ?? perPage),
+            totalPages: Math.max(
+              1,
+              Number(usersData?.pagination?.totalPages ?? 1),
+            ),
+          });
         }
       } catch (err) {
         setError(err.message || "Failed to load users.");
@@ -46,7 +70,7 @@ export default function UsersList({
     }
 
     loadData();
-  }, [refreshKey]);
+  }, [page, perPage, refreshKey, search]);
 
   const rows = useMemo(
     () =>
@@ -61,34 +85,24 @@ export default function UsersList({
     onUsersChange?.(rows);
   }, [onUsersChange, rows]);
 
-  async function handleRoleChange(userId, role) {
-    setPendingIds((prev) => [...prev, userId]);
-    setError("");
-
-    try {
-      const data = await api.assignUserRole(userId, role);
-      setUsers((prev) =>
-        prev.map((user) =>
-          user.id === userId ? { ...user, ...data.user } : user,
-        ),
-      );
-    } catch (err) {
-      setError(err.message || "Failed to assign role.");
-    } finally {
-      setPendingIds((prev) => prev.filter((id) => id !== userId));
-    }
-  }
-
   return (
     <section className="auth-users-section">
       <div className="auth-users-card">
         <div className="auth-users-card-header">
           <div>
             <h2>Directory</h2>
-            <p className="auth-users-card-subtitle">
-              Select a user to inspect the profile on the right.
-            </p>
           </div>
+        </div>
+
+        <div className="auth-users-controls">
+          <input
+            type="search"
+            className="auth-users-search"
+            placeholder="Search by email or name"
+            value={searchInput}
+            onChange={(event) => setSearchInput(event.target.value)}
+          />
+          <span className="auth-users-count">Total: {pagination.total}</span>
         </div>
 
         {error && <div className="auth-error">{error}</div>}
@@ -128,7 +142,6 @@ export default function UsersList({
                           {`${user.firstName ?? ""} ${user.lastName ?? ""}`.trim() ||
                             "—"}
                         </strong>
-                        <span>Open profile</span>
                       </div>
                     </td>
                     <td>
@@ -143,25 +156,7 @@ export default function UsersList({
                       </span>
                     </td>
                     <td>
-                      {canAssignRoles ? (
-                        <select
-                          className="auth-select"
-                          value={user.role}
-                          disabled={pendingIds.includes(user.id)}
-                          onClick={(event) => event.stopPropagation()}
-                          onChange={(event) =>
-                            handleRoleChange(user.id, event.target.value)
-                          }
-                        >
-                          {roles.map((role) => (
-                            <option key={role} value={role}>
-                              {role}
-                            </option>
-                          ))}
-                        </select>
-                      ) : (
-                        <span>{user.role}</span>
-                      )}
+                      <span>{user.role}</span>
                     </td>
                     <td>
                       {user.createdAt
@@ -215,6 +210,34 @@ export default function UsersList({
                 ))}
               </tbody>
             </table>
+          </div>
+        )}
+
+        {!loading && pagination.totalPages > 1 && (
+          <div className="auth-users-pagination">
+            <button
+              type="button"
+              className="auth-pagination-btn"
+              disabled={pagination.page <= 1}
+              onClick={() => setPage((current) => Math.max(1, current - 1))}
+            >
+              Previous
+            </button>
+            <span className="auth-pagination-meta">
+              Page {pagination.page} / {pagination.totalPages}
+            </span>
+            <button
+              type="button"
+              className="auth-pagination-btn"
+              disabled={pagination.page >= pagination.totalPages}
+              onClick={() =>
+                setPage((current) =>
+                  Math.min(pagination.totalPages, current + 1),
+                )
+              }
+            >
+              Next
+            </button>
           </div>
         )}
       </div>

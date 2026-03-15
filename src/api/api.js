@@ -85,6 +85,12 @@ export const api = {
   updateRoute: (id, payload) => request("PUT", `/events/routes/${id}`, payload),
   deleteRoute: (id) => request("DELETE", `/events/routes/${id}`),
 
+  getMapPoints: () => request("GET", "/events/points"),
+  createMapPoint: (payload) => request("POST", "/events/points", payload),
+  updateMapPoint: (id, payload) =>
+    request("PATCH", `/events/points/${id}`, payload),
+  deleteMapPoint: (id) => request("DELETE", `/events/points/${id}`),
+
   login: (email, password) =>
     request("POST", "/auth/login", { email, password }),
   register: (email, password, firstName, lastName) =>
@@ -92,7 +98,15 @@ export const api = {
   requestAccess: (payload) => request("POST", "/auth/request-access", payload),
   me: () => request("GET", "/auth/me"),
 
-  getUsers: () => request("GET", "/auth/users"),
+  getUsers: ({ page = 1, perPage = 10, search = "" } = {}) => {
+    const params = new URLSearchParams();
+    params.set("page", String(page));
+    params.set("perPage", String(perPage));
+    if (search.trim()) {
+      params.set("search", search.trim());
+    }
+    return request("GET", `/auth/users?${params.toString()}`);
+  },
   getUserById: (userId) => request("GET", `/auth/users/${userId}`),
   createUser: (payload) => request("POST", "/auth/users", payload),
   updateUser: (userId, payload) =>

@@ -23,6 +23,7 @@ export default function UsersPage() {
 
   const canCreateUsers = hasPermission("users.create");
   const canEditUsers = hasPermission("users.assign_roles");
+  const canViewUsers = hasPermission("users.view");
 
   useEffect(() => {
     if (!canEditUsers) return;
@@ -55,7 +56,14 @@ export default function UsersPage() {
   }, [selectedUserId, users]);
 
   useEffect(() => {
-    if (!selectedUserId || !hasPermission("users.view") || isCreateOpen) {
+    if (!selectedUserId || !canViewUsers || isCreateOpen) {
+      return;
+    }
+
+    if (
+      selectedUser?.id === selectedUserId &&
+      Array.isArray(selectedUser?.permissions)
+    ) {
       return;
     }
 
@@ -84,7 +92,7 @@ export default function UsersPage() {
     return () => {
       cancelled = true;
     };
-  }, [hasPermission, isCreateOpen, refreshKey, selectedUserId]);
+  }, [canViewUsers, isCreateOpen, refreshKey, selectedUser, selectedUserId]);
 
   function handleUsersChange(nextUsers) {
     setUsers(nextUsers);
@@ -158,12 +166,7 @@ export default function UsersPage() {
           <section className="auth-users-page">
             <div className="auth-users-page-header">
               <div>
-                <p className="auth-users-page-kicker">User management</p>
                 <h1>Users</h1>
-                <p className="auth-users-page-subtitle">
-                  Browse team accounts, inspect profile details, and open the
-                  new user form only when you need it.
-                </p>
               </div>
 
               {canCreateUsers && (
@@ -177,7 +180,7 @@ export default function UsersPage() {
             </div>
 
             <div className="auth-users-layout">
-              {hasPermission("users.view") && (
+              {canViewUsers && (
                 <UsersList
                   onSelectUser={handleUserSelect}
                   onUsersChange={handleUsersChange}

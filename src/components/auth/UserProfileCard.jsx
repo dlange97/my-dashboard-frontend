@@ -37,6 +37,7 @@ export default function UserProfileCard({
   });
   const [saving, setSaving] = React.useState(false);
   const [saveError, setSaveError] = React.useState("");
+  const [permissionsOpen, setPermissionsOpen] = React.useState(false);
 
   React.useEffect(() => {
     setForm({
@@ -46,6 +47,7 @@ export default function UserProfileCard({
       role: user?.role ?? user?.roles?.[0] ?? "ROLE_USER",
     });
     setSaveError("");
+    setPermissionsOpen(false);
   }, [user]);
 
   async function handleSubmit(event) {
@@ -214,20 +216,31 @@ export default function UserProfileCard({
       </div>
 
       <div className="auth-users-profile-section">
-        <h3>Permissions</h3>
-        {permissions.length === 0 ? (
-          <p className="auth-users-profile-muted">
-            This user has no effective permissions.
-          </p>
-        ) : (
-          <div className="auth-users-permission-list">
-            {permissions.map((permission) => (
-              <span key={permission} className="auth-users-permission-chip">
-                {permission}
-              </span>
-            ))}
-          </div>
-        )}
+        <button
+          type="button"
+          className="auth-users-profile-section-toggle"
+          onClick={() => setPermissionsOpen((open) => !open)}
+          aria-expanded={permissionsOpen}
+        >
+          <h3>Permissions</h3>
+          <span className="auth-users-profile-toggle-icon">
+            {permissionsOpen ? "▲" : "▼"}
+          </span>
+        </button>
+        {permissionsOpen &&
+          (permissions.length === 0 ? (
+            <p className="auth-users-profile-muted">
+              This user has no effective permissions.
+            </p>
+          ) : (
+            <div className="auth-users-permission-list">
+              {permissions.map((permission) => (
+                <span key={permission} className="auth-users-permission-chip">
+                  {permission}
+                </span>
+              ))}
+            </div>
+          ))}
       </div>
     </aside>
   );

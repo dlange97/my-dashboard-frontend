@@ -95,3 +95,12 @@
     opacity var(--view-duration) var(--view-ease);
   will-change: transform, opacity;
 }
+
+.app-page-loading {
+  min-height: 40vh;
+  display: grid;
+  place-items: center;
+  color: #475569;
+  font-size: 0.95rem;
+  font-weight: 600;
+}

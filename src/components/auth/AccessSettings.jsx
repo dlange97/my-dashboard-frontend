@@ -1,13 +1,14 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import api from "../../api/api";
 
-// ── Role Editor Modal ─────────────────────────────────────────────────────
 function RoleModal({
   title,
   initial,
   allPermissions,
   saving,
   error,
+  lockSlug = false,
+  lockPermissions = false,
   onSave,
   onClose,
 }) {
@@ -15,89 +16,97 @@ function RoleModal({
   const [slug, setSlug] = useState(initial.slug ?? "");
   const [perms, setPerms] = useState(new Set(initial.permissions ?? []));
 
-  function togglePerm(p) {
-    setPerms((prev) => {
-      const next = new Set(prev);
-      next.has(p) ? next.delete(p) : next.add(p);
+  function togglePermission(permission) {
+    if (lockPermissions) return;
+
+    setPerms((current) => {
+      const next = new Set(current);
+      if (next.has(permission)) {
+        next.delete(permission);
+      } else {
+        next.add(permission);
+      }
       return next;
     });
   }
 
-  function autoSlug(n) {
+  function autoSlug(value) {
     return (
       "ROLE_" +
-      n
+      value
         .toUpperCase()
         .replace(/[^A-Z0-9]+/g, "_")
         .replace(/^_|_$/g, "")
     );
   }
 
-  function handleNameChange(val) {
-    setName(val);
-    if (!initial.isSlugLocked) {
-      setSlug(autoSlug(val));
+  function handleNameChange(value) {
+    setName(value);
+    if (!lockSlug) {
+      setSlug(autoSlug(value));
     }
   }
 
   return (
     <div className="role-modal-overlay" onClick={onClose}>
-      <div className="role-modal" onClick={(e) => e.stopPropagation()}>
+      <div className="role-modal" onClick={(event) => event.stopPropagation()}>
         <h3>{title}</h3>
 
         {error && <div className="role-modal-error">{error}</div>}
 
-        <label>Nazwa roli</label>
+        <label>Role name</label>
         <input
           type="text"
           value={name}
-          onChange={(e) => handleNameChange(e.target.value)}
-          placeholder="np. Custom Viewer"
+          onChange={(event) => handleNameChange(event.target.value)}
+          placeholder="Example: Custom Viewer"
           maxLength={100}
           autoFocus
         />
 
-        {!initial.isSlugLocked && (
-          <>
-            <label>Slug (identyfikator)</label>
-            <input
-              type="text"
-              value={slug}
-              onChange={(e) =>
-                setSlug(e.target.value.toUpperCase().replace(/[^A-Z0-9_]/g, ""))
-              }
-              placeholder="ROLE_CUSTOM_..."
-              maxLength={100}
-            />
-          </>
-        )}
+        <label>Role slug</label>
+        <input
+          type="text"
+          value={slug}
+          onChange={(event) =>
+            setSlug(event.target.value.toUpperCase().replace(/[^A-Z0-9_]/g, ""))
+          }
+          placeholder="ROLE_CUSTOM_VIEWER"
+          maxLength={100}
+          disabled={lockSlug}
+        />
 
-        <label>Uprawnienia</label>
+        <label>Permissions</label>
         <div className="perm-checkboxes">
-          {allPermissions.map((p) => (
-            <label key={p} className="perm-checkbox-item">
+          {allPermissions.map((permission) => (
+            <label key={permission} className="perm-checkbox-item">
               <input
                 type="checkbox"
-                checked={perms.has(p)}
-                onChange={() => togglePerm(p)}
+                checked={perms.has(permission)}
+                onChange={() => togglePermission(permission)}
+                disabled={lockPermissions}
               />
-              {p}
+              {permission}
             </label>
           ))}
         </div>
 
         <div className="role-modal-actions">
           <button className="btn-secondary" onClick={onClose} disabled={saving}>
-            Anuluj
+            Cancel
           </button>
           <button
             className="btn-primary"
-            disabled={saving || !name.trim()}
+            disabled={saving || !name.trim() || !slug.trim()}
             onClick={() =>
-              onSave({ name: name.trim(), slug, permissions: [...perms] })
+              onSave({
+                name: name.trim(),
+                slug: slug.trim(),
+                permissions: [...perms],
+              })
             }
           >
-            {saving ? "Zapisywanie…" : "Zapisz"}
+            {saving ? "Saving..." : "Save"}
           </button>
         </div>
       </div>
@@ -105,169 +114,130 @@ function RoleModal({
   );
 }
 
-// ── Role Card ─────────────────────────────────────────────────────────────
-function RoleCard({ role, allPermissions, onDuplicate, onRename, onDelete }) {
-  const [renaming, setRenaming] = useState(false);
-  const [newName, setNewName] = useState(role.name);
-  const [renameError, setRenameError] = useState("");
-
-  async function submitRename() {
-    if (!newName.trim()) return;
-    try {
-      await onRename(role.id, newName.trim());
-      setRenaming(false);
-    } catch (err) {
-      setRenameError(err.message);
-    }
-  }
+function RoleCard({ role, allPermissions, onEdit, onDuplicate, onDelete }) {
+  const [menuOpen, setMenuOpen] = useState(false);
 
   return (
     <div className={`role-card${role.isSystem ? " system" : ""}`}>
       <div className="role-card-header">
         <div className="role-card-title">
-          {renaming && !role.isSystem ? (
-            <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-              <input
-                value={newName}
-                onChange={(e) => setNewName(e.target.value)}
-                style={{
-                  padding: "4px 8px",
-                  borderRadius: 6,
-                  border: "1px solid #6366f1",
-                  fontSize: "0.85rem",
-                  flex: 1,
-                }}
-                autoFocus
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") submitRename();
-                  if (e.key === "Escape") {
-                    setRenaming(false);
-                    setNewName(role.name);
-                  }
-                }}
-              />
-              <button
-                className="btn-rename"
-                style={{ padding: "3px 9px" }}
-                onClick={submitRename}
-              >
-                ✓
-              </button>
-              <button
-                className="btn-secondary"
-                style={{
-                  padding: "3px 9px",
-                  border: "1px solid #e2e8f0",
-                  borderRadius: 6,
-                  cursor: "pointer",
-                  fontSize: "0.75rem",
-                }}
-                onClick={() => {
-                  setRenaming(false);
-                  setNewName(role.name);
-                }}
-              >
-                ✕
-              </button>
-            </div>
-          ) : (
-            <>
-              <div className="role-card-name">{role.name}</div>
-              <div className="role-card-slug">{role.slug}</div>
-            </>
-          )}
-          {renameError && (
-            <div
-              style={{ color: "#dc2626", fontSize: "0.72rem", marginTop: 3 }}
-            >
-              {renameError}
-            </div>
-          )}
+          <div className="role-card-name">{role.name}</div>
+          <div className="role-card-slug">{role.slug}</div>
         </div>
-        <span
-          className={role.isSystem ? "role-badge-system" : "role-badge-custom"}
-        >
-          {role.isSystem ? "System" : "Custom"}
-        </span>
+
+        <div className="role-card-header-actions">
+          <span
+            className={
+              role.isSystem ? "role-badge-system" : "role-badge-custom"
+            }
+          >
+            {role.isSystem ? "System" : "Custom"}
+          </span>
+
+          <div className="role-actions-menu-wrap">
+            <button
+              type="button"
+              className="role-actions-dots"
+              aria-label="Role actions"
+              onClick={() => setMenuOpen((current) => !current)}
+            >
+              ⋯
+            </button>
+
+            {menuOpen && (
+              <div className="role-actions-menu" role="menu">
+                <button
+                  type="button"
+                  role="menuitem"
+                  onClick={() => {
+                    setMenuOpen(false);
+                    onEdit(role);
+                  }}
+                >
+                  Edit
+                </button>
+                <button
+                  type="button"
+                  role="menuitem"
+                  onClick={() => {
+                    setMenuOpen(false);
+                    onDuplicate(role);
+                  }}
+                >
+                  Duplicate
+                </button>
+                <button
+                  type="button"
+                  role="menuitem"
+                  className="is-danger"
+                  disabled={
+                    role.isSystem || Number(role.assignedUsersCount) > 0
+                  }
+                  onClick={() => {
+                    setMenuOpen(false);
+                    onDelete(role);
+                  }}
+                >
+                  Remove
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <div className="role-meta-line">
+        Assigned users: {Number(role.assignedUsersCount ?? 0)}
       </div>
 
       <div className="role-permissions-list">
-        {allPermissions.map((p) => (
+        {allPermissions.map((permission) => (
           <span
-            key={p}
-            className={`perm-tag${role.permissions.includes(p) ? " active" : ""}`}
+            key={permission}
+            className={`perm-tag${role.permissions.includes(permission) ? " active" : ""}`}
           >
-            {p}
+            {permission}
           </span>
         ))}
-      </div>
-
-      <div className="role-card-actions">
-        <button
-          className="btn-duplicate"
-          onClick={() => onDuplicate(role)}
-          title="Duplikuj rolę"
-        >
-          ⎘ Duplikuj
-        </button>
-        {!role.isSystem && (
-          <>
-            <button
-              className="btn-rename"
-              onClick={() => setRenaming(true)}
-              title="Zmień nazwę"
-            >
-              ✏️ Nazwa
-            </button>
-            <button
-              className="btn-delete-role"
-              onClick={() => {
-                if (window.confirm(`Usunąć rolę "${role.name}"?`))
-                  onDelete(role.id);
-              }}
-              title="Usuń rolę"
-            >
-              🗑 Usuń
-            </button>
-          </>
-        )}
       </div>
     </div>
   );
 }
 
-// ── AccessSettings ────────────────────────────────────────────────────────
 export default function AccessSettings() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [allPermissions, setAllPermissions] = useState([]);
   const [roleDefinitions, setRoleDefinitions] = useState([]);
-  const [modal, setModal] = useState(null); // { mode: "create"|"edit", initial, saving, error }
+  const [modal, setModal] = useState(null);
 
   const loadData = useCallback(() => {
     setLoading(true);
+    setError("");
+
     api
       .getAccessSettings()
       .then((data) => {
-        setAllPermissions(data?.permissions ?? []);
-        // Prefer roleDefinitions from new API field; fall back to old format
+        setAllPermissions(
+          Array.isArray(data?.permissions) ? data.permissions : [],
+        );
+
         if (Array.isArray(data?.roleDefinitions)) {
           setRoleDefinitions(data.roleDefinitions);
-        } else {
-          // legacy fallback
-          const defs = (data?.roles ?? []).map((slug) => ({
-            id: null,
-            name: slug,
-            slug,
-            permissions: data?.rolePermissions?.[slug] ?? [],
-            isSystem: true,
-          }));
-          setRoleDefinitions(defs);
+          return;
         }
+
+        const fallback = (data?.roles ?? []).map((slug) => ({
+          id: null,
+          name: slug,
+          slug,
+          permissions: data?.rolePermissions?.[slug] ?? [],
+          isSystem: true,
+          assignedUsersCount: 0,
+        }));
+        setRoleDefinitions(fallback);
       })
-      .catch((err) =>
-        setError(err.message || "Nie udało się załadować ustawień."),
-      )
+      .catch((err) => setError(err.message || "Unable to load role settings."))
       .finally(() => setLoading(false));
   }, []);
 
@@ -275,65 +245,114 @@ export default function AccessSettings() {
     loadData();
   }, [loadData]);
 
-  // ── Actions ──────────────────────────────────────────────────────────────
-  async function handleDuplicate(sourceRole) {
-    const initial = {
-      name: `${sourceRole.name} (kopia)`,
-      slug: `${sourceRole.slug}_COPY`,
-      permissions: [...sourceRole.permissions],
-      isSlugLocked: false,
-    };
-    setModal({ mode: "create", initial, saving: false, error: "" });
-  }
-
-  async function handleCreate(data) {
-    setModal((m) => ({ ...m, saving: true, error: "" }));
+  async function handleCreate(payload) {
+    setModal((current) => ({ ...current, saving: true, error: "" }));
     try {
-      const created = await api.createRole(data);
-      setRoleDefinitions((prev) => [...prev, created]);
+      const created = await api.createRole(payload);
+      setRoleDefinitions((current) => [...current, created]);
       setModal(null);
     } catch (err) {
-      setModal((m) => ({
-        ...m,
+      setModal((current) => ({
+        ...current,
         saving: false,
-        error: err.message || "Błąd tworzenia roli.",
+        error: err.message || "Failed to create role.",
       }));
     }
   }
 
-  async function handleRename(id, name) {
-    const updated = await api.updateRole(id, { name });
-    setRoleDefinitions((prev) =>
-      prev.map((r) => (r.id === id ? { ...r, name: updated.name ?? name } : r)),
-    );
+  async function handleUpdate(roleId, payload) {
+    setModal((current) => ({ ...current, saving: true, error: "" }));
+    try {
+      const updated = await api.updateRole(roleId, payload);
+      setRoleDefinitions((current) =>
+        current.map((role) =>
+          role.id === roleId ? { ...role, ...updated } : role,
+        ),
+      );
+      setModal(null);
+    } catch (err) {
+      setModal((current) => ({
+        ...current,
+        saving: false,
+        error: err.message || "Failed to update role.",
+      }));
+    }
   }
 
-  async function handleDelete(id) {
-    await api.deleteRole(id);
-    setRoleDefinitions((prev) => prev.filter((r) => r.id !== id));
+  async function handleDelete(role) {
+    const assignedCount = Number(role.assignedUsersCount ?? 0);
+    if (role.isSystem || assignedCount > 0) {
+      return;
+    }
+
+    if (!window.confirm(`Remove role \"${role.name}\"?`)) {
+      return;
+    }
+
+    try {
+      await api.deleteRole(role.id);
+      setRoleDefinitions((current) =>
+        current.filter((item) => item.id !== role.id),
+      );
+    } catch (err) {
+      setError(err.message || "Failed to remove role.");
+    }
+  }
+
+  function openCreateModal() {
+    setModal({
+      mode: "create",
+      roleId: null,
+      initial: {
+        name: "",
+        slug: "",
+        permissions: [],
+      },
+      lockSlug: false,
+      lockPermissions: false,
+      saving: false,
+      error: "",
+    });
+  }
+
+  function openEditModal(role) {
+    setModal({
+      mode: "edit",
+      roleId: role.id,
+      initial: {
+        name: role.name,
+        slug: role.slug,
+        permissions: role.permissions ?? [],
+      },
+      lockSlug: Boolean(role.isSystem),
+      lockPermissions: Boolean(role.isSystem),
+      saving: false,
+      error: "",
+    });
+  }
+
+  function openDuplicateModal(role) {
+    setModal({
+      mode: "create",
+      roleId: null,
+      initial: {
+        name: `${role.name} Copy`,
+        slug: `${role.slug}_COPY`,
+        permissions: [...(role.permissions ?? [])],
+      },
+      lockSlug: false,
+      lockPermissions: false,
+      saving: false,
+      error: "",
+    });
   }
 
   return (
     <div className="access-settings-inner">
       <div className="access-settings-header">
-        <h3>Role i uprawnienia</h3>
-        <button
-          className="btn-add-role"
-          onClick={() =>
-            setModal({
-              mode: "create",
-              initial: {
-                name: "",
-                slug: "",
-                permissions: [],
-                isSlugLocked: false,
-              },
-              saving: false,
-              error: "",
-            })
-          }
-        >
-          + Nowa rola
+        <h3>Roles and permissions</h3>
+        <button className="btn-add-role" onClick={openCreateModal}>
+          + New role
         </button>
       </div>
 
@@ -344,16 +363,16 @@ export default function AccessSettings() {
       )}
 
       {loading ? (
-        <p style={{ color: "#64748b", fontSize: "0.9rem" }}>Ładowanie…</p>
+        <p style={{ color: "#64748b", fontSize: "0.9rem" }}>Loading...</p>
       ) : (
         <div className="roles-grid">
-          {roleDefinitions.map((role, idx) => (
+          {roleDefinitions.map((role, index) => (
             <RoleCard
-              key={role.id ?? `${role.slug}-${idx}`}
+              key={role.id ?? `${role.slug}-${index}`}
               role={role}
               allPermissions={allPermissions}
-              onDuplicate={handleDuplicate}
-              onRename={handleRename}
+              onEdit={openEditModal}
+              onDuplicate={openDuplicateModal}
               onDelete={handleDelete}
             />
           ))}
@@ -362,12 +381,18 @@ export default function AccessSettings() {
 
       {modal && (
         <RoleModal
-          title={modal.mode === "create" ? "Utwórz nową rolę" : "Edytuj rolę"}
+          title={modal.mode === "create" ? "Create role" : "Edit role"}
           initial={modal.initial}
           allPermissions={allPermissions}
+          lockSlug={modal.lockSlug}
+          lockPermissions={modal.lockPermissions}
           saving={modal.saving}
           error={modal.error}
-          onSave={handleCreate}
+          onSave={(payload) =>
+            modal.mode === "create"
+              ? handleCreate(payload)
+              : handleUpdate(modal.roleId, payload)
+          }
           onClose={() => setModal(null)}
         />
       )}

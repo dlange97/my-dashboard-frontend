@@ -5,6 +5,7 @@ import {
   Marker,
   Popup,
   useMap,
+  useMapEvents,
   LayersControl,
   GeoJSON,
 } from "react-leaflet";
@@ -12,6 +13,7 @@ import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import RouteDrawing from "./RouteDrawing";
 import api from "../../api/api";
+import { ConfirmModal } from "../ui";
 
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -23,6 +25,7 @@ L.Icon.Default.mergeOptions({
 
 const POLAND_CENTER = [52.0, 19.0];
 const POLAND_ZOOM = 6;
+const DEFAULT_ROUTE_COLOR = "#6366f1";
 
 const MAP_LAYERS = {
   osm: {
@@ -45,12 +48,107 @@ const MAP_LAYERS = {
 
 const toNumber = (value) => Number(value);
 const normalizeText = (value) => String(value ?? "").toLowerCase();
+const escapeHtml = (value) =>
+  String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/\"/g, "&quot;")
+    .replace(/'/g, "&#039;");
 
 const hasValidCoords = (location) => {
   const lat = toNumber(location?.lat);
   const lon = toNumber(location?.lon);
   return Number.isFinite(lat) && Number.isFinite(lon);
 };
+
+const EVENT_MARKER_ICONS = {
+  upcoming: L.divIcon({
+    className: "map-marker-dot map-marker-dot-upcoming",
+    html: "<span></span>",
+    iconSize: [18, 18],
+    iconAnchor: [9, 9],
+    popupAnchor: [0, -10],
+  }),
+  today: L.divIcon({
+    className: "map-marker-dot map-marker-dot-today",
+    html: "<span></span>",
+    iconSize: [18, 18],
+    iconAnchor: [9, 9],
+    popupAnchor: [0, -10],
+  }),
+  past: L.divIcon({
+    className: "map-marker-dot map-marker-dot-past",
+    html: "<span></span>",
+    iconSize: [18, 18],
+    iconAnchor: [9, 9],
+    popupAnchor: [0, -10],
+  }),
+};
+
+const POINT_MARKER_ICON = L.divIcon({
+  className: "map-marker-pin",
+  html: "<span>📌</span>",
+  iconSize: [22, 22],
+  iconAnchor: [11, 11],
+  popupAnchor: [0, -12],
+});
+
+function buildFallbackLocation(lat, lon) {
+  const latFixed = lat.toFixed(5);
+  const lonFixed = lon.toFixed(5);
+
+  return {
+    display_name: `Współrzędne: ${latFixed}, ${lonFixed}`,
+    lat,
+    lon,
+    suggestedTitle: `Event (${latFixed}, ${lonFixed})`,
+  };
+}
+
+async function resolveLocationForClick(lat, lon) {
+  const fallback = buildFallbackLocation(lat, lon);
+
+  const timeoutController = new AbortController();
+  const timeoutId = setTimeout(() => timeoutController.abort(), 2500);
+
+  try {
+    const url = `https://nominatim.openstreetmap.org/reverse?lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lon)}&format=json&addressdetails=1`;
+    const response = await fetch(url, {
+      headers: { "Accept-Language": "pl,en" },
+      signal: timeoutController.signal,
+    });
+
+    if (!response.ok) {
+      return fallback;
+    }
+
+    const payload = await response.json();
+    const displayName = payload?.display_name;
+    if (!displayName) {
+      return fallback;
+    }
+
+    const locality =
+      payload?.address?.city ||
+      payload?.address?.town ||
+      payload?.address?.village ||
+      payload?.address?.municipality ||
+      payload?.address?.county ||
+      "Wybrana lokalizacja";
+
+    return {
+      display_name: displayName,
+      lat,
+      lon,
+      suggestedTitle: `Event: ${locality}`,
+    };
+  } catch {
+    return fallback;
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
 
 function getEventStatus(event) {
   if (!event?.startAt) return "upcoming";
@@ -76,6 +174,17 @@ function FlyTo({ lat, lon }) {
       map.flyTo([lat, lon], 13, { duration: 1.2 });
     }
   }, [lat, lon, map]);
+
+  return null;
+}
+
+function MapClickCapture({ enabled, onMapClick }) {
+  useMapEvents({
+    click(event) {
+      if (!enabled) return;
+      onMapClick?.(event.latlng);
+    },
+  });
 
   return null;
 }
@@ -136,7 +245,14 @@ export function MapModal({ location, title, onClose }) {
   );
 }
 
-export function FullMap({ events = [], canManageRoutes = false }) {
+export function FullMap({
+  events = [],
+  canManageRoutes = false,
+  canManageEvents = false,
+  onCreateEventAtLocation,
+  onEditEvent,
+  onDeleteEvent,
+}) {
   const [filters, setFilters] = useState({
     upcoming: true,
     today: true,
@@ -145,8 +261,41 @@ export function FullMap({ events = [], canManageRoutes = false }) {
   const [dateRange, setDateRange] = useState({ start: "", end: "" });
   const [searchText, setSearchText] = useState("");
   const [showRouteDrawing, setShowRouteDrawing] = useState(false);
+  const [addPointMode, setAddPointMode] = useState(false);
+  const [addEventMode, setAddEventMode] = useState(false);
   const [routes, setRoutes] = useState([]);
   const [loadingRoutes, setLoadingRoutes] = useState(true);
+  const [routeActionRequest, setRouteActionRequest] = useState(null);
+  const [customPoints, setCustomPoints] = useState([]);
+  const [loadingPoints, setLoadingPoints] = useState(true);
+  const [pointForm, setPointForm] = useState(null);
+  const [pointActionError, setPointActionError] = useState("");
+  const [pointSaving, setPointSaving] = useState(false);
+  const [pendingDeletePointId, setPendingDeletePointId] = useState(null);
+  const [pendingDeleteEvent, setPendingDeleteEvent] = useState(null);
+
+  useEffect(() => {
+    let mounted = true;
+
+    api
+      .getMapPoints()
+      .then((data) => {
+        if (!mounted) return;
+        setCustomPoints(Array.isArray(data) ? data : []);
+      })
+      .catch(() => {
+        if (!mounted) return;
+        setCustomPoints([]);
+      })
+      .finally(() => {
+        if (!mounted) return;
+        setLoadingPoints(false);
+      });
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   useEffect(() => {
     let mounted = true;
@@ -227,6 +376,127 @@ export function FullMap({ events = [], canManageRoutes = false }) {
     setRoutes((prev) => prev.filter((route) => route.id !== routeId));
   };
 
+  const handleRoutePopupAction = (actionType, routeId) => {
+    if (!canManageRoutes || !routeId) return;
+
+    setShowRouteDrawing(true);
+    setRouteActionRequest({
+      key: `${actionType}-${routeId}-${Date.now()}`,
+      type: actionType,
+      routeId,
+    });
+  };
+
+  const openPointForm = (point) => {
+    setPointActionError("");
+    setPointForm({
+      id: point?.id ?? null,
+      name: point?.name ?? "",
+      description: point?.description ?? "",
+      lat: Number(point?.lat ?? 0),
+      lon: Number(point?.lon ?? 0),
+    });
+  };
+
+  const handleMapPointClick = (latLng) => {
+    if (!addPointMode || !latLng) return;
+
+    openPointForm({
+      lat: latLng.lat,
+      lon: latLng.lng,
+    });
+  };
+
+  const handleMapEventClick = async (latLng) => {
+    if (!addEventMode || !canManageEvents || !latLng) return;
+
+    const lat = Number(latLng.lat);
+    const lon = Number(latLng.lng);
+    const fallbackLocation = buildFallbackLocation(lat, lon);
+
+    setAddEventMode(false);
+    onCreateEventAtLocation?.(fallbackLocation);
+
+    const resolvedLocation = await resolveLocationForClick(lat, lon);
+    if (
+      resolvedLocation.display_name !== fallbackLocation.display_name ||
+      resolvedLocation.suggestedTitle !== fallbackLocation.suggestedTitle
+    ) {
+      onCreateEventAtLocation?.(resolvedLocation);
+    }
+  };
+
+  const handleMapClick = (latLng) => {
+    if (addPointMode) {
+      handleMapPointClick(latLng);
+      return;
+    }
+
+    if (addEventMode) {
+      handleMapEventClick(latLng);
+    }
+  };
+
+  const handlePointSave = async () => {
+    if (!pointForm) return;
+
+    setPointActionError("");
+    const name = pointForm.name.trim();
+    if (!name) {
+      setPointActionError("Podaj nazwę punktu.");
+      return;
+    }
+
+    const pointPayload = {
+      name,
+      description: pointForm.description.trim(),
+      lat: Number(pointForm.lat),
+      lon: Number(pointForm.lon),
+    };
+
+    try {
+      setPointSaving(true);
+      if (pointForm.id != null) {
+        const updated = await api.updateMapPoint(pointForm.id, pointPayload);
+        setCustomPoints((prev) =>
+          prev.map((point) => (point.id === pointForm.id ? updated : point)),
+        );
+      } else {
+        const created = await api.createMapPoint(pointPayload);
+        setCustomPoints((prev) => [created, ...prev]);
+      }
+      setPointForm(null);
+    } catch (error) {
+      setPointActionError(error.message || "Nie udało się zapisać punktu.");
+    } finally {
+      setPointSaving(false);
+    }
+  };
+
+  const handlePointDelete = async () => {
+    if (!pendingDeletePointId) return;
+
+    try {
+      await api.deleteMapPoint(pendingDeletePointId);
+      setCustomPoints((prev) =>
+        prev.filter((point) => point.id !== pendingDeletePointId),
+      );
+      setPendingDeletePointId(null);
+    } catch (error) {
+      setPointActionError(error.message || "Nie udało się usunąć punktu.");
+    }
+  };
+
+  const handleEventDelete = async () => {
+    if (!pendingDeleteEvent || !onDeleteEvent) {
+      setPendingDeleteEvent(null);
+      return;
+    }
+
+    await onDeleteEvent(pendingDeleteEvent);
+    setPendingDeleteEvent(null);
+  };
+
   return (
     <div style={{ display: "flex", height: "100%", flexDirection: "column" }}>
       <div className="map-filter-panel">
@@ -252,8 +522,52 @@ export function FullMap({ events = [], canManageRoutes = false }) {
             >
               🛤️ {showRouteDrawing ? "Zamknij" : "Trasa"}
             </button>
+            <button
+              className={`map-point-btn${addPointMode ? " active" : ""}`}
+              onClick={() => {
+                setAddPointMode((prev) => {
+                  const next = !prev;
+                  if (next) setAddEventMode(false);
+                  return next;
+                });
+              }}
+              title="Tryb dodawania punktów"
+            >
+              📌 {addPointMode ? "Kliknij mapę" : "Dodaj punkt"}
+            </button>
+            <button
+              className={`map-event-btn${addEventMode ? " active" : ""}`}
+              disabled={!canManageEvents}
+              title={
+                canManageEvents
+                  ? "Tryb dodawania eventu po kliknięciu mapy"
+                  : "Brak uprawnienia: events.manage"
+              }
+              onClick={() => {
+                setAddEventMode((prev) => {
+                  const next = !prev;
+                  if (next) setAddPointMode(false);
+                  return next;
+                });
+              }}
+            >
+              ➕ {addEventMode ? "Kliknij mapę" : "Event"}
+            </button>
           </div>
         </div>
+
+        {addPointMode && (
+          <div className="map-point-mode-note">
+            Kliknij mapę, aby dodać punkt. Każdy punkt można potem edytować lub
+            usunąć.
+          </div>
+        )}
+
+        {addEventMode && (
+          <div className="map-event-mode-note">
+            Kliknij mapę, aby otworzyć formularz nowego eventu z tą lokalizacją.
+          </div>
+        )}
 
         <div className="map-filter-row">
           <input
@@ -355,6 +669,11 @@ export function FullMap({ events = [], canManageRoutes = false }) {
                 Trasy: <strong>{routes.length}</strong>
               </span>
             )}
+            {!loadingPoints && customPoints.length > 0 && (
+              <span>
+                Punkty: <strong>{customPoints.length}</strong>
+              </span>
+            )}
           </div>
         </div>
       </div>
@@ -365,6 +684,11 @@ export function FullMap({ events = [], canManageRoutes = false }) {
           zoom={POLAND_ZOOM}
           style={{ height: "100%", width: "100%" }}
         >
+          <MapClickCapture
+            enabled={addPointMode || addEventMode}
+            onMapClick={handleMapClick}
+          />
+
           {showRouteDrawing && canManageRoutes && (
             <RouteDrawing
               onRouteSave={handleRouteSave}
@@ -372,6 +696,7 @@ export function FullMap({ events = [], canManageRoutes = false }) {
               onRouteDelete={handleRouteDelete}
               onCancel={() => setShowRouteDrawing(false)}
               existingRoutes={routes}
+              requestedAction={routeActionRequest}
             />
           )}
 
@@ -394,6 +719,10 @@ export function FullMap({ events = [], canManageRoutes = false }) {
                 toNumber(event.location.lat),
                 toNumber(event.location.lon),
               ]}
+              icon={
+                EVENT_MARKER_ICONS[getEventStatus(event)] ??
+                EVENT_MARKER_ICONS.upcoming
+              }
               title={event.title}
             >
               <Popup className="map-event-popup">
@@ -417,6 +746,80 @@ export function FullMap({ events = [], canManageRoutes = false }) {
                       {event.description}
                     </div>
                   )}
+                  {canManageEvents && (
+                    <div className="map-popup-actions">
+                      <button
+                        type="button"
+                        className="map-popup-action-btn map-popup-action-btn-edit"
+                        onClick={() => onEditEvent?.(event)}
+                      >
+                        Edytuj
+                      </button>
+                      <button
+                        type="button"
+                        className="map-popup-action-btn map-popup-action-btn-delete"
+                        onClick={() => setPendingDeleteEvent(event)}
+                      >
+                        Usuń
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </Popup>
+            </Marker>
+          ))}
+
+          {customPoints.map((point) => (
+            <Marker
+              key={point.id}
+              position={[point.lat, point.lon]}
+              icon={POINT_MARKER_ICON}
+            >
+              <Popup className="map-event-popup">
+                <div className="map-event-popup-content">
+                  <strong className="map-popup-title">📌 {point.name}</strong>
+                  <div className="map-popup-detail">
+                    {point.lat.toFixed(5)}, {point.lon.toFixed(5)}
+                  </div>
+                  {point.description && (
+                    <div className="map-popup-description">
+                      {point.description}
+                    </div>
+                  )}
+                  <div className="map-popup-actions">
+                    <button
+                      type="button"
+                      className="map-popup-action-btn map-popup-action-btn-edit"
+                      onClick={() => openPointForm(point)}
+                    >
+                      Edytuj punkt
+                    </button>
+                    <button
+                      type="button"
+                      className="map-popup-action-btn map-popup-action-btn-delete"
+                      onClick={() => setPendingDeletePointId(point.id)}
+                    >
+                      Usuń punkt
+                    </button>
+                  </div>
+                  {canManageEvents && (
+                    <div className="map-popup-secondary-actions">
+                      <button
+                        type="button"
+                        className="map-popup-action-btn"
+                        onClick={() =>
+                          onCreateEventAtLocation?.({
+                            lat: point.lat,
+                            lon: point.lon,
+                            display_name: point.name,
+                            suggestedTitle: `Event: ${point.name}`,
+                          })
+                        }
+                      >
+                        Utwórz event tutaj
+                      </button>
+                    </div>
+                  )}
                 </div>
               </Popup>
             </Marker>
@@ -433,15 +836,53 @@ export function FullMap({ events = [], canManageRoutes = false }) {
               <GeoJSON
                 key={`route-${route.id ?? route.name}`}
                 data={route.geoJson}
-                style={{ color: "#6366f1", weight: 4, opacity: 0.8 }}
+                style={{
+                  color: route?.color || DEFAULT_ROUTE_COLOR,
+                  weight: 4,
+                  opacity: 0.8,
+                }}
                 onEachFeature={(_feature, layer) => {
                   const distKm =
                     route.distanceMeters != null
                       ? `<br/><span style="font-size:0.82em">📏 ${(route.distanceMeters / 1000).toFixed(2)} km</span>`
                       : "";
+
+                  const actionButtons =
+                    canManageRoutes && route.id
+                      ? `<div class="map-route-popup-actions"><button type="button" class="map-route-popup-btn map-route-popup-btn-edit js-route-edit">Edytuj</button><button type="button" class="map-route-popup-btn map-route-popup-btn-delete js-route-delete">Usuń</button></div>`
+                      : "";
+
                   layer.bindPopup(
-                    `<div style="min-width:150px"><strong>🛤️ ${route.name || "Trasa"}</strong>${distKm}</div>`,
+                    `<div class="map-route-popup-content"><strong class="map-route-popup-title">🛤️ ${escapeHtml(route.name || "Trasa")}</strong>${distKm}${actionButtons}</div>`,
                   );
+
+                  layer.on("popupopen", (event) => {
+                    if (!canManageRoutes || !route.id) return;
+
+                    const popupElement = event.popup?.getElement();
+                    if (!popupElement) return;
+
+                    const editButton =
+                      popupElement.querySelector(".js-route-edit");
+                    const deleteButton =
+                      popupElement.querySelector(".js-route-delete");
+
+                    if (editButton) {
+                      editButton.onclick = (popupEvent) => {
+                        popupEvent.preventDefault();
+                        popupEvent.stopPropagation();
+                        handleRoutePopupAction("edit", route.id);
+                      };
+                    }
+
+                    if (deleteButton) {
+                      deleteButton.onclick = (popupEvent) => {
+                        popupEvent.preventDefault();
+                        popupEvent.stopPropagation();
+                        handleRoutePopupAction("delete", route.id);
+                      };
+                    }
+                  });
                 }}
               />
             ))}
@@ -465,8 +906,102 @@ export function FullMap({ events = [], canManageRoutes = false }) {
             <span className="map-legend-icon">🛤️</span>
             <span>Trasa</span>
           </div>
+          <div className="map-legend-item">
+            <span className="map-legend-icon">📌</span>
+            <span>Punkt własny</span>
+          </div>
+          {loadingPoints && (
+            <div className="map-legend-loading">Ładowanie punktów...</div>
+          )}
         </div>
       </div>
+
+      {pointForm && (
+        <div
+          className="map-point-form-overlay"
+          onClick={() => setPointForm(null)}
+        >
+          <div
+            className="map-point-form-card"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <h4>{pointForm.id ? "Edycja punktu" : "Nowy punkt"}</h4>
+            {pointActionError && (
+              <div className="map-point-form-error">{pointActionError}</div>
+            )}
+            <p className="map-point-form-coords">
+              Współrzędne: {pointForm.lat.toFixed(5)},{" "}
+              {pointForm.lon.toFixed(5)}
+            </p>
+            <label>
+              Nazwa
+              <input
+                type="text"
+                value={pointForm.name}
+                onChange={(event) =>
+                  setPointForm((prev) =>
+                    prev ? { ...prev, name: event.target.value } : prev,
+                  )
+                }
+                placeholder="Np. Punkt zbiórki"
+                autoFocus
+              />
+            </label>
+            <label>
+              Opis
+              <textarea
+                value={pointForm.description}
+                onChange={(event) =>
+                  setPointForm((prev) =>
+                    prev ? { ...prev, description: event.target.value } : prev,
+                  )
+                }
+                placeholder="Dodatkowe informacje"
+              />
+            </label>
+            <div className="map-point-form-actions">
+              <button
+                type="button"
+                className="map-popup-action-btn"
+                onClick={() => setPointForm(null)}
+                disabled={pointSaving}
+              >
+                Anuluj
+              </button>
+              <button
+                type="button"
+                className="map-popup-action-btn map-popup-action-btn-edit"
+                disabled={!pointForm.name.trim() || pointSaving}
+                onClick={handlePointSave}
+              >
+                {pointSaving ? "Zapisywanie..." : "Zapisz"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {pendingDeletePointId && (
+        <ConfirmModal
+          title="Usunąć punkt?"
+          message="Punkt zostanie trwale usunięty z mapy."
+          confirmLabel="Usuń"
+          cancelLabel="Anuluj"
+          onConfirm={handlePointDelete}
+          onCancel={() => setPendingDeletePointId(null)}
+        />
+      )}
+
+      {pendingDeleteEvent && (
+        <ConfirmModal
+          title="Usunąć event?"
+          message={`Event \"${pendingDeleteEvent.title}\" zostanie trwale usunięty.`}
+          confirmLabel="Usuń"
+          cancelLabel="Anuluj"
+          onConfirm={handleEventDelete}
+          onCancel={() => setPendingDeleteEvent(null)}
+        />
+      )}
     </div>
   );
 }

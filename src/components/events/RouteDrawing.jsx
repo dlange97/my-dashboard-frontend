@@ -18,6 +18,7 @@ export default function RouteDrawing({
   onRouteDelete,
   onCancel,
   existingRoutes = [],
+  requestedAction = null,
 }) {
   const map = useMap();
   const drawLayerRef = useRef(null);
@@ -27,6 +28,7 @@ export default function RouteDrawing({
   const [saving, setSaving] = useState(false);
   const [routeName, setRouteName] = useState("");
   const [routeDescription, setRouteDescription] = useState("");
+  const [routeColor, setRouteColor] = useState("#6366f1");
   const [showForm, setShowForm] = useState(false);
   const [error, setError] = useState("");
   const [drawLoadError, setDrawLoadError] = useState("");
@@ -38,6 +40,33 @@ export default function RouteDrawing({
   useEffect(() => {
     setSavedRoutes(existingRoutes);
   }, [existingRoutes]);
+
+  useEffect(() => {
+    if (!requestedAction?.routeId) return;
+
+    const targetRoute =
+      savedRoutes.find((route) => route.id === requestedAction.routeId) ?? null;
+
+    if (!targetRoute) return;
+
+    if (requestedAction.type === "edit") {
+      setEditingRouteId(targetRoute.id ?? null);
+      setRouteName(targetRoute.name ?? "");
+      setRouteDescription(targetRoute.description ?? "");
+      setRouteColor(targetRoute.color ?? "#6366f1");
+      setShowForm(true);
+      setError("");
+      setPendingDeleteRoute(null);
+      return;
+    }
+
+    if (requestedAction.type === "delete") {
+      setShowForm(false);
+      setEditingRouteId(null);
+      setError("");
+      setPendingDeleteRoute(targetRoute);
+    }
+  }, [requestedAction, savedRoutes]);
 
   useEffect(() => {
     let cancelled = false;
@@ -149,7 +178,7 @@ export default function RouteDrawing({
       if (!route?.geoJson) return;
       L.geoJSON(route.geoJson, {
         style: {
-          color: "#6366f1",
+          color: route.color ?? "#6366f1",
           weight: 3,
           opacity: 0.7,
         },
@@ -216,6 +245,7 @@ export default function RouteDrawing({
     const payload = {
       name: routeName.trim(),
       description: routeDescription.trim(),
+      color: routeColor,
       geoJson:
         features.length > 0
           ? {
@@ -244,6 +274,7 @@ export default function RouteDrawing({
 
       setRouteName("");
       setRouteDescription("");
+      setRouteColor("#6366f1");
       setShowForm(false);
       setEditingRouteId(null);
       drawLayer.clearLayers();
@@ -270,6 +301,7 @@ export default function RouteDrawing({
     setEditingRouteId(route.id ?? null);
     setRouteName(route.name ?? "");
     setRouteDescription(route.description ?? "");
+    setRouteColor(route.color ?? "#6366f1");
     setShowForm(true);
     setError("");
   };
@@ -337,6 +369,9 @@ export default function RouteDrawing({
                   >
                     <strong>{route.name}</strong>
                     <div className="route-stats">
+                      🎨 {route.color ?? "#6366f1"}
+                    </div>
+                    <div className="route-stats">
                       📏 {((route.distanceMeters ?? 0) / 1000).toFixed(2)} km |
                       ⏱️ {route.durationMinutes ?? 0} min
                     </div>
@@ -385,6 +420,15 @@ export default function RouteDrawing({
               onChange={(e) => setRouteDescription(e.target.value)}
               className="route-form-textarea"
             />
+            <label className="route-color-field">
+              Kolor trasy
+              <input
+                type="color"
+                value={routeColor}
+                onChange={(e) => setRouteColor(e.target.value)}
+                className="route-color-input"
+              />
+            </label>
             <button
               className="btn-primary"
               onClick={handleSaveRoute}

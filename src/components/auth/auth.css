@@ -515,7 +515,8 @@
   padding: 0.3rem;
   display: grid;
   gap: 0.2rem;
-  overflow: visible;
+  overflow-x: auto;
+  word-break: break-word;
 }
 
 /* Jeśli menu wychodzi poza prawą krawędź, przesuwamy je w lewo */

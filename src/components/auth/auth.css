@@ -475,6 +475,15 @@
   display: inline-flex;
 }
 
+.auth-users-actions-cell {
+  position: relative;
+  overflow: visible;
+}
+
+.auth-users-actions-cell.is-open {
+  z-index: 12;
+}
+
 .auth-kebab-btn {
   border: 1px solid #cbd5e1;
   background: #fff;
@@ -493,9 +502,9 @@
 
 .auth-kebab-menu {
   position: absolute;
-  top: calc(100% + 4px);
+  bottom: calc(100% + 4px);
   right: 0;
-  z-index: 5;
+  z-index: 30;
   min-width: 140px;
   background: #fff;
   border: 1px solid #e2e8f0;

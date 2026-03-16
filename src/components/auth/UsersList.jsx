@@ -163,7 +163,14 @@ export default function UsersList({
                         ? new Date(user.createdAt).toLocaleDateString("pl-PL")
                         : "—"}
                     </td>
-                    <td onClick={(event) => event.stopPropagation()}>
+                    <td
+                      className={
+                        openMenuUserId === user.id
+                          ? "auth-users-actions-cell is-open"
+                          : "auth-users-actions-cell"
+                      }
+                      onClick={(event) => event.stopPropagation()}
+                    >
                       <div className="auth-user-actions-wrap">
                         <button
                           type="button"

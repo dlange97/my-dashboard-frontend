@@ -502,10 +502,12 @@
 
 .auth-kebab-menu {
   position: absolute;
-  bottom: calc(100% + 4px);
+  top: calc(100% + 6px);
+  bottom: auto;
   right: 0;
   z-index: 30;
   min-width: 140px;
+  max-width: 220px;
   background: #fff;
   border: 1px solid #e2e8f0;
   border-radius: 10px;
@@ -513,6 +515,23 @@
   padding: 0.3rem;
   display: grid;
   gap: 0.2rem;
+  overflow: visible;
+}
+
+/* Jeśli menu wychodzi poza prawą krawędź, przesuwamy je w lewo */
+.auth-users-actions-cell.is-open .auth-kebab-menu {
+  right: 0;
+  left: auto;
+  transform: translateX(0);
+}
+@media (max-width: 600px) {
+  .auth-kebab-menu {
+    left: 50%;
+    right: auto;
+    transform: translateX(-60%);
+    min-width: 120px;
+    max-width: 90vw;
+  }
 }
 
 .auth-kebab-menu button {

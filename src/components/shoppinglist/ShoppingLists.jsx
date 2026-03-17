@@ -38,24 +38,38 @@ function compareByNearestDueDate(a, b) {
 
   const aUpdated = Date.parse(a?.updatedAt || "");
   const bUpdated = Date.parse(b?.updatedAt || "");
-  if (!Number.isNaN(aUpdated) && !Number.isNaN(bUpdated) && aUpdated !== bUpdated) {
+  if (
+    !Number.isNaN(aUpdated) &&
+    !Number.isNaN(bUpdated) &&
+    aUpdated !== bUpdated
+  ) {
     return bUpdated - aUpdated;
   }
 
   return String(a?.name ?? "").localeCompare(String(b?.name ?? ""), "pl");
 }
 
+function parseDateLocal(value) {
+  if (!value) return null;
+  const m = String(value).match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (!m) return null;
+  return new Date(parseInt(m[1], 10), parseInt(m[2], 10) - 1, parseInt(m[3], 10));
+}
+
 function formatDueDate(value) {
-  if (!value) {
-    return "Brak terminu";
-  }
+  const d = parseDateLocal(value);
+  if (!d) return "Brak terminu";
+  return d.toLocaleDateString("pl-PL");
+}
 
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) {
-    return "Brak terminu";
-  }
-
-  return date.toLocaleDateString("pl-PL");
+function getDueDateStatus(value) {
+  const due = parseDateLocal(value);
+  if (!due) return null;
+  const today = new Date();
+  const todayDay = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  if (due.getTime() < todayDay.getTime()) return "overdue";
+  if (due.getTime() === todayDay.getTime()) return "today";
+  return null;
 }
 
 export default function ShoppingLists({
@@ -316,15 +330,17 @@ export default function ShoppingLists({
     (list) => list.status === "archived",
   ).length;
 
-  const filteredLists = localLists.filter((list) => {
-    if (statusFilter === "active") {
-      return (list.status || "active") === "active";
-    }
-    if (statusFilter === "archived") {
-      return list.status === "archived";
-    }
-    return true;
-  }).sort(compareByNearestDueDate);
+  const filteredLists = localLists
+    .filter((list) => {
+      if (statusFilter === "active") {
+        return (list.status || "active") === "active";
+      }
+      if (statusFilter === "archived") {
+        return list.status === "archived";
+      }
+      return true;
+    })
+    .sort(compareByNearestDueDate);
 
   const visibleLists = showAllLists ? filteredLists : filteredLists.slice(0, 5);
 
@@ -452,7 +468,11 @@ export default function ShoppingLists({
               type="date"
               value={selected.dueDate || ""}
               onChange={(e) =>
-                updateListField(selectedIndex, "dueDate", e.target.value || null)
+                updateListField(
+                  selectedIndex,
+                  "dueDate",
+                  e.target.value || null,
+                )
               }
               aria-label="Shopping list due date"
             />
@@ -610,7 +630,11 @@ export default function ShoppingLists({
             <div
               key={list.id}
               className="list-item"
-              style={{ "--shopping-accent": colorForUserKey(list.createdBy ?? list.ownerId) }}
+              style={{
+                "--shopping-accent": colorForUserKey(
+                  list.createdBy ?? list.ownerId,
+                ),
+              }}
               onClick={() =>
                 handleSelect(
                   localLists.findIndex((current) => current.id === list.id),
@@ -624,8 +648,12 @@ export default function ShoppingLists({
                 )}
               </strong>
               <div>
-                <div className="list-count">{(list.products || []).length} items</div>
-                <div className="list-due-date">Termin: {formatDueDate(list.dueDate)}</div>
+                <div className="list-count">
+                  {(list.products || []).length} items
+                </div>
+                <div className={`list-due-date${getDueDateStatus(list.dueDate) ? ` is-${getDueDateStatus(list.dueDate)}` : ""}`}>
+                  Termin: {formatDueDate(list.dueDate)}
+                </div>
               </div>
             </div>
           ))}

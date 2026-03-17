@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import ProductForm from "./ProductForm";
 
-const ANIM_MS = 360; // should match --view-duration in CSS
+const ANIM_MS = 360;
 
 export default function NewShoppingList({ onCreate, onCancel }) {
   const [name, setName] = useState("");
@@ -19,8 +19,8 @@ export default function NewShoppingList({ onCreate, onCancel }) {
   const submit = (e) => {
     e && e.preventDefault();
     if (!name) return;
-    startClose(() =>
-      onCreate && onCreate({ name, dueDate: dueDate || null, products }),
+    startClose(
+      () => onCreate && onCreate({ name, dueDate: dueDate || null, products }),
     );
   };
 

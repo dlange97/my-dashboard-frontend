@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { createPortal } from "react-dom";
 import api from "../../api/api";
 import "./auth.css";
 
@@ -14,6 +15,7 @@ export default function UsersList({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [openMenuUserId, setOpenMenuUserId] = useState(null);
+  const [menuPos, setMenuPos] = useState(null);
   const [page, setPage] = useState(1);
   const [perPage] = useState(10);
   const [searchInput, setSearchInput] = useState("");
@@ -33,6 +35,13 @@ export default function UsersList({
 
     return () => clearTimeout(timeoutId);
   }, [searchInput]);
+
+  useEffect(() => {
+    if (!openMenuUserId) return;
+    const close = () => { setOpenMenuUserId(null); setMenuPos(null); };
+    document.addEventListener("click", close);
+    return () => document.removeEventListener("click", close);
+  }, [openMenuUserId]);
 
   useEffect(() => {
     async function loadData() {
@@ -86,8 +95,9 @@ export default function UsersList({
   }, [onUsersChange, rows]);
 
   return (
-    <section className="auth-users-section">
-      <div className="auth-users-card">
+    <>
+      <section className="auth-users-section">
+        <div className="auth-users-card">
         <div className="auth-users-card-header">
           <div>
             <h2>Directory</h2>
@@ -176,41 +186,23 @@ export default function UsersList({
                           type="button"
                           className="auth-kebab-btn"
                           aria-label="User actions"
-                          onClick={() =>
-                            setOpenMenuUserId((current) =>
-                              current === user.id ? null : user.id,
-                            )
-                          }
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (openMenuUserId === user.id) {
+                              setOpenMenuUserId(null);
+                              setMenuPos(null);
+                              return;
+                            }
+                            const rect = e.currentTarget.getBoundingClientRect();
+                            setMenuPos({
+                              top: rect.bottom + 6,
+                              right: window.innerWidth - rect.right,
+                            });
+                            setOpenMenuUserId(user.id);
+                          }}
                         >
                           ⋯
                         </button>
-
-                        {openMenuUserId === user.id && (
-                          <div className="auth-kebab-menu" role="menu">
-                            <button
-                              type="button"
-                              role="menuitem"
-                              onClick={() => {
-                                setOpenMenuUserId(null);
-                                onEditUser?.(user);
-                              }}
-                            >
-                              Edit
-                            </button>
-                            <button
-                              type="button"
-                              role="menuitem"
-                              className="is-danger"
-                              disabled={user.status === "inactive"}
-                              onClick={() => {
-                                setOpenMenuUserId(null);
-                                onDeleteUser?.(user);
-                              }}
-                            >
-                              Delete
-                            </button>
-                          </div>
-                        )}
                       </div>
                     </td>
                   </tr>
@@ -249,5 +241,49 @@ export default function UsersList({
         )}
       </div>
     </section>
+    {openMenuUserId && menuPos &&
+      createPortal(
+        <div
+          className="auth-kebab-menu auth-kebab-menu--fixed"
+          style={{ top: menuPos.top, right: menuPos.right }}
+          role="menu"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {(() => {
+            const u = rows.find((r) => r.id === openMenuUserId);
+            if (!u) return null;
+            return (
+              <>
+                <button
+                  type="button"
+                  role="menuitem"
+                  onClick={() => {
+                    setOpenMenuUserId(null);
+                    setMenuPos(null);
+                    onEditUser?.(u);
+                  }}
+                >
+                  Edit
+                </button>
+                <button
+                  type="button"
+                  role="menuitem"
+                  className="is-danger"
+                  disabled={u.status === "inactive"}
+                  onClick={() => {
+                    setOpenMenuUserId(null);
+                    setMenuPos(null);
+                    onDeleteUser?.(u);
+                  }}
+                >
+                  Delete
+                </button>
+              </>
+            );
+          })()}
+        </div>,
+        document.body,
+      )}
+    </>
   );
 }

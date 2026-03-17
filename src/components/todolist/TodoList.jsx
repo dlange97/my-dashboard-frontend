@@ -37,7 +37,11 @@ function compareByNearestDueDate(a, b) {
 
   const aCreated = Date.parse(a?.createdAt || "");
   const bCreated = Date.parse(b?.createdAt || "");
-  if (!Number.isNaN(aCreated) && !Number.isNaN(bCreated) && aCreated !== bCreated) {
+  if (
+    !Number.isNaN(aCreated) &&
+    !Number.isNaN(bCreated) &&
+    aCreated !== bCreated
+  ) {
     return bCreated - aCreated;
   }
 

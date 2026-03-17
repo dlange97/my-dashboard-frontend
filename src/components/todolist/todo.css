@@ -83,6 +83,20 @@
   color: #475569;
 }
 
+.todo-due-date.is-overdue {
+  color: #b91c1c;
+  background: #fee2e2;
+  border-radius: 4px;
+  padding: 0.1rem 0.35rem;
+}
+
+.todo-due-date.is-today {
+  color: #92400e;
+  background: #fef3c7;
+  border-radius: 4px;
+  padding: 0.1rem 0.35rem;
+}
+
 .todo-label.done .todo-text {
   text-decoration: line-through;
   color: #94a3b8;

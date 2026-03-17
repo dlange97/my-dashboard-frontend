@@ -1,5 +1,3 @@
-/* ── Product Form — Modern Design ──────────────────────────── */
-
 .product-form {
   display: flex;
   flex-direction: column;
@@ -10,7 +8,6 @@
   width: 100%;
 }
 
-/* Second row: qty + weight + submit button side-by-side */
 .product-form-row {
   display: flex;
   gap: 0.6rem;
@@ -26,7 +23,6 @@
   max-width: 90px;
 }
 
-/* Inherit form-field styles from search.css */
 .product-form .form-field label {
   font-size: 0.78rem;
   font-weight: 600;

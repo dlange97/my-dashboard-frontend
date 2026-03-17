@@ -2,6 +2,7 @@ import React, { useMemo, useState, useEffect } from "react";
 import TodoItem from "./TodoItem";
 import TodoForm from "./TodoForm";
 import api from "../../api/api";
+import { useTranslation } from "../../context/TranslationContext";
 
 const ITEM_COLORS = [
   "#2563eb",
@@ -48,7 +49,9 @@ function compareByNearestDueDate(a, b) {
   return String(a?.text ?? "").localeCompare(String(b?.text ?? ""), "pl");
 }
 
-export default function TodoList({ title = "To-Do" }) {
+export default function TodoList({ title }) {
+  const { t } = useTranslation();
+  const resolvedTitle = title ?? t("todo.title", "To-Do");
   const [localTasks, setLocalTasks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -76,7 +79,7 @@ export default function TodoList({ title = "To-Do" }) {
       .toggleTodo(item.id)
       .then((updated) =>
         setLocalTasks((prev) =>
-          prev.map((t) => (t.id === updated.id ? updated : t)),
+          prev.map((task) => (task.id === updated.id ? updated : task)),
         ),
       )
       .catch((err) => alert(`Failed to toggle task: ${err.message}`));
@@ -85,7 +88,9 @@ export default function TodoList({ title = "To-Do" }) {
   const deleteTask = (item) => {
     api
       .deleteTodo(item.id)
-      .then(() => setLocalTasks((prev) => prev.filter((t) => t.id !== item.id)))
+      .then(() =>
+        setLocalTasks((prev) => prev.filter((task) => task.id !== item.id)),
+      )
       .catch((err) => alert(`Failed to delete task: ${err.message}`));
   };
 
@@ -97,7 +102,7 @@ export default function TodoList({ title = "To-Do" }) {
   return (
     <div className="card todo-card">
       <div className="card-header">
-        <h2>{title}</h2>
+        <h2>{resolvedTitle}</h2>
         <button
           type="button"
           className="add-list-plus"
@@ -121,18 +126,20 @@ export default function TodoList({ title = "To-Do" }) {
         )}
 
         {loading ? (
-          <p>Loading&hellip;</p>
+          <p>{t("common.loading", "Loading\u2026")}</p>
         ) : error ? (
-          <p style={{ color: "red" }}>Error: {error}</p>
+          <p style={{ color: "red" }}>
+            {t("common.error", "Error:")} {error}
+          </p>
         ) : localTasks.length === 0 ? (
-          <p>No tasks</p>
+          <p>{t("todo.empty", "No tasks")}</p>
         ) : (
           <ul className="todo-list">
-            {sortedTasks.map((t) => (
+            {sortedTasks.map((task) => (
               <TodoItem
-                key={t.id}
-                item={t}
-                accentColor={colorForUserKey(t.createdBy ?? t.ownerId)}
+                key={task.id}
+                item={task}
+                accentColor={colorForUserKey(task.createdBy ?? task.ownerId)}
                 onToggle={toggleTask}
                 onDelete={deleteTask}
               />

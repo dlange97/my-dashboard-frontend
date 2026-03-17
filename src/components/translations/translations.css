@@ -1,0 +1,246 @@
+/* ── Translation Settings ──────────────────────────────────── */
+.transl-settings {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.transl-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.transl-locale-tabs {
+  display: flex;
+  gap: 0.35rem;
+}
+
+.transl-locale-tab {
+  background: var(--surface-2, #f1f5f9);
+  border: 1px solid var(--border, #e2e8f0);
+  color: var(--text-2, #475569);
+  padding: 0.35rem 0.85rem;
+  border-radius: 7px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.transl-locale-tab.active {
+  background: var(--accent, #6366f1);
+  border-color: var(--accent, #6366f1);
+  color: #fff;
+}
+
+.transl-search {
+  flex: 1;
+  min-width: 160px;
+  padding: 0.4rem 0.75rem;
+  border: 1px solid var(--border, #e2e8f0);
+  border-radius: 7px;
+  font-size: 0.85rem;
+  background: var(--surface-2, #f8fafc);
+}
+
+.transl-add-btn {
+  background: var(--accent, #6366f1);
+  color: #fff;
+  border: none;
+  padding: 0.4rem 1rem;
+  border-radius: 7px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: opacity 0.15s;
+}
+
+.transl-add-btn:hover {
+  opacity: 0.88;
+}
+
+/* Add form */
+.transl-add-form {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  padding: 0.75rem;
+  background: var(--surface-2, #f8fafc);
+  border: 1px solid var(--border, #e2e8f0);
+  border-radius: 8px;
+}
+
+.transl-add-locale {
+  width: 72px;
+  padding: 0.4rem;
+  border: 1px solid var(--border, #e2e8f0);
+  border-radius: 6px;
+  font-size: 0.85rem;
+}
+
+.transl-add-key {
+  flex: 1;
+  min-width: 160px;
+  padding: 0.4rem 0.75rem;
+  border: 1px solid var(--border, #e2e8f0);
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-family: monospace;
+}
+
+.transl-add-value {
+  flex: 2;
+  min-width: 200px;
+  padding: 0.4rem 0.75rem;
+  border: 1px solid var(--border, #e2e8f0);
+  border-radius: 6px;
+  font-size: 0.85rem;
+}
+
+/* Error / loading */
+.transl-error {
+  color: #dc2626;
+  font-size: 0.85rem;
+  padding: 0.5rem 0.75rem;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 7px;
+}
+
+.transl-loading {
+  color: var(--text-2, #64748b);
+  font-size: 0.9rem;
+  padding: 1rem;
+  text-align: center;
+}
+
+/* Table */
+.transl-table-wrap {
+  overflow-x: auto;
+}
+
+.transl-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.transl-table th {
+  text-align: left;
+  padding: 0.6rem 0.75rem;
+  background: var(--surface-2, #f1f5f9);
+  color: var(--text-2, #475569);
+  font-weight: 600;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid var(--border, #e2e8f0);
+  white-space: nowrap;
+}
+
+.transl-table td {
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid var(--border, #f1f5f9);
+  vertical-align: middle;
+}
+
+.transl-table tr:last-child td {
+  border-bottom: none;
+}
+
+.transl-key-cell {
+  font-family: monospace;
+  font-size: 0.82rem;
+  color: var(--text-2, #475569);
+  white-space: nowrap;
+}
+
+.transl-value-cell {
+  min-width: 200px;
+}
+
+.transl-value-text {
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  display: inline-block;
+  transition: background 0.12s;
+}
+
+.transl-value-text:hover {
+  background: var(--surface-2, #f1f5f9);
+}
+
+.transl-edit-input {
+  width: 100%;
+  padding: 0.3rem 0.5rem;
+  border: 1px solid var(--accent, #6366f1);
+  border-radius: 5px;
+  font-size: 0.875rem;
+}
+
+.transl-actions-cell {
+  white-space: nowrap;
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
+}
+
+.transl-edit-btn,
+.transl-save-btn,
+.transl-cancel-btn,
+.transl-delete-btn {
+  padding: 0.28rem 0.65rem;
+  border-radius: 5px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: opacity 0.15s;
+}
+
+.transl-edit-btn {
+  background: var(--surface-2, #f1f5f9);
+  border-color: var(--border, #e2e8f0);
+  color: var(--text, #334155);
+}
+
+.transl-save-btn {
+  background: var(--accent, #6366f1);
+  color: #fff;
+}
+
+.transl-cancel-btn {
+  background: transparent;
+  border-color: var(--border, #e2e8f0);
+  color: var(--text-2, #64748b);
+}
+
+.transl-delete-btn {
+  background: transparent;
+  border-color: #fca5a5;
+  color: #dc2626;
+}
+
+.transl-edit-btn:hover,
+.transl-save-btn:hover,
+.transl-cancel-btn:hover,
+.transl-delete-btn:hover {
+  opacity: 0.8;
+}
+
+.transl-empty {
+  color: var(--text-2, #94a3b8);
+  text-align: center;
+  padding: 2rem;
+  font-size: 0.9rem;
+}
+
+.transl-count {
+  margin-top: 0.5rem;
+  font-size: 0.78rem;
+  color: var(--text-2, #94a3b8);
+  text-align: right;
+}

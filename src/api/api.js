@@ -139,6 +139,24 @@ export const api = {
     request("GET", "/notification/settings/template/request-access"),
   updateNotificationTemplate: (payload) =>
     request("PUT", "/notification/settings/template/request-access", payload),
+
+  // ── Translation Service ───────────────────────────────────────────────
+  getTranslations: (locale = "en") =>
+    request("GET", `/translation/translations?locale=${locale}`),
+  getAdminTranslations: (locale) =>
+    request(
+      "GET",
+      `/translation/admin/translations${locale ? `?locale=${locale}` : ""}`,
+    ),
+  createTranslation: (payload) =>
+    request("POST", "/translation/admin/translations", payload),
+  updateTranslation: (id, payload) =>
+    request("PUT", `/translation/admin/translations/${id}`, payload),
+  deleteTranslation: (id) =>
+    request("DELETE", `/translation/admin/translations/${id}`),
+
+  // ── User language (own profile) ──────────────────────────────────────
+  updateMyLanguage: (language) => request("PATCH", "/auth/me", { language }),
 };
 
 export default api;

@@ -105,6 +105,95 @@
   background: rgba(255, 255, 255, 0.22);
 }
 
+/* ── Language Switcher ─────────────────────────────────────── */
+.nav-lang-switcher {
+  position: relative;
+}
+
+.nav-lang-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  background: rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  padding: 0.35rem 0.65rem;
+  border-radius: 7px;
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: background 0.15s;
+  white-space: nowrap;
+}
+
+.nav-lang-btn:hover {
+  background: rgba(255, 255, 255, 0.22);
+}
+
+.nav-lang-current {
+  font-weight: 600;
+  letter-spacing: 0.05em;
+}
+
+.nav-lang-dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  background: #1e293b;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  padding: 0.35rem;
+  min-width: 72px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  z-index: 200;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.nav-lang-option {
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.75);
+  padding: 0.4rem 0.65rem;
+  border-radius: 5px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  text-align: center;
+  transition: background 0.12s;
+}
+
+.nav-lang-option:hover {
+  background: rgba(99, 102, 241, 0.3);
+  color: #c7d2fe;
+}
+
+.nav-lang-option.active {
+  background: rgba(99, 102, 241, 0.35);
+  color: #c7d2fe;
+}
+
+.nav-mobile-lang {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.65rem 0.75rem;
+  border: none;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.95rem;
+  cursor: pointer;
+  border-radius: 8px;
+  text-align: left;
+  transition: background 0.15s;
+  width: 100%;
+}
+
+.nav-mobile-lang:hover {
+  background: rgba(99, 102, 241, 0.2);
+}
+
 .nav-settings-btn {
   display: flex;
   align-items: center;
@@ -200,6 +289,10 @@
   }
 
   .nav-logout-btn {
+    display: none;
+  }
+
+  .nav-lang-switcher {
     display: none;
   }
 

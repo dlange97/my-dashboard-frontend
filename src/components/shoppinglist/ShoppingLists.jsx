@@ -4,6 +4,60 @@ import NewShoppingList from "./NewShoppingList";
 import ConfirmModal from "../ui/ConfirmModal";
 import api from "../../api/api";
 
+const ITEM_COLORS = [
+  "#2563eb",
+  "#16a34a",
+  "#ea580c",
+  "#0891b2",
+  "#9333ea",
+  "#dc2626",
+  "#0f766e",
+  "#d97706",
+];
+
+function colorForUserKey(value) {
+  const key = String(value ?? "unknown");
+  let hash = 0;
+  for (let i = 0; i < key.length; i += 1) {
+    hash = (hash * 31 + key.charCodeAt(i)) >>> 0;
+  }
+  return ITEM_COLORS[hash % ITEM_COLORS.length];
+}
+
+function dueDateTime(value) {
+  if (!value) return Number.POSITIVE_INFINITY;
+  const timestamp = Date.parse(value);
+  return Number.isNaN(timestamp) ? Number.POSITIVE_INFINITY : timestamp;
+}
+
+function compareByNearestDueDate(a, b) {
+  const dueDiff = dueDateTime(a?.dueDate) - dueDateTime(b?.dueDate);
+  if (dueDiff !== 0) {
+    return dueDiff;
+  }
+
+  const aUpdated = Date.parse(a?.updatedAt || "");
+  const bUpdated = Date.parse(b?.updatedAt || "");
+  if (!Number.isNaN(aUpdated) && !Number.isNaN(bUpdated) && aUpdated !== bUpdated) {
+    return bUpdated - aUpdated;
+  }
+
+  return String(a?.name ?? "").localeCompare(String(b?.name ?? ""), "pl");
+}
+
+function formatDueDate(value) {
+  if (!value) {
+    return "Brak terminu";
+  }
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return "Brak terminu";
+  }
+
+  return date.toLocaleDateString("pl-PL");
+}
+
 export default function ShoppingLists({
   onSelectionChange,
   initialSelectedListId = null,
@@ -195,6 +249,7 @@ export default function ShoppingLists({
     api
       .createList({
         name: item.name,
+        dueDate: item.dueDate || null,
         status: "active",
         products: item.products || [],
       })
@@ -212,6 +267,7 @@ export default function ShoppingLists({
     api
       .updateList(editingList.id, {
         name: editingList.name,
+        dueDate: editingList.dueDate || null,
         status: editingList.status || "active",
         products: (editingList.products || []).map((product, index) => ({
           name: product.name,
@@ -268,7 +324,7 @@ export default function ShoppingLists({
       return list.status === "archived";
     }
     return true;
-  });
+  }).sort(compareByNearestDueDate);
 
   const visibleLists = showAllLists ? filteredLists : filteredLists.slice(0, 5);
 
@@ -389,6 +445,16 @@ export default function ShoppingLists({
                 updateListField(selectedIndex, "name", e.target.value)
               }
               placeholder="List name"
+            />
+
+            <input
+              className="list-name-input list-date-input"
+              type="date"
+              value={selected.dueDate || ""}
+              onChange={(e) =>
+                updateListField(selectedIndex, "dueDate", e.target.value || null)
+              }
+              aria-label="Shopping list due date"
             />
 
             <div className="products-edit">
@@ -544,6 +610,7 @@ export default function ShoppingLists({
             <div
               key={list.id}
               className="list-item"
+              style={{ "--shopping-accent": colorForUserKey(list.createdBy ?? list.ownerId) }}
               onClick={() =>
                 handleSelect(
                   localLists.findIndex((current) => current.id === list.id),
@@ -556,8 +623,9 @@ export default function ShoppingLists({
                   <span className="list-status-badge">Archived</span>
                 )}
               </strong>
-              <div className="list-count">
-                {(list.products || []).length} items
+              <div>
+                <div className="list-count">{(list.products || []).length} items</div>
+                <div className="list-due-date">Termin: {formatDueDate(list.dueDate)}</div>
               </div>
             </div>
           ))}

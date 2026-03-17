@@ -37,8 +37,9 @@
   justify-content: space-between;
   padding: 10px 12px;
   border-radius: 8px;
-  background: #f8fafc;
+  background: color-mix(in srgb, var(--todo-accent, #6366f1) 8%, #ffffff);
   border: 1.5px solid #e2e8f0;
+  border-left: 4px solid var(--todo-accent, #6366f1);
   transition:
     border-color 0.18s,
     background 0.18s;
@@ -68,9 +69,18 @@
 }
 
 .todo-label .todo-text {
+  display: block;
   font-size: 0.93rem;
   color: #334155;
   word-break: break-word;
+}
+
+.todo-due-date {
+  display: block;
+  margin-top: 0.18rem;
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: #475569;
 }
 
 .todo-label.done .todo-text {

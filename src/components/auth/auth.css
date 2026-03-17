@@ -407,6 +407,7 @@
 
 .auth-users-table-wrap {
   overflow-x: auto;
+  overflow-y: visible;
 }
 
 .auth-users-table {
@@ -507,7 +508,8 @@
   right: 0;
   z-index: 30;
   min-width: 140px;
-  max-width: 220px;
+  width: max-content;
+  max-width: none;
   background: #fff;
   border: 1px solid #e2e8f0;
   border-radius: 10px;
@@ -526,11 +528,11 @@
 }
 @media (max-width: 600px) {
   .auth-kebab-menu {
-    left: 50%;
-    right: auto;
-    transform: translateX(-60%);
+    left: auto;
+    right: 0;
+    transform: none;
     min-width: 120px;
-    max-width: 90vw;
+    max-width: none;
   }
 }
 
@@ -541,6 +543,7 @@
   padding: 0.45rem 0.5rem;
   border-radius: 8px;
   font-size: 0.82rem;
+  white-space: nowrap;
   cursor: pointer;
   color: #1e293b;
 }

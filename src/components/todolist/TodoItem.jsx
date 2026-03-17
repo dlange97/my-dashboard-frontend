@@ -1,15 +1,33 @@
 import React from "react";
 
-export default function TodoItem({ item, onToggle, onDelete }) {
+function formatDueDate(dateValue) {
+  if (!dateValue) {
+    return null;
+  }
+
+  const date = new Date(dateValue);
+  if (Number.isNaN(date.getTime())) {
+    return null;
+  }
+
+  return date.toLocaleDateString("pl-PL");
+}
+
+export default function TodoItem({ item, onToggle, onDelete, accentColor }) {
+  const dueDateLabel = formatDueDate(item?.dueDate);
+
   return (
-    <li className="todo-item">
+    <li className="todo-item" style={{ "--todo-accent": accentColor || "#6366f1" }}>
       <label className={`todo-label ${item.done ? "done" : ""}`}>
         <input
           type="checkbox"
           checked={!!item.done}
           onChange={() => onToggle && onToggle(item)}
         />
-        <span className="todo-text">{item.text}</span>
+        <span>
+          <span className="todo-text">{item.text}</span>
+          {dueDateLabel && <span className="todo-due-date">Termin: {dueDateLabel}</span>}
+        </span>
       </label>
       <button
         className="remove-product-icon"

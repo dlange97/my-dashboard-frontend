@@ -6,13 +6,15 @@ export default function TodoForm({
   placeholder = "New task",
 }) {
   const [text, setText] = useState("");
+  const [dueDate, setDueDate] = useState("");
 
   const submit = (e) => {
     e.preventDefault();
     const trimmed = (text || "").trim();
     if (!trimmed) return;
-    onAdd && onAdd({ text: trimmed, done: false });
+    onAdd && onAdd({ text: trimmed, done: false, dueDate: dueDate || null });
     setText("");
+    setDueDate("");
     if (onCancel) onCancel();
   };
 
@@ -24,6 +26,13 @@ export default function TodoForm({
         onChange={(e) => setText(e.target.value)}
         placeholder={placeholder}
         aria-label="New task"
+      />
+      <input
+        className="todo-input"
+        type="date"
+        value={dueDate}
+        onChange={(e) => setDueDate(e.target.value)}
+        aria-label="Due date"
       />
       <div className="todo-form-actions">
         <button type="submit" className="add-list-btn">

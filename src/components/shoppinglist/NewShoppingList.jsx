@@ -5,6 +5,7 @@ const ANIM_MS = 360; // should match --view-duration in CSS
 
 export default function NewShoppingList({ onCreate, onCancel }) {
   const [name, setName] = useState("");
+  const [dueDate, setDueDate] = useState("");
   const [products, setProducts] = useState([]);
   const [closing, setClosing] = useState(false);
 
@@ -18,7 +19,9 @@ export default function NewShoppingList({ onCreate, onCancel }) {
   const submit = (e) => {
     e && e.preventDefault();
     if (!name) return;
-    startClose(() => onCreate && onCreate({ name, products }));
+    startClose(() =>
+      onCreate && onCreate({ name, dueDate: dueDate || null, products }),
+    );
   };
 
   const addProduct = (p) => setProducts((prev) => [...prev, p]);
@@ -33,6 +36,13 @@ export default function NewShoppingList({ onCreate, onCancel }) {
           placeholder="List name"
           value={name}
           onChange={(e) => setName(e.target.value)}
+        />
+
+        <input
+          type="date"
+          value={dueDate}
+          onChange={(e) => setDueDate(e.target.value)}
+          aria-label="Shopping list due date"
         />
 
         <div className="modal-products">

@@ -3,12 +3,15 @@ import NavBar from "../components/nav/NavBar";
 import AccessSettings from "../components/auth/AccessSettings";
 import JwtSessionSettings from "../components/auth/JwtSessionSettings";
 import NotificationSettings from "../components/notifications/NotificationSettings";
+import TranslationSettings from "../components/translations/TranslationSettings";
 import InboxSidebar from "../components/notifications/InboxSidebar";
 import { useAuth } from "../context/AuthContext";
+import { useTranslation } from "../context/TranslationContext";
 import "../styles/settings.css";
 
 export default function SettingsPage() {
   const { user } = useAuth();
+  const { t } = useTranslation();
   const [openSection, setOpenSection] = useState("access");
   const isAdmin =
     Array.isArray(user?.roles) && user.roles.includes("ROLE_ADMIN");
@@ -16,26 +19,45 @@ export default function SettingsPage() {
   const sections = [
     {
       id: "access",
-      label: "🔐 Dostęp i Role",
-      subtitle: "Zarządzaj rolami i uprawnieniami",
+      label: t("settings.access", "🔐 Access & Roles"),
+      subtitle: t("settings.accessSubtitle", "Manage roles and permissions"),
       component: <AccessSettings />,
     },
     ...(isAdmin
       ? [
           {
             id: "jwt-session",
-            label: "🪪 Sesja JWT",
-            subtitle: "Konfiguracja czasu ważności tokenu",
+            label: t("settings.jwtSession", "🪪 JWT Session"),
+            subtitle: t(
+              "settings.jwtSessionSubtitle",
+              "Token expiry configuration",
+            ),
             component: <JwtSessionSettings />,
           },
         ]
       : []),
     {
       id: "notifications",
-      label: "🔔 Powiadomienia",
-      subtitle: "Szablony wiadomości i kanały dostarczania",
+      label: t("settings.notifications", "🔔 Notifications"),
+      subtitle: t(
+        "settings.notificationsSubtitle",
+        "Message templates and delivery channels",
+      ),
       component: <NotificationSettings />,
     },
+    ...(isAdmin
+      ? [
+          {
+            id: "translations",
+            label: t("settings.translations", "🌐 Translations"),
+            subtitle: t(
+              "settings.translationsSubtitle",
+              "Manage UI translation keys",
+            ),
+            component: <TranslationSettings />,
+          },
+        ]
+      : []),
   ];
 
   function toggle(id) {
@@ -49,7 +71,7 @@ export default function SettingsPage() {
         <InboxSidebar />
         <main className="page-content app-shell-main">
           <div className="settings-page">
-            <h1>⚙️ Ustawienia</h1>
+            <h1>⚙️ {t("settings.title", "Settings")}</h1>
 
             <div className="settings-sections">
               {sections.map((section) => {

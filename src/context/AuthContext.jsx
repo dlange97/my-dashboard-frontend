@@ -9,6 +9,7 @@ const AuthContext = createContext(null);
 
 const TOKEN_KEY = "dashboard_token";
 const USER_KEY = "dashboard_user";
+const LANG_KEY = "dashboard_lang";
 
 export function AuthProvider({ children }) {
   const [token, setToken] = useState(() => {
@@ -48,11 +49,17 @@ export function AuthProvider({ children }) {
       lastName: newUser?.lastName ?? claims.lastName,
       roles: newUser?.roles ?? claims.roles ?? ["ROLE_USER"],
       status: newUser?.status ?? claims.status ?? "active",
+      language: newUser?.language ?? claims.language ?? "en",
+      dashboardLayout: newUser?.dashboardLayout ?? claims.dashboardLayout ?? null,
       permissions: newUser?.permissions ?? claims.permissions ?? [],
     };
 
     localStorage.setItem(TOKEN_KEY, newToken);
     localStorage.setItem(USER_KEY, JSON.stringify(mergedUser));
+
+    if (mergedUser.language) {
+      localStorage.setItem(LANG_KEY, mergedUser.language);
+    }
     setToken(newToken);
     setUser(mergedUser);
   }, []);

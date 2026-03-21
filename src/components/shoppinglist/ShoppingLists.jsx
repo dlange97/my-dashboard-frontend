@@ -3,6 +3,83 @@ import ProductForm from "./ProductForm";
 import NewShoppingList from "./NewShoppingList";
 import ConfirmModal from "../ui/ConfirmModal";
 import api from "../../api/api";
+import { useTranslation } from "../../context/TranslationContext";
+
+const ITEM_COLORS = [
+  "#2563eb",
+  "#16a34a",
+  "#ea580c",
+  "#0891b2",
+  "#9333ea",
+  "#dc2626",
+  "#0f766e",
+  "#d97706",
+];
+
+function colorForUserKey(value) {
+  const key = String(value ?? "unknown");
+  let hash = 0;
+  for (let i = 0; i < key.length; i += 1) {
+    hash = (hash * 31 + key.charCodeAt(i)) >>> 0;
+  }
+  return ITEM_COLORS[hash % ITEM_COLORS.length];
+}
+
+function dueDateTime(value) {
+  if (!value) return Number.POSITIVE_INFINITY;
+  const timestamp = Date.parse(value);
+  return Number.isNaN(timestamp) ? Number.POSITIVE_INFINITY : timestamp;
+}
+
+function compareByNearestDueDate(a, b) {
+  const dueDiff = dueDateTime(a?.dueDate) - dueDateTime(b?.dueDate);
+  if (dueDiff !== 0) {
+    return dueDiff;
+  }
+
+  const aUpdated = Date.parse(a?.updatedAt || "");
+  const bUpdated = Date.parse(b?.updatedAt || "");
+  if (
+    !Number.isNaN(aUpdated) &&
+    !Number.isNaN(bUpdated) &&
+    aUpdated !== bUpdated
+  ) {
+    return bUpdated - aUpdated;
+  }
+
+  return String(a?.name ?? "").localeCompare(String(b?.name ?? ""), "pl");
+}
+
+function parseDateLocal(value) {
+  if (!value) return null;
+  const m = String(value).match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (!m) return null;
+  return new Date(
+    parseInt(m[1], 10),
+    parseInt(m[2], 10) - 1,
+    parseInt(m[3], 10),
+  );
+}
+
+function formatDueDate(value) {
+  const d = parseDateLocal(value);
+  if (!d) return null;
+  return d.toLocaleDateString("pl-PL");
+}
+
+function getDueDateStatus(value) {
+  const due = parseDateLocal(value);
+  if (!due) return null;
+  const today = new Date();
+  const todayDay = new Date(
+    today.getFullYear(),
+    today.getMonth(),
+    today.getDate(),
+  );
+  if (due.getTime() < todayDay.getTime()) return "overdue";
+  if (due.getTime() === todayDay.getTime()) return "today";
+  return null;
+}
 
 export default function ShoppingLists({
   onSelectionChange,
@@ -21,6 +98,7 @@ export default function ShoppingLists({
   const [showAllLists, setShowAllLists] = useState(false);
   const [statusFilter, setStatusFilter] = useState("all");
   const ANIM_MS = 360;
+  const { t } = useTranslation();
 
   useEffect(() => {
     setLoading(true);
@@ -195,6 +273,7 @@ export default function ShoppingLists({
     api
       .createList({
         name: item.name,
+        dueDate: item.dueDate || null,
         status: "active",
         products: item.products || [],
       })
@@ -212,6 +291,7 @@ export default function ShoppingLists({
     api
       .updateList(editingList.id, {
         name: editingList.name,
+        dueDate: editingList.dueDate || null,
         status: editingList.status || "active",
         products: (editingList.products || []).map((product, index) => ({
           name: product.name,
@@ -260,22 +340,24 @@ export default function ShoppingLists({
     (list) => list.status === "archived",
   ).length;
 
-  const filteredLists = localLists.filter((list) => {
-    if (statusFilter === "active") {
-      return (list.status || "active") === "active";
-    }
-    if (statusFilter === "archived") {
-      return list.status === "archived";
-    }
-    return true;
-  });
+  const filteredLists = localLists
+    .filter((list) => {
+      if (statusFilter === "active") {
+        return (list.status || "active") === "active";
+      }
+      if (statusFilter === "archived") {
+        return list.status === "archived";
+      }
+      return true;
+    })
+    .sort(compareByNearestDueDate);
 
   const visibleLists = showAllLists ? filteredLists : filteredLists.slice(0, 5);
 
   if (loading) {
     return (
       <div className="card">
-        <div className="card-body">Loading…</div>
+        <div className="card-body">{t("common.loading", "Loading\u2026")}</div>
       </div>
     );
   }
@@ -284,7 +366,7 @@ export default function ShoppingLists({
     return (
       <div className="card">
         <div className="card-body" style={{ color: "red" }}>
-          Error: {error}
+          {t("common.error", "Error:")} {error}
         </div>
       </div>
     );
@@ -313,10 +395,13 @@ export default function ShoppingLists({
               onClick={() => {
                 if (isDirty) {
                   setConfirmModal({
-                    title: "Leave without saving?",
-                    message: "You have unsaved changes. Leave without saving?",
-                    confirmLabel: "Leave",
-                    cancelLabel: "Cancel",
+                    title: t("shopping.leaveTitle", "Leave without saving?"),
+                    message: t(
+                      "shopping.leaveMessage",
+                      "You have unsaved changes. Leave without saving?",
+                    ),
+                    confirmLabel: t("shopping.leaveConfirm", "Leave"),
+                    cancelLabel: t("common.cancel", "Cancel"),
                     onConfirm: () => {
                       setConfirmModal(null);
                       closeEditor();
@@ -333,7 +418,7 @@ export default function ShoppingLists({
                 }, ANIM_MS);
               }}
             >
-              ← Back
+              {t("common.back", "\u2190 Back")}
             </button>
 
             {isDirty && (
@@ -342,7 +427,9 @@ export default function ShoppingLists({
                 disabled={saving}
                 onClick={saveEditing}
               >
-                {saving ? "Saving…" : "Save"}
+                {saving
+                  ? t("common.saving", "Saving\u2026")
+                  : t("common.save", "Save")}
               </button>
             )}
 
@@ -355,7 +442,9 @@ export default function ShoppingLists({
                 )
               }
             >
-              {selected.status === "archived" ? "Przywróć" : "Archiwizuj"}
+              {selected.status === "archived"
+                ? t("shopping.restore", "Restore")
+                : t("shopping.archive", "Archive")}
             </button>
 
             <button
@@ -363,10 +452,10 @@ export default function ShoppingLists({
               onClick={(e) => {
                 e.stopPropagation();
                 setConfirmModal({
-                  title: "Delete shopping list",
+                  title: t("shopping.deleteTitle", "Delete shopping list"),
                   message: `Delete "${selected?.name}"? This cannot be undone.`,
-                  confirmLabel: "Delete",
-                  cancelLabel: "Cancel",
+                  confirmLabel: t("common.delete", "Delete"),
+                  cancelLabel: t("common.cancel", "Cancel"),
                   onConfirm: () => {
                     removeList(selectedIndex);
                     setConfirmModal(null);
@@ -388,12 +477,26 @@ export default function ShoppingLists({
               onChange={(e) =>
                 updateListField(selectedIndex, "name", e.target.value)
               }
-              placeholder="List name"
+              placeholder={t("shopping.listNamePlaceholder", "List name")}
+            />
+
+            <input
+              className="list-name-input list-date-input"
+              type="date"
+              value={selected.dueDate || ""}
+              onChange={(e) =>
+                updateListField(
+                  selectedIndex,
+                  "dueDate",
+                  e.target.value || null,
+                )
+              }
+              aria-label="Shopping list due date"
             />
 
             <div className="products-edit">
               {selected.products && selected.products.length === 0 && (
-                <p>No products</p>
+                <p>{t("shopping.noProducts", "No products")}</p>
               )}
 
               {selected.products && selected.products.length > 0 && (
@@ -403,7 +506,9 @@ export default function ShoppingLists({
                     checked={isListBought(selected.products || [])}
                     onChange={(e) => setAllProductsBought(e.target.checked)}
                   />
-                  <span>Oznacz całą listę jako kupioną</span>
+                  <span>
+                    {t("shopping.markAllBought", "Mark all as purchased")}
+                  </span>
                 </label>
               )}
 
@@ -446,7 +551,7 @@ export default function ShoppingLists({
                   />
                   <input
                     className={`small input-weight${isProductBought(product) ? " bought" : ""}`}
-                    placeholder="weight"
+                    placeholder={t("shopping.weightPlaceholder", "weight")}
                     value={product.weight || ""}
                     onChange={(e) =>
                       updateProductField(
@@ -492,7 +597,7 @@ export default function ShoppingLists({
       )}
       <div className="card">
         <div className="card-header">
-          <h2>Shopping Lists</h2>
+          <h2>{t("shopping.title", "Shopping Lists")}</h2>
           <button
             type="button"
             className="add-list-plus"
@@ -515,7 +620,7 @@ export default function ShoppingLists({
               setShowAllLists(false);
             }}
           >
-            Wszystkie ({localLists.length})
+            {t("shopping.filterAll", "All")} ({localLists.length})
           </button>
           <button
             type="button"
@@ -525,7 +630,7 @@ export default function ShoppingLists({
               setShowAllLists(false);
             }}
           >
-            Aktywne ({activeCount})
+            {t("shopping.filterActive", "Active")} ({activeCount})
           </button>
           <button
             type="button"
@@ -535,7 +640,7 @@ export default function ShoppingLists({
               setShowAllLists(false);
             }}
           >
-            Archiwalne ({archivedCount})
+            {t("shopping.filterArchived", "Archived")} ({archivedCount})
           </button>
         </div>
 
@@ -544,6 +649,11 @@ export default function ShoppingLists({
             <div
               key={list.id}
               className="list-item"
+              style={{
+                "--shopping-accent": colorForUserKey(
+                  list.createdBy ?? list.ownerId,
+                ),
+              }}
               onClick={() =>
                 handleSelect(
                   localLists.findIndex((current) => current.id === list.id),
@@ -553,11 +663,22 @@ export default function ShoppingLists({
               <strong>
                 {list.name}
                 {list.status === "archived" && (
-                  <span className="list-status-badge">Archived</span>
+                  <span className="list-status-badge">
+                    {t("shopping.archived", "Archived")}
+                  </span>
                 )}
               </strong>
-              <div className="list-count">
-                {(list.products || []).length} items
+              <div>
+                <div className="list-count">
+                  {(list.products || []).length} {t("shopping.items", "items")}
+                </div>
+                <div
+                  className={`list-due-date${getDueDateStatus(list.dueDate) ? ` is-${getDueDateStatus(list.dueDate)}` : ""}`}
+                >
+                  {t("shopping.dueDate", "Due:")}{" "}
+                  {formatDueDate(list.dueDate) ??
+                    t("shopping.noDueDate", "No due date")}
+                </div>
               </div>
             </div>
           ))}
@@ -571,8 +692,11 @@ export default function ShoppingLists({
               onClick={() => setShowAllLists((shown) => !shown)}
             >
               {showAllLists
-                ? "Show less"
-                : `Show ${filteredLists.length - 5} more`}
+                ? t("common.showLess", "Show less")
+                : t(
+                    "common.showMore",
+                    `Show ${filteredLists.length - 5} more`,
+                  ).replace("{n}", filteredLists.length - 5)}
             </button>
           </div>
         )}

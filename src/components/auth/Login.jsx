@@ -1,11 +1,13 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
+import { useTranslation } from "../../context/TranslationContext";
 import api from "../../api/api";
 import "./auth.css";
 
 export default function Login() {
   const { login } = useAuth();
+  const { t } = useTranslation();
   const navigate = useNavigate();
 
   const [view, setView] = useState("login");
@@ -32,7 +34,10 @@ export default function Login() {
       login(data.token, data.user ?? { email });
       navigate("/");
     } catch (err) {
-      setError(err.message || "Network error. Is the server running?");
+      setError(
+        err.message ||
+          t("login.networkError", "Network error. Is the server running?"),
+      );
     } finally {
       setLoginLoading(false);
     }
@@ -44,7 +49,12 @@ export default function Login() {
     setRequestSuccess("");
 
     if (!email.trim()) {
-      setError("Enter your email before sending request access.");
+      setError(
+        t(
+          "login.emailRequired",
+          "Enter your email before sending request access.",
+        ),
+      );
       return;
     }
 
@@ -56,13 +66,21 @@ export default function Login() {
         lastName: lastName.trim(),
         message: requestMessage.trim(),
       });
-      setRequestSuccess("Request access sent. Admin will review your request.");
+      setRequestSuccess(
+        t(
+          "login.requestSent",
+          "Request access sent. Admin will review your request.",
+        ),
+      );
       setView("login");
       setFirstName("");
       setLastName("");
       setRequestMessage("");
     } catch (err) {
-      setError(err.message || "Failed to send request access.");
+      setError(
+        err.message ||
+          t("login.requestFailed", "Failed to send request access."),
+      );
     } finally {
       setRequestLoading(false);
     }
@@ -87,8 +105,10 @@ export default function Login() {
       >
         {view === "login" ? (
           <>
-            <h2>My Dashboard</h2>
-            <p className="auth-subtitle">Sign in to your account</p>
+            <h2>{t("nav.brand", "My Dashboard")}</h2>
+            <p className="auth-subtitle">
+              {t("login.subtitle", "Sign in to your account")}
+            </p>
 
             <form className="auth-form" onSubmit={handleSubmit}>
               {error && <div className="auth-error">{error}</div>}
@@ -97,7 +117,7 @@ export default function Login() {
               )}
 
               <div className="form-group">
-                <label htmlFor="email">Email</label>
+                <label htmlFor="email">{t("login.email", "Email")}</label>
                 <input
                   id="email"
                   type="email"
@@ -111,7 +131,9 @@ export default function Login() {
               </div>
 
               <div className="form-group">
-                <label htmlFor="password">Password</label>
+                <label htmlFor="password">
+                  {t("login.password", "Password")}
+                </label>
                 <div className="auth-password-wrap">
                   <input
                     id="password"
@@ -127,7 +149,9 @@ export default function Login() {
                     className="auth-password-toggle"
                     onClick={() => setShowPassword((prev) => !prev)}
                     aria-label={
-                      showPassword ? "Hide password" : "Show password"
+                      showPassword
+                        ? t("login.hidePassword", "Hide password")
+                        : t("login.showPassword", "Show password")
                     }
                   >
                     {showPassword ? "🙈" : "👁️"}
@@ -140,7 +164,9 @@ export default function Login() {
                 type="submit"
                 disabled={loginLoading || requestLoading}
               >
-                {loginLoading ? "Signing in…" : "Sign In"}
+                {loginLoading
+                  ? t("login.signingIn", "Signing in…")
+                  : t("login.signIn", "Sign In")}
               </button>
 
               <button
@@ -149,29 +175,35 @@ export default function Login() {
                 disabled={loginLoading || requestLoading}
                 onClick={openRequestView}
               >
-                Request Access
+                {t("login.requestAccess", "Request Access")}
               </button>
             </form>
 
             <p className="auth-footer">
-              Account creation is managed by administrators.
+              {t(
+                "login.footerNote",
+                "Account creation is managed by administrators.",
+              )}
             </p>
           </>
         ) : (
           <>
             <div className="auth-request-header">
-              <h2>Request Access</h2>
+              <h2>{t("login.requestAccess", "Request Access")}</h2>
               <button
                 type="button"
                 className="auth-request-back-btn"
                 onClick={openLoginView}
                 disabled={requestLoading}
               >
-                ← Back to login
+                {t("login.backToLogin", "← Back to login")}
               </button>
             </div>
             <p className="auth-subtitle">
-              Send your details to administrator for approval.
+              {t(
+                "login.requestSubtitle",
+                "Send your details to administrator for approval.",
+              )}
             </p>
 
             <form className="auth-request-form" onSubmit={handleRequestAccess}>
@@ -181,7 +213,9 @@ export default function Login() {
               )}
 
               <div className="form-group">
-                <label htmlFor="requestEmail">Email *</label>
+                <label htmlFor="requestEmail">
+                  {t("login.email", "Email")} *
+                </label>
                 <input
                   id="requestEmail"
                   type="email"
@@ -196,7 +230,10 @@ export default function Login() {
 
               <div className="form-row">
                 <div className="form-group">
-                  <label htmlFor="firstName">First name (optional)</label>
+                  <label htmlFor="firstName">
+                    {t("login.firstName", "First name")} (
+                    {t("common.optional", "optional")})
+                  </label>
                   <input
                     id="firstName"
                     type="text"
@@ -206,7 +243,10 @@ export default function Login() {
                   />
                 </div>
                 <div className="form-group">
-                  <label htmlFor="lastName">Last name (optional)</label>
+                  <label htmlFor="lastName">
+                    {t("login.lastName", "Last name")} (
+                    {t("common.optional", "optional")})
+                  </label>
                   <input
                     id="lastName"
                     type="text"
@@ -218,7 +258,9 @@ export default function Login() {
               </div>
 
               <div className="form-group">
-                <label htmlFor="requestMessage">Request access message</label>
+                <label htmlFor="requestMessage">
+                  {t("login.requestMessage", "Request access message")}
+                </label>
                 <textarea
                   id="requestMessage"
                   className="auth-login-textarea"
@@ -235,14 +277,16 @@ export default function Login() {
                   disabled={requestLoading}
                   onClick={openLoginView}
                 >
-                  Cancel
+                  {t("common.cancel", "Cancel")}
                 </button>
                 <button
                   className="auth-btn"
                   type="submit"
                   disabled={requestLoading}
                 >
-                  {requestLoading ? "Sending…" : "Send Request"}
+                  {requestLoading
+                    ? t("login.sending", "Sending…")
+                    : t("login.sendRequest", "Send Request")}
                 </button>
               </div>
             </form>

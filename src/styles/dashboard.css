@@ -6,7 +6,33 @@
 }
 
 .dashboard-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1.25rem;
   margin-bottom: 2rem;
+}
+
+.dashboard-header-copy {
+  min-width: 0;
+}
+
+.dashboard-reset-layout-btn {
+  flex-shrink: 0;
+  margin-top: 0.45rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  background: #fff;
+  color: #334155;
+  font-size: 0.82rem;
+  font-weight: 700;
+  padding: 0.45rem 0.8rem;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.dashboard-reset-layout-btn:hover {
+  background: #f8fafc;
 }
 
 .dashboard-header h1 {
@@ -24,17 +50,78 @@
 /* ── Summary Grid ─────────────────────────────────────────── */
 .summary-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  grid-auto-flow: dense;
   gap: 1.5rem;
+  align-items: start;
 }
 
 .summary-tile {
+  --tile-scale-x: 1;
+  --tile-scale-y: 1;
+  position: relative;
+  display: flex;
   cursor: grab;
   border-radius: 16px;
+  min-height: calc(270px * var(--tile-scale-y));
   transition:
-    transform 0.16s ease,
+    min-height 0.06s linear,
     opacity 0.16s ease,
     box-shadow 0.16s ease;
+  overflow: hidden;
+}
+
+.summary-tile.tile-span-2 {
+  grid-column: span 2;
+}
+
+.summary-tile.tile-span-3 {
+  grid-column: span 3;
+}
+
+.summary-tile.tile-span-4 {
+  grid-column: span 4;
+}
+
+.summary-tile.tile-span-5 {
+  grid-column: span 5;
+}
+
+.summary-tile.tile-span-6 {
+  grid-column: span 6;
+}
+
+.summary-tile.tile-span-7 {
+  grid-column: span 7;
+}
+
+.summary-tile.tile-span-8 {
+  grid-column: span 8;
+}
+
+.summary-tile.tile-span-9 {
+  grid-column: span 9;
+}
+
+.summary-tile.tile-span-10 {
+  grid-column: span 10;
+}
+
+.summary-tile.tile-span-11 {
+  grid-column: span 11;
+}
+
+.summary-tile.tile-span-12 {
+  grid-column: span 12;
+}
+
+.summary-tile.summary-tile-wide {
+  min-height: calc(360px * var(--tile-scale-y));
+}
+
+.summary-tile .summary-card {
+  flex: 1;
+  min-height: 100%;
 }
 
 .summary-tile:active {
@@ -50,15 +137,87 @@
   box-shadow: 0 0 0 2px #6366f1;
 }
 
+.summary-tile.resizing {
+  opacity: 0.98;
+  z-index: 3;
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.12);
+}
+
+/* Resize Handle - Right Bottom Corner */
+.summary-tile-resize-handle {
+  position: absolute;
+  right: 9px;
+  bottom: 9px;
+  width: 16px;
+  height: 16px;
+  display: block;
+  cursor: se-resize;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  opacity: 0.72;
+  transition: opacity 0.18s ease, transform 0.18s ease;
+  z-index: 10;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
+}
+
+.summary-tile-resize-handle::before,
+.summary-tile-resize-handle::after {
+  content: "";
+  position: absolute;
+  right: 1px;
+  bottom: 3px;
+  width: 9px;
+  height: 1.5px;
+  background: rgba(148, 163, 184, 0.88);
+  border-radius: 999px;
+  transform: rotate(-45deg);
+  transform-origin: right center;
+}
+
+.summary-tile-resize-handle::after {
+  right: 4px;
+  bottom: 6px;
+  width: 6px;
+  background: rgba(148, 163, 184, 0.62);
+}
+
+.summary-tile:hover .summary-tile-resize-handle {
+  opacity: 1;
+  transform: translateY(-0.5px);
+}
+
+.summary-tile.resizing .summary-tile-resize-handle {
+  opacity: 1;
+  transform: translateY(-0.5px) scale(1.02);
+}
+
+
 @media (max-width: 900px) {
   .summary-grid {
-    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+
+  .dashboard-header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .dashboard-reset-layout-btn {
+    margin-top: 0;
   }
 }
 
 @media (max-width: 700px) {
   .summary-grid {
     grid-template-columns: 1fr;
+  }
+
+  .summary-tile[class*="tile-span-"] {
+    grid-column: span 1;
   }
 }
 
@@ -106,6 +265,24 @@
 }
 .icon-events {
   background: #dbeafe;
+}
+
+.icon-calendar {
+  background: #e0f2fe;
+}
+
+.summary-card-calendar {
+  min-height: 470px;
+}
+
+.calendar-summary-note {
+  font-size: 0.82rem;
+  color: #475569;
+  font-weight: 600;
+}
+
+.calendar-summary-calendar {
+  margin-top: 0.25rem;
 }
 
 .summary-go-link {

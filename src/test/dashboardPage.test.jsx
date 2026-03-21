@@ -124,6 +124,7 @@ describe("DashboardPage tile resizing", () => {
     });
 
     fireEvent.click(screen.getByRole("button", { name: "Reset tile settings" }));
+    fireEvent.click(screen.getByRole("button", { name: "Reset" }));
 
     await waitFor(() => {
       expect(todoTile.style.getPropertyValue("--tile-scale-x")).toBe("1");

@@ -3,8 +3,10 @@ import { Link } from "react-router-dom";
 import { format } from "date-fns";
 import { pl } from "date-fns/locale";
 import api from "../../api/api";
+import { useTranslation } from "../../context/TranslationContext";
 
 export default function EventsSummary() {
+  const { t } = useTranslation();
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -27,17 +29,17 @@ export default function EventsSummary() {
       <div className="summary-card-header">
         <div className="summary-card-title">
           <span className="icon icon-events">📅</span>
-          My Events
+          {t("events.pageTitle", "My Events")}
         </div>
         <Link to="/events" className="summary-go-link">
-          View all →
+          {t("events.viewAll", "View all")} →
         </Link>
       </div>
 
       {loading ? (
-        <div className="empty-state">Loading…</div>
+        <div className="empty-state">{t("common.loading", "Loading…")}</div>
       ) : events.length === 0 ? (
-        <div className="empty-state">No upcoming events.</div>
+        <div className="empty-state">{t("events.noUpcoming", "No upcoming events.")}</div>
       ) : (
         <div className="events-summary-list">
           {events.map((ev) => (

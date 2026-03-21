@@ -6,12 +6,14 @@ import EventItem from "../components/events/EventItem";
 import InboxSidebar from "../components/notifications/InboxSidebar";
 import api from "../api/api";
 import { useAuth } from "../context/AuthContext";
+import { useTranslation } from "../context/TranslationContext";
 import "../components/events/events.css";
 
 const MapModal = lazy(() => import("../components/events/MapModal"));
 
 export default function EventsPage() {
   const { hasPermission } = useAuth();
+  const { t } = useTranslation();
   const canManageEvents = hasPermission("events.manage");
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -44,7 +46,7 @@ export default function EventsPage() {
         setEvents((prev) => [...prev, created]);
       }
     } catch (err) {
-      alert(`Failed to save event: ${err.message}`);
+      alert(`${t("events.saveError", "Failed to save event")}: ${err.message}`);
     }
     setShowForm(false);
     setEditingEvent(null);
@@ -56,12 +58,12 @@ export default function EventsPage() {
   };
 
   const handleDelete = async (event) => {
-    if (!window.confirm(`Delete "${event.title}"?`)) return;
+    if (!window.confirm(`${t("events.deleteConfirm", "Delete event")}: "${event.title}"?`)) return;
     try {
       await api.deleteEvent(event.id);
       setEvents((prev) => prev.filter((e) => e.id !== event.id));
     } catch (err) {
-      alert(`Failed to delete: ${err.message}`);
+      alert(`${t("events.deleteError", "Failed to delete event")}: ${err.message}`);
     }
   };
 
@@ -72,19 +74,19 @@ export default function EventsPage() {
         <InboxSidebar />
         <main className="page-content app-shell-main events-page">
           <div className="events-page-header">
-            <h1>📅 My Events</h1>
+            <h1>{t("events.pageTitle", "📅 My Events")}</h1>
             <div className="events-view-tabs">
               <button
                 className={`tab-btn${view === "list" ? " active" : ""}`}
                 onClick={() => setView("list")}
               >
-                List
+                {t("events.viewList", "List")}
               </button>
               <button
                 className={`tab-btn${view === "calendar" ? " active" : ""}`}
                 onClick={() => setView("calendar")}
               >
-                Calendar
+                {t("events.viewCalendar", "Calendar")}
               </button>
             </div>
             <button
@@ -92,25 +94,25 @@ export default function EventsPage() {
               disabled={!canManageEvents}
               title={
                 canManageEvents
-                  ? "Add Event"
-                  : "Missing permission: events.manage"
+                  ? t("events.add", "Add Event")
+                  : t("events.missingManagePermission", "Missing permission: events.manage")
               }
               onClick={() => {
                 setEditingEvent(null);
                 setShowForm(true);
               }}
             >
-              + Add Event
+              {t("events.addButton", "+ Add Event")}
             </button>
           </div>
 
           {loading ? (
-            <p>Loading…</p>
+            <p>{t("common.loading", "Loading…")}</p>
           ) : view === "calendar" ? (
             <EventCalendar events={events} onSelectEvent={handleEdit} />
           ) : sorted.length === 0 ? (
             <div className="event-list-empty">
-              No events yet. Click <strong>+ Add Event</strong> to create one.
+              {t("events.empty", "No events yet. Click")} <strong>{t("events.addButton", "+ Add Event")}</strong> {t("events.emptySuffix", "to create one.")}
             </div>
           ) : (
             <div className="event-list">

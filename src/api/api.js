@@ -143,20 +143,25 @@ export const api = {
   // ── Translation Service ───────────────────────────────────────────────
   getTranslations: (locale = "en") =>
     request("GET", `/translation/translations?locale=${locale}`),
-  getAdminTranslations: (locale) =>
-    request(
-      "GET",
-      `/translation/admin/translations${locale ? `?locale=${locale}` : ""}`,
-    ),
+  getAdminTranslations: () => request("GET", "/translation/admin/translations"),
   createTranslation: (payload) =>
     request("POST", "/translation/admin/translations", payload),
-  updateTranslation: (id, payload) =>
-    request("PUT", `/translation/admin/translations/${id}`, payload),
-  deleteTranslation: (id) =>
-    request("DELETE", `/translation/admin/translations/${id}`),
+  updateTranslation: (translationKey, payload) =>
+    request(
+      "PUT",
+      `/translation/admin/translations/${encodeURIComponent(translationKey)}`,
+      payload,
+    ),
+  deleteTranslation: (translationKey) =>
+    request(
+      "DELETE",
+      `/translation/admin/translations/${encodeURIComponent(translationKey)}`,
+    ),
 
   // ── User language (own profile) ──────────────────────────────────────
   updateMyLanguage: (language) => request("PATCH", "/auth/me", { language }),
+  updateMyDashboardLayout: (dashboardLayout) =>
+    request("PATCH", "/auth/me", { dashboardLayout }),
 };
 
 export default api;

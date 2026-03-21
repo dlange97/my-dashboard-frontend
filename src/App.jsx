@@ -20,6 +20,7 @@ const DashboardPage = lazy(() => import("./pages/DashboardPage"));
 const TodoPage = lazy(() => import("./pages/TodoPage"));
 const ShoppingPage = lazy(() => import("./pages/ShoppingPage"));
 const EventsPage = lazy(() => import("./pages/EventsPage"));
+const CalendarPage = lazy(() => import("./pages/CalendarPage"));
 const MapPage = lazy(() => import("./pages/MapPage"));
 const UsersPage = lazy(() => import("./pages/UsersPage"));
 const SettingsPage = lazy(() => import("./pages/SettingsPage"));
@@ -87,6 +88,16 @@ function App() {
             <ProtectedRoute>
               <PermissionRoute permission="events.view">
                 <EventsPage />
+              </PermissionRoute>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/calendar"
+          element={
+            <ProtectedRoute>
+              <PermissionRoute permission="events.view">
+                <CalendarPage />
               </PermissionRoute>
             </ProtectedRoute>
           }

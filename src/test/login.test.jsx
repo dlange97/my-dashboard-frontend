@@ -13,6 +13,14 @@ vi.mock("../context/AuthContext", () => ({
   }),
 }));
 
+vi.mock("../context/TranslationContext", () => ({
+  useTranslation: () => ({
+    t: (_key, fallback) => fallback,
+    locale: "en",
+    changeLocale: vi.fn(),
+  }),
+}));
+
 vi.mock("../api/api", () => ({
   default: {
     login: vi.fn(),

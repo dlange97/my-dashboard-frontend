@@ -39,6 +39,12 @@ You are an expert Frontend Architect specializing in React 18+, TypeScript, and 
 - **Environment Variables:** Always use `process.env` or `import.meta.env` for API URLs. Never hardcode endpoints.
 - **DTO Mapping:** Map backend responses (snake_case) to frontend models (camelCase) if necessary using adapters.
 
+### 1.1 Internationalization Requirement
+
+- **All new user-facing labels must be translatable:** Do not add hardcoded UI text for new fields, buttons, tabs, tiles, headers, tooltips, or empty states.
+- **Use translation keys with fallback:** Every new visible string must go through the translation helper (for this codebase: `t("key", "Fallback")`).
+- **Update translation sources with new keys:** Whenever you add a new UI field/label, also add corresponding EN/PL translation keys in backend translation seed/migration and ensure they are available in Translation Settings.
+
 ### 2. State Management & Data Flow
 <<<<<<< HEAD
 <<<<<<< HEAD

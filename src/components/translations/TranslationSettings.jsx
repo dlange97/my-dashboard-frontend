@@ -3,69 +3,66 @@ import api from "../../api/api";
 import { useTranslation } from "../../context/TranslationContext";
 import "./translations.css";
 
-const LOCALES = ["en", "pl"];
-
 export default function TranslationSettings() {
   const { t } = useTranslation();
 
-  const [locale, setLocale] = useState("en");
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [editingId, setEditingId] = useState(null);
-  const [editValue, setEditValue] = useState("");
+  const [editingKey, setEditingKey] = useState(null);
+  const [editEn, setEditEn] = useState("");
+  const [editPl, setEditPl] = useState("");
   const [saving, setSaving] = useState(false);
 
   // New translation form
   const [showAdd, setShowAdd] = useState(false);
   const [newKey, setNewKey] = useState("");
-  const [newValue, setNewValue] = useState("");
-  const [newLocale, setNewLocale] = useState("en");
+  const [newEn, setNewEn] = useState("");
+  const [newPl, setNewPl] = useState("");
   const [adding, setAdding] = useState(false);
 
   const [search, setSearch] = useState("");
 
-  const loadTranslations = useCallback(
-    async (loc) => {
-      setLoading(true);
-      setError("");
-      try {
-        const data = await api.getAdminTranslations(loc);
-        setRows(Array.isArray(data) ? data : []);
-      } catch (err) {
-        setError(
-          err.message ||
-            t("translations.loadError", "Failed to load translations"),
-        );
-      } finally {
-        setLoading(false);
-      }
-    },
-    [t],
-  );
+  const loadTranslations = useCallback(async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const data = await api.getAdminTranslations();
+      setRows(Array.isArray(data) ? data : []);
+    } catch (err) {
+      setError(
+        err.message ||
+          t("translations.loadError", "Failed to load translations"),
+      );
+    } finally {
+      setLoading(false);
+    }
+  }, [t]);
 
   useEffect(() => {
-    loadTranslations(locale);
-  }, [locale, loadTranslations]);
+    loadTranslations();
+  }, [loadTranslations]);
 
   function startEdit(row) {
-    setEditingId(row.id);
-    setEditValue(row.translationValue);
+    setEditingKey(row.translationKey);
+    setEditEn(row.values?.en || "");
+    setEditPl(row.values?.pl || "");
   }
 
   function cancelEdit() {
-    setEditingId(null);
-    setEditValue("");
+    setEditingKey(null);
+    setEditEn("");
+    setEditPl("");
   }
 
-  async function saveEdit(id) {
+  async function saveEdit(translationKey) {
     setSaving(true);
     try {
-      await api.updateTranslation(id, { translationValue: editValue });
+      const updated = await api.updateTranslation(translationKey, {
+        values: { en: editEn.trim(), pl: editPl.trim() },
+      });
       setRows((prev) =>
-        prev.map((r) =>
-          r.id === id ? { ...r, translationValue: editValue } : r,
-        ),
+        prev.map((r) => (r.translationKey === translationKey ? updated : r)),
       );
       cancelEdit();
     } catch (err) {
@@ -78,7 +75,7 @@ export default function TranslationSettings() {
     }
   }
 
-  async function handleDelete(id) {
+  async function handleDelete(translationKey) {
     if (
       !window.confirm(
         t("translations.confirmDelete", "Delete this translation?"),
@@ -86,8 +83,10 @@ export default function TranslationSettings() {
     )
       return;
     try {
-      await api.deleteTranslation(id);
-      setRows((prev) => prev.filter((r) => r.id !== id));
+      await api.deleteTranslation(translationKey);
+      setRows((prev) =>
+        prev.filter((r) => r.translationKey !== translationKey),
+      );
     } catch (err) {
       setError(
         err.message ||
@@ -98,19 +97,20 @@ export default function TranslationSettings() {
 
   async function handleAdd(e) {
     e.preventDefault();
-    if (!newKey.trim() || !newValue.trim()) return;
+    if (!newKey.trim() || !newEn.trim() || !newPl.trim()) return;
     setAdding(true);
     try {
       const created = await api.createTranslation({
-        locale: newLocale,
         translationKey: newKey.trim(),
-        translationValue: newValue.trim(),
+        values: {
+          en: newEn.trim(),
+          pl: newPl.trim(),
+        },
       });
-      if (newLocale === locale) {
-        setRows((prev) => [...prev, created]);
-      }
+      setRows((prev) => [...prev, created]);
       setNewKey("");
-      setNewValue("");
+      setNewEn("");
+      setNewPl("");
       setShowAdd(false);
     } catch (err) {
       setError(
@@ -125,28 +125,18 @@ export default function TranslationSettings() {
     (r) =>
       !search ||
       r.translationKey.toLowerCase().includes(search.toLowerCase()) ||
-      r.translationValue.toLowerCase().includes(search.toLowerCase()),
+      String(r.values?.en || "")
+        .toLowerCase()
+        .includes(search.toLowerCase()) ||
+      String(r.values?.pl || "")
+        .toLowerCase()
+        .includes(search.toLowerCase()),
   );
 
   return (
     <div className="transl-settings">
       {/* Toolbar */}
       <div className="transl-toolbar">
-        <div className="transl-locale-tabs">
-          {LOCALES.map((loc) => (
-            <button
-              key={loc}
-              className={`transl-locale-tab${locale === loc ? " active" : ""}`}
-              onClick={() => {
-                setLocale(loc);
-                setEditingId(null);
-              }}
-            >
-              {loc.toUpperCase()}
-            </button>
-          ))}
-        </div>
-
         <input
           className="transl-search"
           type="text"
@@ -168,17 +158,6 @@ export default function TranslationSettings() {
       {/* Add form */}
       {showAdd && (
         <form className="transl-add-form" onSubmit={handleAdd}>
-          <select
-            className="transl-add-locale"
-            value={newLocale}
-            onChange={(e) => setNewLocale(e.target.value)}
-          >
-            {LOCALES.map((loc) => (
-              <option key={loc} value={loc}>
-                {loc.toUpperCase()}
-              </option>
-            ))}
-          </select>
           <input
             className="transl-add-key"
             type="text"
@@ -190,9 +169,17 @@ export default function TranslationSettings() {
           <input
             className="transl-add-value"
             type="text"
-            placeholder={t("translations.valuePlaceholder", "Value…")}
-            value={newValue}
-            onChange={(e) => setNewValue(e.target.value)}
+            placeholder={t("translations.valueEnPlaceholder", "Value EN…")}
+            value={newEn}
+            onChange={(e) => setNewEn(e.target.value)}
+            required
+          />
+          <input
+            className="transl-add-value"
+            type="text"
+            placeholder={t("translations.valuePlPlaceholder", "Value PL…")}
+            value={newPl}
+            onChange={(e) => setNewPl(e.target.value)}
             required
           />
           <button className="transl-save-btn" type="submit" disabled={adding}>
@@ -211,30 +198,31 @@ export default function TranslationSettings() {
             <thead>
               <tr>
                 <th>{t("translations.colKey", "Key")}</th>
-                <th>{t("translations.colValue", "Value")}</th>
+                <th>{t("translations.colValueEn", "Value EN")}</th>
+                <th>{t("translations.colValuePl", "Value PL")}</th>
                 <th>{t("translations.colActions", "Actions")}</th>
               </tr>
             </thead>
             <tbody>
               {filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={3} className="transl-empty">
+                  <td colSpan={4} className="transl-empty">
                     {t("translations.noRows", "No translations found.")}
                   </td>
                 </tr>
               ) : (
                 filtered.map((row) => (
-                  <tr key={row.id}>
+                  <tr key={row.translationKey}>
                     <td className="transl-key-cell">{row.translationKey}</td>
                     <td className="transl-value-cell">
-                      {editingId === row.id ? (
+                      {editingKey === row.translationKey ? (
                         <input
                           className="transl-edit-input"
-                          value={editValue}
-                          onChange={(e) => setEditValue(e.target.value)}
+                          value={editEn}
+                          onChange={(e) => setEditEn(e.target.value)}
                           autoFocus
                           onKeyDown={(e) => {
-                            if (e.key === "Enter") saveEdit(row.id);
+                            if (e.key === "Enter") saveEdit(row.translationKey);
                             if (e.key === "Escape") cancelEdit();
                           }}
                         />
@@ -244,16 +232,37 @@ export default function TranslationSettings() {
                           onClick={() => startEdit(row)}
                           title={t("translations.clickToEdit", "Click to edit")}
                         >
-                          {row.translationValue}
+                          {row.values?.en}
+                        </span>
+                      )}
+                    </td>
+                    <td className="transl-value-cell">
+                      {editingKey === row.translationKey ? (
+                        <input
+                          className="transl-edit-input"
+                          value={editPl}
+                          onChange={(e) => setEditPl(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") saveEdit(row.translationKey);
+                            if (e.key === "Escape") cancelEdit();
+                          }}
+                        />
+                      ) : (
+                        <span
+                          className="transl-value-text"
+                          onClick={() => startEdit(row)}
+                          title={t("translations.clickToEdit", "Click to edit")}
+                        >
+                          {row.values?.pl}
                         </span>
                       )}
                     </td>
                     <td className="transl-actions-cell">
-                      {editingId === row.id ? (
+                      {editingKey === row.translationKey ? (
                         <>
                           <button
                             className="transl-save-btn"
-                            onClick={() => saveEdit(row.id)}
+                            onClick={() => saveEdit(row.translationKey)}
                             disabled={saving}
                           >
                             {t("common.save", "Save")}
@@ -275,7 +284,7 @@ export default function TranslationSettings() {
                           </button>
                           <button
                             className="transl-delete-btn"
-                            onClick={() => handleDelete(row.id)}
+                            onClick={() => handleDelete(row.translationKey)}
                           >
                             {t("common.delete", "Delete")}
                           </button>

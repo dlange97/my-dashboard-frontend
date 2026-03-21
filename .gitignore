@@ -1,8 +1,10 @@
 # .gitignore for my-dashboard-frontend
 /dist
 /node_modules
-/.env
-/.env.*
+/.env.dev
+/.env.*.dev
+/.env.local
+/.env.*.local
 /.DS_Store
 /.idea
 /coverage

@@ -35,6 +35,13 @@ const NAV_LINKS = [
     permission: "events.view",
   },
   {
+    to: "/calendar",
+    labelKey: "nav.calendar",
+    label: "Calendar",
+    icon: "🗓️",
+    permission: "events.view",
+  },
+  {
     to: "/map",
     labelKey: "nav.map",
     label: "Map",

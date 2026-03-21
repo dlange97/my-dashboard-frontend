@@ -50,12 +50,13 @@ export function AuthProvider({ children }) {
       roles: newUser?.roles ?? claims.roles ?? ["ROLE_USER"],
       status: newUser?.status ?? claims.status ?? "active",
       language: newUser?.language ?? claims.language ?? "en",
+      dashboardLayout: newUser?.dashboardLayout ?? claims.dashboardLayout ?? null,
       permissions: newUser?.permissions ?? claims.permissions ?? [],
     };
 
     localStorage.setItem(TOKEN_KEY, newToken);
     localStorage.setItem(USER_KEY, JSON.stringify(mergedUser));
-    // Sync language preference from user profile
+
     if (mergedUser.language) {
       localStorage.setItem(LANG_KEY, mergedUser.language);
     }

@@ -58,6 +58,13 @@ export const api = {
   updateListStatus: (id, status) =>
     request("PATCH", `/dashboard/shopping-lists/${id}/status`, { status }),
   deleteList: (id) => request("DELETE", `/dashboard/shopping-lists/${id}`),
+  shareList: (id, userId) =>
+    request("POST", `/dashboard/shopping-lists/${id}/share`, { userId }),
+  unshareList: (id, userId) =>
+    request(
+      "DELETE",
+      `/dashboard/shopping-lists/${id}/share/${encodeURIComponent(userId)}`,
+    ),
   addProduct: (listId, product) =>
     request("POST", `/dashboard/shopping-lists/${listId}/products`, product),
   removeProduct: (listId, productId) =>
@@ -72,11 +79,22 @@ export const api = {
   updateTodo: (id, payload) =>
     request("PATCH", `/dashboard/todos/${id}`, payload),
   deleteTodo: (id) => request("DELETE", `/dashboard/todos/${id}`),
+  shareTodo: (id, userId) =>
+    request("POST", `/dashboard/todos/${id}/share`, { userId }),
+  unshareTodo: (id, userId) =>
+    request(
+      "DELETE",
+      `/dashboard/todos/${id}/share/${encodeURIComponent(userId)}`,
+    ),
 
   getEvents: () => request("GET", "/events"),
   createEvent: (payload) => request("POST", "/events", payload),
   updateEvent: (id, payload) => request("PUT", `/events/${id}`, payload),
   deleteEvent: (id) => request("DELETE", `/events/${id}`),
+  shareEvent: (id, userId) =>
+    request("POST", `/events/${id}/share`, { userId }),
+  unshareEvent: (id, userId) =>
+    request("DELETE", `/events/${id}/share/${encodeURIComponent(userId)}`),
 
   getRoutes: () => request("GET", "/events/routes"),
   getRoutesByEvent: (eventId) =>
@@ -106,6 +124,15 @@ export const api = {
       params.set("search", search.trim());
     }
     return request("GET", `/auth/users?${params.toString()}`);
+  },
+  getShareableUsers: ({ page = 1, perPage = 25, search = "" } = {}) => {
+    const params = new URLSearchParams();
+    params.set("page", String(page));
+    params.set("perPage", String(perPage));
+    if (search.trim()) {
+      params.set("search", search.trim());
+    }
+    return request("GET", `/auth/users/options?${params.toString()}`);
   },
   getUserById: (userId) => request("GET", `/auth/users/${userId}`),
   createUser: (payload) => request("POST", "/auth/users", payload),

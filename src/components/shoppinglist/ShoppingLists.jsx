@@ -2,8 +2,10 @@ import React, { useEffect, useState } from "react";
 import ProductForm from "./ProductForm";
 import NewShoppingList from "./NewShoppingList";
 import ConfirmModal from "../ui/ConfirmModal";
+import ShareUserModal from "../ui/ShareUserModal";
 import api from "../../api/api";
 import { useTranslation } from "../../context/TranslationContext";
+import { useAuth } from "../../context/AuthContext";
 
 const ITEM_COLORS = [
   "#2563eb",
@@ -85,6 +87,7 @@ export default function ShoppingLists({
   onSelectionChange,
   initialSelectedListId = null,
 }) {
+  const { user } = useAuth();
   const [localLists, setLocalLists] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -97,6 +100,10 @@ export default function ShoppingLists({
   const [showNewForm, setShowNewForm] = useState(false);
   const [showAllLists, setShowAllLists] = useState(false);
   const [statusFilter, setStatusFilter] = useState("all");
+  const [shareTarget, setShareTarget] = useState(null);
+  const [shareSearch, setShareSearch] = useState("");
+  const [shareUsers, setShareUsers] = useState([]);
+  const [shareUsersLoading, setShareUsersLoading] = useState(false);
   const ANIM_MS = 360;
   const { t } = useTranslation();
 
@@ -128,6 +135,61 @@ export default function ShoppingLists({
       onSelectionChange(selectedIndex !== null);
     }
   }, [selectedIndex, onSelectionChange]);
+
+  useEffect(() => {
+    if (!shareTarget) {
+      return;
+    }
+
+    setShareUsersLoading(true);
+    api
+      .getShareableUsers({ page: 1, perPage: 50, search: shareSearch })
+      .then((response) => {
+        const users = Array.isArray(response)
+          ? response
+          : Array.isArray(response?.items)
+            ? response.items
+            : [];
+        setShareUsers(users);
+      })
+      .catch((err) => {
+        alert(`Failed to load users: ${err.message}`);
+        setShareUsers([]);
+      })
+      .finally(() => setShareUsersLoading(false));
+  }, [shareTarget, shareSearch]);
+
+  const closeShareModal = () => {
+    setShareTarget(null);
+    setShareSearch("");
+    setShareUsers([]);
+  };
+
+  const openShareModal = (list) => {
+    if (!list) {
+      return;
+    }
+    setShareTarget(list);
+  };
+
+  const handleShareList = async (selectedUser) => {
+    if (!shareTarget?.id || !selectedUser?.id) {
+      return;
+    }
+
+    try {
+      const updated = await api.shareList(shareTarget.id, selectedUser.id);
+      setLocalLists((prev) =>
+        prev.map((list) => (list.id === updated.id ? updated : list)),
+      );
+      if (editingList?.id === updated.id) {
+        setEditingList(JSON.parse(JSON.stringify(updated)));
+      }
+      closeShareModal();
+    } catch (err) {
+      alert(`Failed to share list: ${err.message}`);
+    }
+  };
 
   const isProductBought = (product) => Boolean(product?.bought);
 
@@ -433,6 +495,16 @@ export default function ShoppingLists({
               </button>
             )}
 
+            {selected.ownerId === user?.id && (
+              <button
+                className="archive-list-btn"
+                type="button"
+                onClick={() => openShareModal(selected)}
+              >
+                Udostępnij
+              </button>
+            )}
+
             <button
               className="archive-list-btn"
               disabled={saving}
@@ -582,6 +654,18 @@ export default function ShoppingLists({
             </div>
           </div>
         </div>
+        <ShareUserModal
+          isOpen={Boolean(shareTarget)}
+          title="Udostępnij listę zakupów"
+          loading={shareUsersLoading}
+          users={shareUsers}
+          search={shareSearch}
+          onSearchChange={setShareSearch}
+          currentUserId={user?.id}
+          alreadySharedUserIds={shareTarget?.sharedWithUserIds ?? []}
+          onClose={closeShareModal}
+          onConfirm={handleShareList}
+        />
         {confirmModal && <ConfirmModal {...confirmModal} />}
       </>
     );
@@ -672,6 +756,21 @@ export default function ShoppingLists({
                 <div className="list-count">
                   {(list.products || []).length} {t("shopping.items", "items")}
                 </div>
+                {list.ownerId === user?.id && (
+                  <button
+                    type="button"
+                    className="show-more-btn"
+                    title="Udostępnij listę"
+                    aria-label="Udostępnij listę"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      openShareModal(list);
+                    }}
+                    style={{ marginTop: 6, padding: "3px 8px" }}
+                  >
+                    👥
+                  </button>
+                )}
                 <div
                   className={`list-due-date${getDueDateStatus(list.dueDate) ? ` is-${getDueDateStatus(list.dueDate)}` : ""}`}
                 >
@@ -701,6 +800,18 @@ export default function ShoppingLists({
           </div>
         )}
       </div>
+      <ShareUserModal
+        isOpen={Boolean(shareTarget)}
+        title="Udostępnij listę zakupów"
+        loading={shareUsersLoading}
+        users={shareUsers}
+        search={shareSearch}
+        onSearchChange={setShareSearch}
+        currentUserId={user?.id}
+        alreadySharedUserIds={shareTarget?.sharedWithUserIds ?? []}
+        onClose={closeShareModal}
+        onConfirm={handleShareList}
+      />
       {confirmModal && <ConfirmModal {...confirmModal} />}
     </>
   );

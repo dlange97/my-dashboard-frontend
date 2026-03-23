@@ -249,9 +249,11 @@ export function FullMap({
   events = [],
   canManageRoutes = false,
   canManageEvents = false,
+  currentUserId = null,
   onCreateEventAtLocation,
   onEditEvent,
   onDeleteEvent,
+  onShareEvent,
 }) {
   const [filters, setFilters] = useState({
     upcoming: true,
@@ -748,6 +750,18 @@ export function FullMap({
                   )}
                   {canManageEvents && (
                     <div className="map-popup-actions">
+                      {event.ownerId &&
+                        currentUserId &&
+                        event.ownerId === currentUserId && (
+                          <button
+                            type="button"
+                            className="map-popup-action-btn"
+                            onClick={() => onShareEvent?.(event)}
+                            title="Udostępnij"
+                          >
+                            👥
+                          </button>
+                        )}
                       <button
                         type="button"
                         className="map-popup-action-btn map-popup-action-btn-edit"

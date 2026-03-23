@@ -13,7 +13,9 @@ export default function EventItem({
   onEdit,
   onDelete,
   onViewMap,
+  onShare,
   canManage = true,
+  canShare = false,
 }) {
   const start = formatEventDate(event.startAt);
 
@@ -57,6 +59,16 @@ export default function EventItem({
         )}
         {canManage && (
           <>
+            {canShare && (
+              <button
+                className="event-action-btn"
+                onClick={() => onShare && onShare(event)}
+                title="Udostępnij"
+                aria-label="Udostępnij event"
+              >
+                👥
+              </button>
+            )}
             <button className="event-action-btn" onClick={() => onEdit(event)}>
               Edit
             </button>

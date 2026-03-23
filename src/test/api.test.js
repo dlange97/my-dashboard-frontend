@@ -162,4 +162,74 @@ describe("api method shapes", () => {
     expect(opts.method).toBe("DELETE");
     expect(opts.url).toContain("/notification/inbox");
   });
+
+  it("shareTodo sends POST to /dashboard/todos/{id}/share with userId", async () => {
+    const opts = await spyRequest("shareTodo", "/dashboard/todos/5/share", [
+      5,
+      "user-abc",
+    ]);
+    expect(opts.method).toBe("POST");
+    expect(opts.url).toContain("/dashboard/todos/5/share");
+    expect(JSON.parse(opts.body)).toEqual({ userId: "user-abc" });
+  });
+
+  it("unshareTodo sends DELETE to /dashboard/todos/{id}/share/{userId}", async () => {
+    const opts = await spyRequest(
+      "unshareTodo",
+      "/dashboard/todos/5/share/user-abc",
+      [5, "user-abc"],
+    );
+    expect(opts.method).toBe("DELETE");
+    expect(opts.url).toContain("/dashboard/todos/5/share/user-abc");
+  });
+
+  it("shareList sends POST to /dashboard/shopping-lists/{id}/share with userId", async () => {
+    const opts = await spyRequest(
+      "shareList",
+      "/dashboard/shopping-lists/7/share",
+      [7, "user-xyz"],
+    );
+    expect(opts.method).toBe("POST");
+    expect(opts.url).toContain("/dashboard/shopping-lists/7/share");
+    expect(JSON.parse(opts.body)).toEqual({ userId: "user-xyz" });
+  });
+
+  it("unshareList sends DELETE to /dashboard/shopping-lists/{id}/share/{userId}", async () => {
+    const opts = await spyRequest(
+      "unshareList",
+      "/dashboard/shopping-lists/7/share/user-xyz",
+      [7, "user-xyz"],
+    );
+    expect(opts.method).toBe("DELETE");
+    expect(opts.url).toContain("/dashboard/shopping-lists/7/share/user-xyz");
+  });
+
+  it("shareEvent sends POST to /events/{id}/share with userId", async () => {
+    const opts = await spyRequest("shareEvent", "/events/3/share", [
+      3,
+      "user-ev",
+    ]);
+    expect(opts.method).toBe("POST");
+    expect(opts.url).toContain("/events/3/share");
+    expect(JSON.parse(opts.body)).toEqual({ userId: "user-ev" });
+  });
+
+  it("unshareEvent sends DELETE to /events/{id}/share/{userId}", async () => {
+    const opts = await spyRequest("unshareEvent", "/events/3/share/user-ev", [
+      3,
+      "user-ev",
+    ]);
+    expect(opts.method).toBe("DELETE");
+    expect(opts.url).toContain("/events/3/share/user-ev");
+  });
+
+  it("getShareableUsers sends GET to /auth/users/options", async () => {
+    const opts = await spyRequest(
+      "getShareableUsers",
+      "/auth/users/options",
+      [],
+    );
+    expect(opts.method).toBe("GET");
+    expect(opts.url).toContain("/auth/users/options");
+  });
 });

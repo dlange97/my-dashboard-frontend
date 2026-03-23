@@ -38,6 +38,8 @@ export default function EventForm({
   seedStartAt = null,
   onSave,
   onCancel,
+  onShare,
+  canShare = false,
 }) {
   const { t } = useTranslation();
   const [form, setForm] = useState(() => {
@@ -113,7 +115,10 @@ export default function EventForm({
             <textarea
               value={form.description}
               onChange={(e) => set("description", e.target.value)}
-              placeholder={t("events.form.descriptionPlaceholder", "Optional details…")}
+              placeholder={t(
+                "events.form.descriptionPlaceholder",
+                "Optional details…",
+              )}
             />
           </div>
 
@@ -166,6 +171,15 @@ export default function EventForm({
           </div>
 
           <div className="event-form-actions">
+            {initial && canShare && (
+              <button
+                type="button"
+                className="event-btn-secondary"
+                onClick={() => onShare && onShare(initial)}
+              >
+                Udostępnij
+              </button>
+            )}
             <button
               type="button"
               className="event-btn-secondary"

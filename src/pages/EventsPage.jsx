@@ -4,6 +4,7 @@ import EventCalendar from "../components/events/EventCalendar";
 import EventForm from "../components/events/EventForm";
 import EventItem from "../components/events/EventItem";
 import InboxSidebar from "../components/notifications/InboxSidebar";
+import ShareUserModal from "../components/ui/ShareUserModal";
 import api from "../api/api";
 import { useAuth } from "../context/AuthContext";
 import { useTranslation } from "../context/TranslationContext";
@@ -12,7 +13,7 @@ import "../components/events/events.css";
 const MapModal = lazy(() => import("../components/events/MapModal"));
 
 export default function EventsPage() {
-  const { hasPermission } = useAuth();
+  const { hasPermission, user } = useAuth();
   const { t } = useTranslation();
   const canManageEvents = hasPermission("events.manage");
   const [events, setEvents] = useState([]);
@@ -21,6 +22,10 @@ export default function EventsPage() {
   const [showForm, setShowForm] = useState(false);
   const [editingEvent, setEditingEvent] = useState(null);
   const [mapEvent, setMapEvent] = useState(null);
+  const [shareTarget, setShareTarget] = useState(null);
+  const [shareSearch, setShareSearch] = useState("");
+  const [shareUsers, setShareUsers] = useState([]);
+  const [shareUsersLoading, setShareUsersLoading] = useState(false);
 
   useEffect(() => {
     api
@@ -29,6 +34,29 @@ export default function EventsPage() {
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
+
+  useEffect(() => {
+    if (!shareTarget) {
+      return;
+    }
+
+    setShareUsersLoading(true);
+    api
+      .getShareableUsers({ page: 1, perPage: 50, search: shareSearch })
+      .then((response) => {
+        const users = Array.isArray(response)
+          ? response
+          : Array.isArray(response?.items)
+            ? response.items
+            : [];
+        setShareUsers(users);
+      })
+      .catch((err) => {
+        alert(`Failed to load users: ${err.message}`);
+        setShareUsers([]);
+      })
+      .finally(() => setShareUsersLoading(false));
+  }, [shareTarget, shareSearch]);
 
   const sorted = [...events].sort(
     (a, b) => new Date(a.startAt) - new Date(b.startAt),
@@ -58,12 +86,44 @@ export default function EventsPage() {
   };
 
   const handleDelete = async (event) => {
-    if (!window.confirm(`${t("events.deleteConfirm", "Delete event")}: "${event.title}"?`)) return;
+    if (
+      !window.confirm(
+        `${t("events.deleteConfirm", "Delete event")}: "${event.title}"?`,
+      )
+    )
+      return;
     try {
       await api.deleteEvent(event.id);
       setEvents((prev) => prev.filter((e) => e.id !== event.id));
     } catch (err) {
-      alert(`${t("events.deleteError", "Failed to delete event")}: ${err.message}`);
+      alert(
+        `${t("events.deleteError", "Failed to delete event")}: ${err.message}`,
+      );
+    }
+  };
+
+  const closeShareModal = () => {
+    setShareTarget(null);
+    setShareSearch("");
+    setShareUsers([]);
+  };
+
+  const handleShareEvent = async (selectedUser) => {
+    if (!shareTarget?.id || !selectedUser?.id) {
+      return;
+    }
+
+    try {
+      const updated = await api.shareEvent(shareTarget.id, selectedUser.id);
+      setEvents((prev) =>
+        prev.map((entry) => (entry.id === updated.id ? updated : entry)),
+      );
+      if (editingEvent?.id === updated.id) {
+        setEditingEvent(updated);
+      }
+      closeShareModal();
+    } catch (err) {
+      alert(`Failed to share event: ${err.message}`);
     }
   };
 
@@ -95,7 +155,10 @@ export default function EventsPage() {
               title={
                 canManageEvents
                   ? t("events.add", "Add Event")
-                  : t("events.missingManagePermission", "Missing permission: events.manage")
+                  : t(
+                      "events.missingManagePermission",
+                      "Missing permission: events.manage",
+                    )
               }
               onClick={() => {
                 setEditingEvent(null);
@@ -112,7 +175,9 @@ export default function EventsPage() {
             <EventCalendar events={events} onSelectEvent={handleEdit} />
           ) : sorted.length === 0 ? (
             <div className="event-list-empty">
-              {t("events.empty", "No events yet. Click")} <strong>{t("events.addButton", "+ Add Event")}</strong> {t("events.emptySuffix", "to create one.")}
+              {t("events.empty", "No events yet. Click")}{" "}
+              <strong>{t("events.addButton", "+ Add Event")}</strong>{" "}
+              {t("events.emptySuffix", "to create one.")}
             </div>
           ) : (
             <div className="event-list">
@@ -121,9 +186,11 @@ export default function EventsPage() {
                   key={ev.id}
                   event={ev}
                   canManage={canManageEvents}
+                  canShare={ev.ownerId === user?.id}
                   onEdit={handleEdit}
                   onDelete={handleDelete}
                   onViewMap={setMapEvent}
+                  onShare={setShareTarget}
                 />
               ))}
             </div>
@@ -132,6 +199,8 @@ export default function EventsPage() {
           {showForm && (
             <EventForm
               initial={editingEvent}
+              canShare={editingEvent?.ownerId === user?.id}
+              onShare={setShareTarget}
               onSave={handleSave}
               onCancel={() => {
                 setShowForm(false);
@@ -139,6 +208,19 @@ export default function EventsPage() {
               }}
             />
           )}
+
+          <ShareUserModal
+            isOpen={Boolean(shareTarget)}
+            title="Udostępnij event"
+            loading={shareUsersLoading}
+            users={shareUsers}
+            search={shareSearch}
+            onSearchChange={setShareSearch}
+            currentUserId={user?.id}
+            alreadySharedUserIds={shareTarget?.sharedWithUserIds ?? []}
+            onClose={closeShareModal}
+            onConfirm={handleShareEvent}
+          />
 
           {mapEvent && (
             <Suspense fallback={null}>

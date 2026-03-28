@@ -3,12 +3,13 @@ import NavBar from "../components/nav/NavBar";
 import { FullMap } from "../components/events/MapView";
 import EventForm from "../components/events/EventForm";
 import InboxSidebar from "../components/notifications/InboxSidebar";
+import ShareUserModal from "../components/ui/ShareUserModal";
 import api from "../api/api";
 import { useAuth } from "../context/AuthContext";
 import "../components/events/events.css";
 
 export default function MapPage() {
-  const { hasPermission, isAuthenticated } = useAuth();
+  const { hasPermission, isAuthenticated, user } = useAuth();
   // All authenticated users can manage routes; fallback covers stale JWTs issued
   // before routes.manage was added to ROLE_USER.
   const canManageRoutes = hasPermission("routes.manage") || isAuthenticated;
@@ -21,6 +22,10 @@ export default function MapPage() {
   const [seedLocation, setSeedLocation] = useState(null);
   const [seedTitle, setSeedTitle] = useState("");
   const [mapResetKey, setMapResetKey] = useState(0);
+  const [shareTarget, setShareTarget] = useState(null);
+  const [shareSearch, setShareSearch] = useState("");
+  const [shareUsers, setShareUsers] = useState([]);
+  const [shareUsersLoading, setShareUsersLoading] = useState(false);
 
   useEffect(() => {
     api
@@ -28,6 +33,26 @@ export default function MapPage() {
       .then((data) => setEvents(data ?? []))
       .catch(() => {});
   }, []);
+
+  useEffect(() => {
+    if (!shareTarget) {
+      return;
+    }
+
+    setShareUsersLoading(true);
+    api
+      .getShareableUsers({ page: 1, perPage: 50, search: shareSearch })
+      .then((response) => {
+        const users = Array.isArray(response)
+          ? response
+          : Array.isArray(response?.items)
+            ? response.items
+            : [];
+        setShareUsers(users);
+      })
+      .catch(() => setShareUsers([]))
+      .finally(() => setShareUsersLoading(false));
+  }, [shareTarget, shareSearch]);
 
   const handleCreateEventAtLocation = (location) => {
     setEditingEvent(null);
@@ -80,6 +105,31 @@ export default function MapPage() {
     setSeedTitle("");
   };
 
+  const closeShareModal = () => {
+    setShareTarget(null);
+    setShareSearch("");
+    setShareUsers([]);
+  };
+
+  const handleShareEvent = async (selectedUser) => {
+    if (!shareTarget?.id || !selectedUser?.id) {
+      return;
+    }
+
+    try {
+      const updated = await api.shareEvent(shareTarget.id, selectedUser.id);
+      setEvents((prev) =>
+        prev.map((entry) => (entry.id === updated.id ? updated : entry)),
+      );
+      if (editingEvent?.id === updated.id) {
+        setEditingEvent(updated);
+      }
+      closeShareModal();
+    } catch (err) {
+      alert(`Failed to share event: ${err.message}`);
+    }
+  };
+
   return (
     <div
       className="page-shell"
@@ -110,9 +160,11 @@ export default function MapPage() {
               events={events}
               canManageRoutes={canManageRoutes}
               canManageEvents={canManageEvents}
+              currentUserId={user?.id ?? null}
               onCreateEventAtLocation={handleCreateEventAtLocation}
               onEditEvent={handleEditEvent}
               onDeleteEvent={handleDeleteEvent}
+              onShareEvent={setShareTarget}
             />
           </div>
         </div>
@@ -123,6 +175,8 @@ export default function MapPage() {
           initial={editingEvent}
           seedLocation={seedLocation}
           seedTitle={seedTitle}
+          canShare={editingEvent?.ownerId === user?.id}
+          onShare={setShareTarget}
           onSave={handleSaveEvent}
           onCancel={() => {
             setShowForm(false);
@@ -132,6 +186,19 @@ export default function MapPage() {
           }}
         />
       )}
+
+      <ShareUserModal
+        isOpen={Boolean(shareTarget)}
+        title="Udostępnij event"
+        loading={shareUsersLoading}
+        users={shareUsers}
+        search={shareSearch}
+        onSearchChange={setShareSearch}
+        currentUserId={user?.id}
+        alreadySharedUserIds={shareTarget?.sharedWithUserIds ?? []}
+        onClose={closeShareModal}
+        onConfirm={handleShareEvent}
+      />
     </div>
   );
 }

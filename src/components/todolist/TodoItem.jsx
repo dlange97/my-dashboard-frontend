@@ -32,7 +32,14 @@ function getDueDateStatus(dateValue) {
   return null;
 }
 
-export default function TodoItem({ item, onToggle, onDelete, accentColor }) {
+export default function TodoItem({
+  item,
+  onToggle,
+  onDelete,
+  onShare,
+  canShare = false,
+  accentColor,
+}) {
   const { t } = useTranslation();
   const dueDateLabel = formatDueDate(item?.dueDate);
   const dueDateStatus = getDueDateStatus(item?.dueDate);
@@ -59,14 +66,27 @@ export default function TodoItem({ item, onToggle, onDelete, accentColor }) {
           )}
         </span>
       </label>
-      <button
-        className="remove-product-icon"
-        onClick={() => onDelete && onDelete(item)}
-        aria-label="Delete task"
-        title="Delete task"
-      >
-        <span className="minus">−</span>
-      </button>
+      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+        {canShare && (
+          <button
+            className="show-more-btn"
+            onClick={() => onShare && onShare(item)}
+            aria-label="Share task"
+            title="Share task"
+            style={{ padding: "5px 9px" }}
+          >
+            👥
+          </button>
+        )}
+        <button
+          className="remove-product-icon"
+          onClick={() => onDelete && onDelete(item)}
+          aria-label="Delete task"
+          title="Delete task"
+        >
+          <span className="minus">−</span>
+        </button>
+      </div>
     </li>
   );
 }

@@ -5,6 +5,7 @@ import ShoppingSummary from "../components/dashboard/ShoppingSummary";
 import CalendarSummary from "../components/dashboard/CalendarSummary";
 import EventsSummary from "../components/events/EventsSummary";
 import InboxSidebar from "../components/notifications/InboxSidebar";
+import { ConfirmModal } from "../components/ui";
 import api from "../api/api";
 import { useAuth } from "../context/AuthContext";
 import { useTranslation } from "../context/TranslationContext";
@@ -124,6 +125,7 @@ export default function DashboardPage() {
   const [dropTargetTileId, setDropTargetTileId] = useState(null);
   const [layoutReady, setLayoutReady] = useState(false);
   const [resizingTileId, setResizingTileId] = useState(null);
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
   const lastPersistedRef = useRef("");
   const resizeStartRef = useRef({
     x: 0,
@@ -293,6 +295,7 @@ export default function DashboardPage() {
   const handleResetLayout = () => {
     setTileOrder(DEFAULT_ORDER);
     setTileScales(DEFAULT_SCALES);
+    setShowResetConfirm(false);
   };
 
   return (
@@ -311,7 +314,7 @@ export default function DashboardPage() {
             <button
               type="button"
               className="dashboard-reset-layout-btn"
-              onClick={handleResetLayout}
+              onClick={() => setShowResetConfirm(true)}
             >
               {t("dashboard.resetTiles", "Reset tile settings")}
             </button>
@@ -372,6 +375,20 @@ export default function DashboardPage() {
           </div>
         </main>
       </div>
+
+      {showResetConfirm && (
+        <ConfirmModal
+          title={t("dashboard.resetConfirmTitle", "Reset tile settings?")}
+          message={t(
+            "dashboard.resetConfirmMessage",
+            "This will restore the default tile order and sizes.",
+          )}
+          confirmLabel={t("dashboard.resetConfirmAction", "Reset")}
+          cancelLabel={t("dashboard.resetConfirmCancel", "Cancel")}
+          onConfirm={handleResetLayout}
+          onCancel={() => setShowResetConfirm(false)}
+        />
+      )}
     </div>
   );
 }

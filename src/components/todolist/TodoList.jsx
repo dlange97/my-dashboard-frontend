@@ -3,6 +3,8 @@ import TodoItem from "./TodoItem";
 import TodoForm from "./TodoForm";
 import api from "../../api/api";
 import { useTranslation } from "../../context/TranslationContext";
+import { useAuth } from "../../context/AuthContext";
+import ShareUserModal from "../ui/ShareUserModal";
 
 const ITEM_COLORS = [
   "#2563eb",
@@ -51,11 +53,16 @@ function compareByNearestDueDate(a, b) {
 
 export default function TodoList({ title }) {
   const { t } = useTranslation();
+  const { user } = useAuth();
   const resolvedTitle = title ?? t("todo.title", "To-Do");
   const [localTasks, setLocalTasks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showForm, setShowForm] = useState(false);
+  const [shareTarget, setShareTarget] = useState(null);
+  const [shareSearch, setShareSearch] = useState("");
+  const [shareUsers, setShareUsers] = useState([]);
+  const [shareUsersLoading, setShareUsersLoading] = useState(false);
 
   // ── Load from API on mount ─────────────────────────────────
   useEffect(() => {
@@ -92,6 +99,51 @@ export default function TodoList({ title }) {
         setLocalTasks((prev) => prev.filter((task) => task.id !== item.id)),
       )
       .catch((err) => alert(`Failed to delete task: ${err.message}`));
+  };
+
+  useEffect(() => {
+    if (!shareTarget) {
+      return;
+    }
+
+    setShareUsersLoading(true);
+    api
+      .getShareableUsers({ page: 1, perPage: 50, search: shareSearch })
+      .then((response) => {
+        const users = Array.isArray(response)
+          ? response
+          : Array.isArray(response?.items)
+            ? response.items
+            : [];
+        setShareUsers(users);
+      })
+      .catch((err) => {
+        alert(`Failed to load users: ${err.message}`);
+        setShareUsers([]);
+      })
+      .finally(() => setShareUsersLoading(false));
+  }, [shareTarget, shareSearch]);
+
+  const closeShareModal = () => {
+    setShareTarget(null);
+    setShareSearch("");
+    setShareUsers([]);
+  };
+
+  const handleShareTask = async (selectedUser) => {
+    if (!shareTarget?.id || !selectedUser?.id) {
+      return;
+    }
+
+    try {
+      const updated = await api.shareTodo(shareTarget.id, selectedUser.id);
+      setLocalTasks((prev) =>
+        prev.map((task) => (task.id === updated.id ? updated : task)),
+      );
+      closeShareModal();
+    } catch (err) {
+      alert(`Failed to share task: ${err.message}`);
+    }
   };
 
   const sortedTasks = useMemo(
@@ -142,11 +194,26 @@ export default function TodoList({ title }) {
                 accentColor={colorForUserKey(task.createdBy ?? task.ownerId)}
                 onToggle={toggleTask}
                 onDelete={deleteTask}
+                onShare={(item) => setShareTarget(item)}
+                canShare={task.ownerId === user?.id}
               />
             ))}
           </ul>
         )}
       </div>
+
+      <ShareUserModal
+        isOpen={Boolean(shareTarget)}
+        title="Udostępnij zadanie"
+        loading={shareUsersLoading}
+        users={shareUsers}
+        search={shareSearch}
+        onSearchChange={setShareSearch}
+        currentUserId={user?.id}
+        alreadySharedUserIds={shareTarget?.sharedWithUserIds ?? []}
+        onClose={closeShareModal}
+        onConfirm={handleShareTask}
+      />
     </div>
   );
 }

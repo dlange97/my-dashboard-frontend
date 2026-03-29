@@ -1,9 +1,11 @@
 import React, { useState } from "react";
 import ProductForm from "./ProductForm";
+import { useTranslation } from "../../context/TranslationContext";
 
 const ANIM_MS = 360;
 
 export default function NewShoppingList({ onCreate, onCancel }) {
+  const { t } = useTranslation();
   const [name, setName] = useState("");
   const [dueDate, setDueDate] = useState("");
   const [products, setProducts] = useState([]);
@@ -33,7 +35,7 @@ export default function NewShoppingList({ onCreate, onCancel }) {
       <form className={`modal ${closing ? "closing" : ""}`} onSubmit={submit}>
         <input
           autoFocus
-          placeholder="List name"
+          placeholder={t("shopping.listNamePlaceholder", "List name")}
           value={name}
           onChange={(e) => setName(e.target.value)}
         />
@@ -42,23 +44,30 @@ export default function NewShoppingList({ onCreate, onCancel }) {
           type="date"
           value={dueDate}
           onChange={(e) => setDueDate(e.target.value)}
-          aria-label="Shopping list due date"
+          aria-label={t("shopping.dueDate", "Due date")}
         />
 
         <div className="modal-products">
-          <h4>Products</h4>
-          {products.length === 0 && <p>No products yet</p>}
+          <h4>{t("shopping.products", "Products")}</h4>
+          {products.length === 0 && (
+            <p>{t("shopping.noProductsYet", "No products yet")}</p>
+          )}
           {products.map((p, i) => (
             <div className="product-row" key={i}>
               <div>
-                {p.name} x{p.qty} {p.weight ? `(${p.weight})` : ""}
+                {p.category && (
+                  <span className="product-category-badge">
+                    {t(`shopping.category.${p.category}`, p.category)}
+                  </span>
+                )}{" "}
+                {p.name} — {p.qty} {p.weight || t("shopping.unit.szt", "szt")}
               </div>
               <button
                 type="button"
                 className="remove-product-icon"
                 onClick={() => removeProduct(i)}
-                title="Remove product"
-                aria-label="Remove product"
+                title={t("shopping.removeProduct", "Remove product")}
+                aria-label={t("shopping.removeProduct", "Remove product")}
               >
                 <span className="minus">−</span>
               </button>
@@ -66,7 +75,10 @@ export default function NewShoppingList({ onCreate, onCancel }) {
           ))}
         </div>
 
-        <ProductForm onAdd={addProduct} addLabel="Add to list" />
+        <ProductForm
+          onAdd={addProduct}
+          addLabel={t("shopping.addToList", "Add to list")}
+        />
 
         <div className="modal-actions">
           <button
@@ -74,10 +86,10 @@ export default function NewShoppingList({ onCreate, onCancel }) {
             className="btn-muted"
             onClick={() => startClose(onCancel)}
           >
-            Cancel
+            {t("common.cancel", "Cancel")}
           </button>
           <button type="submit" className="btn-primary">
-            Create
+            {t("shopping.create", "Create")}
           </button>
         </div>
       </form>

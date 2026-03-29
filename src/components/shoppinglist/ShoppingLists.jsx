@@ -359,6 +359,7 @@ export default function ShoppingLists({
           name: product.name,
           qty: product.qty,
           weight: product.weight || null,
+          category: product.category || null,
           bought: Boolean(product.bought),
           position: index,
         })),
@@ -501,7 +502,7 @@ export default function ShoppingLists({
                 type="button"
                 onClick={() => openShareModal(selected)}
               >
-                Udostępnij
+                {t("shopping.share", "Share")}
               </button>
             )}
 
@@ -525,7 +526,7 @@ export default function ShoppingLists({
                 e.stopPropagation();
                 setConfirmModal({
                   title: t("shopping.deleteTitle", "Delete shopping list"),
-                  message: `Delete "${selected?.name}"? This cannot be undone.`,
+                  message: `${t("shopping.deleteMessage", "Delete")} "${selected?.name}"? ${t("shopping.deleteWarning", "This cannot be undone.")}`,
                   confirmLabel: t("common.delete", "Delete"),
                   cancelLabel: t("common.cancel", "Cancel"),
                   onConfirm: () => {
@@ -607,6 +608,25 @@ export default function ShoppingLists({
                       )
                     }
                   />
+                  <select
+                    className={`small input-category${isProductBought(product) ? " bought" : ""}`}
+                    value={product.category || ""}
+                    onChange={(e) =>
+                      updateProductField(
+                        selectedIndex,
+                        index,
+                        "category",
+                        e.target.value || null,
+                      )
+                    }
+                  >
+                    <option value="">{t("shopping.categoryNone", "—")}</option>
+                    {["dairy","meat","fruits","vegetables","bakery","beverages","snacks","frozen","spices","household","hygiene","other"].map((cat) => (
+                      <option key={cat} value={cat}>
+                        {t(`shopping.category.${cat}`, cat)}
+                      </option>
+                    ))}
+                  </select>
                   <input
                     className={`small input-qty${isProductBought(product) ? " bought" : ""}`}
                     type="number"
@@ -621,10 +641,9 @@ export default function ShoppingLists({
                       )
                     }
                   />
-                  <input
-                    className={`small input-weight${isProductBought(product) ? " bought" : ""}`}
-                    placeholder={t("shopping.weightPlaceholder", "weight")}
-                    value={product.weight || ""}
+                  <select
+                    className={`small input-unit${isProductBought(product) ? " bought" : ""}`}
+                    value={product.weight || "szt"}
                     onChange={(e) =>
                       updateProductField(
                         selectedIndex,
@@ -633,7 +652,13 @@ export default function ShoppingLists({
                         e.target.value,
                       )
                     }
-                  />
+                  >
+                    {["szt","kg","g","l","ml","opak"].map((u) => (
+                      <option key={u} value={u}>
+                        {t(`shopping.unit.${u}`, u)}
+                      </option>
+                    ))}
+                  </select>
                   <button
                     className="remove-product-icon"
                     onClick={() => removeProduct(selectedIndex, index)}
@@ -649,14 +674,14 @@ export default function ShoppingLists({
             <div className="add-product-form">
               <ProductForm
                 onAdd={(product) => addProduct(selectedIndex, product)}
-                addLabel="Add Product"
+                addLabel={t("shopping.addProduct", "Add Product")}
               />
             </div>
           </div>
         </div>
         <ShareUserModal
           isOpen={Boolean(shareTarget)}
-          title="Udostępnij listę zakupów"
+          title={t("shopping.shareTitle", "Share shopping list")}
           loading={shareUsersLoading}
           users={shareUsers}
           search={shareSearch}
@@ -760,8 +785,8 @@ export default function ShoppingLists({
                   <button
                     type="button"
                     className="show-more-btn"
-                    title="Udostępnij listę"
-                    aria-label="Udostępnij listę"
+                    title={t("shopping.shareList", "Share list")}
+                    aria-label={t("shopping.shareList", "Share list")}
                     onClick={(event) => {
                       event.stopPropagation();
                       openShareModal(list);

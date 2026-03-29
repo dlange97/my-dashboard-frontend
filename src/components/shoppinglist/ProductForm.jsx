@@ -26,8 +26,7 @@ export default function ProductForm({
   const { t } = useTranslation();
   const [product, setProduct] = useState(initial);
 
-  const resolvedAddLabel =
-    addLabel || t("shopping.addProduct", "Add product");
+  const resolvedAddLabel = addLabel || t("shopping.addProduct", "Add product");
 
   const submit = (e) => {
     e && e.preventDefault();
@@ -36,8 +35,14 @@ export default function ProductForm({
     setProduct(initial);
   };
 
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") {
+      submit(e);
+    }
+  };
+
   return (
-    <form className="product-form" onSubmit={submit}>
+    <div className="product-form" role="group" onKeyDown={handleKeyDown}>
       <div className="product-form-top-row">
         <div className="form-field product-name-field">
           <label htmlFor="pf-name">
@@ -63,9 +68,7 @@ export default function ProductForm({
               setProduct((p) => ({ ...p, category: e.target.value }))
             }
           >
-            <option value="">
-              {t("shopping.categoryNone", "— select —")}
-            </option>
+            <option value="">{t("shopping.categoryNone", "— select —")}</option>
             {CATEGORIES.map((cat) => (
               <option key={cat} value={cat}>
                 {t(`shopping.category.${cat}`, cat)}
@@ -114,6 +117,6 @@ export default function ProductForm({
           + {resolvedAddLabel}
         </button>
       </div>
-    </form>
+    </div>
   );
 }

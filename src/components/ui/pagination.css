@@ -1,0 +1,155 @@
+.pager {
+  margin-top: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.pager-nav,
+.pager-page-btn,
+.pager-go-btn {
+  border: 1px solid #d1d5db;
+  background: #fff;
+  color: #1f2937;
+  border-radius: 8px;
+  min-height: 34px;
+  min-width: 34px;
+  padding: 0 10px;
+  font-size: 0.86rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.pager-nav:hover,
+.pager-page-btn:hover,
+.pager-go-btn:hover {
+  background: #f3f4f6;
+  border-color: #9ca3af;
+}
+
+.pager-nav:disabled,
+.pager-page-btn:disabled,
+.pager-go-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.pager-page-btn.is-active {
+  background: #2563eb;
+  color: #fff;
+  border-color: #2563eb;
+}
+
+.pager-pages {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pager-dots {
+  color: #6b7280;
+  font-weight: 700;
+  min-width: 18px;
+  text-align: center;
+}
+
+.pager-jump {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: 6px;
+}
+
+.pager-jump-label {
+  font-size: 0.78rem;
+  color: #6b7280;
+}
+
+.pager-jump-input {
+  width: 62px;
+  min-height: 34px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  text-align: center;
+  font-size: 0.86rem;
+  color: #111827;
+  background: #fff;
+}
+
+.pager-jump-input:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
+}
+
+.pager-mobile-nav {
+  width: 100%;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+}
+
+.pager-nav-mobile {
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  padding: 0 12px;
+}
+
+.pager-mobile-meta {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #334155;
+  white-space: nowrap;
+}
+
+@media (max-width: 700px) {
+  .pager {
+    margin-top: 10px;
+    gap: 10px;
+    justify-content: stretch;
+  }
+
+  .pager.is-mobile {
+    width: 100%;
+  }
+
+  .pager-pages-mobile {
+    width: 100%;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 5px;
+  }
+
+  .pager-pages-mobile .pager-page-btn {
+    min-width: 36px;
+    min-height: 36px;
+    border-radius: 999px;
+    padding: 0 11px;
+  }
+
+  .pager-jump {
+    margin-left: 0;
+    width: 100%;
+    justify-content: center;
+  }
+
+  .pager-jump-label {
+    font-size: 0.74rem;
+  }
+
+  .pager-jump-input {
+    width: 58px;
+    min-height: 36px;
+    font-size: 0.82rem;
+  }
+}

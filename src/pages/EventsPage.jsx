@@ -5,6 +5,7 @@ import EventForm from "../components/events/EventForm";
 import EventItem from "../components/events/EventItem";
 import InboxSidebar from "../components/notifications/InboxSidebar";
 import ShareUserModal from "../components/ui/ShareUserModal";
+import Pagination from "../components/ui/Pagination";
 import api from "../api/api";
 import { useAuth } from "../context/AuthContext";
 import { useTranslation } from "../context/TranslationContext";
@@ -16,9 +17,11 @@ export default function EventsPage() {
   const { hasPermission, user } = useAuth();
   const { t } = useTranslation();
   const canManageEvents = hasPermission("events.manage");
+  const PAGE_SIZE = 5;
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [view, setView] = useState("list");
+  const [page, setPage] = useState(1);
   const [showForm, setShowForm] = useState(false);
   const [editingEvent, setEditingEvent] = useState(null);
   const [mapEvent, setMapEvent] = useState(null);
@@ -61,6 +64,12 @@ export default function EventsPage() {
   const sorted = [...events].sort(
     (a, b) => new Date(a.startAt) - new Date(b.startAt),
   );
+  const totalPages = Math.max(1, Math.ceil(sorted.length / PAGE_SIZE));
+  const pagedEvents = sorted.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
+  useEffect(() => {
+    setPage((current) => Math.min(current, totalPages));
+  }, [totalPages]);
 
   const handleSave = async (payload) => {
     try {
@@ -172,7 +181,11 @@ export default function EventsPage() {
           {loading ? (
             <p>{t("common.loading", "Loading…")}</p>
           ) : view === "calendar" ? (
-            <EventCalendar events={events} onSelectEvent={handleEdit} />
+            <EventCalendar
+              events={events}
+              onEventsChange={setEvents}
+              canManageEvents={canManageEvents}
+            />
           ) : sorted.length === 0 ? (
             <div className="event-list-empty">
               {t("events.empty", "No events yet. Click")}{" "}
@@ -180,20 +193,27 @@ export default function EventsPage() {
               {t("events.emptySuffix", "to create one.")}
             </div>
           ) : (
-            <div className="event-list">
-              {sorted.map((ev) => (
-                <EventItem
-                  key={ev.id}
-                  event={ev}
-                  canManage={canManageEvents}
-                  canShare={ev.ownerId === user?.id}
-                  onEdit={handleEdit}
-                  onDelete={handleDelete}
-                  onViewMap={setMapEvent}
-                  onShare={setShareTarget}
-                />
-              ))}
-            </div>
+            <>
+              <div className="event-list">
+                {pagedEvents.map((ev) => (
+                  <EventItem
+                    key={ev.id}
+                    event={ev}
+                    canManage={canManageEvents}
+                    canShare={ev.ownerId === user?.id}
+                    onEdit={handleEdit}
+                    onDelete={handleDelete}
+                    onViewMap={setMapEvent}
+                    onShare={setShareTarget}
+                  />
+                ))}
+              </div>
+              <Pagination
+                page={page}
+                totalPages={totalPages}
+                onPageChange={setPage}
+              />
+            </>
           )}
 
           {showForm && (

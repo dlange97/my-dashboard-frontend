@@ -98,10 +98,12 @@ describe("CalendarPage", () => {
       ...payload,
     }));
     authMock.hasPermission.mockReset();
-    authMock.hasPermission.mockImplementation((permission) => permission === "events.manage");
+    authMock.hasPermission.mockImplementation(
+      (permission) => permission === "events.manage",
+    );
   });
 
-  it("opens event form from the add event button and creates an event", async () => {
+  it("creates an event after selecting an empty calendar slot", async () => {
     render(<CalendarPage />);
 
     await waitFor(() => {
@@ -109,12 +111,18 @@ describe("CalendarPage", () => {
       expect(appCalendarProps).not.toBeNull();
     });
 
-    fireEvent.click(screen.getByRole("button", { name: "+ Add Event" }));
+    fireEvent.click(
+      screen.getByRole("button", { name: "select-calendar-day" }),
+    );
 
     expect(screen.getByTestId("event-form")).toBeInTheDocument();
-    expect(screen.getByTestId("seed-start-at")).toHaveTextContent("");
+    expect(screen.getByTestId("seed-start-at").textContent).toContain(
+      "2030-01-15",
+    );
 
-    fireEvent.click(screen.getByRole("button", { name: "save-calendar-event" }));
+    fireEvent.click(
+      screen.getByRole("button", { name: "save-calendar-event" }),
+    );
 
     await waitFor(() => {
       expect(apiMock.createEvent).toHaveBeenCalledWith(
@@ -133,9 +141,13 @@ describe("CalendarPage", () => {
       expect(appCalendarProps).not.toBeNull();
     });
 
-    fireEvent.click(screen.getByRole("button", { name: "select-calendar-day" }));
+    fireEvent.click(
+      screen.getByRole("button", { name: "select-calendar-day" }),
+    );
 
     expect(screen.getByTestId("event-form")).toBeInTheDocument();
-    expect(screen.getByTestId("seed-start-at").textContent).toContain("2030-01-15");
+    expect(screen.getByTestId("seed-start-at").textContent).toContain(
+      "2030-01-15",
+    );
   });
 });

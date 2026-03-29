@@ -28,14 +28,16 @@ export default function ShoppingSummary() {
           {t("shopping.title", "Shopping Lists")}
         </div>
         <Link to="/shopping" className="summary-go-link">
-          {t("shopping.viewAll", "View all →")}
+          {t("common.viewAll", "View all")} →
         </Link>
       </div>
 
       {loading ? (
         <div className="empty-state">{t("common.loading", "Loading…")}</div>
       ) : lists.length === 0 ? (
-        <div className="empty-state">{t("shopping.empty", "No shopping lists yet.")}</div>
+        <div className="empty-state">
+          {t("shopping.empty", "No shopping lists yet.")}
+        </div>
       ) : (
         <>
           <div className="shop-summary-list">
@@ -53,7 +55,9 @@ export default function ShoppingSummary() {
             ))}
           </div>
           {lists.length > 4 && (
-            <div className="summary-stat">+{lists.length - 4} {t("shopping.moreLists", "more lists")}</div>
+            <div className="summary-stat">
+              +{lists.length - 4} {t("common.more", "more")}
+            </div>
           )}
         </>
       )}

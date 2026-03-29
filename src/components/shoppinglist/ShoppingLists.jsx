@@ -3,6 +3,7 @@ import ProductForm from "./ProductForm";
 import NewShoppingList from "./NewShoppingList";
 import ConfirmModal from "../ui/ConfirmModal";
 import ShareUserModal from "../ui/ShareUserModal";
+import Pagination from "../ui/Pagination";
 import api from "../../api/api";
 import { useTranslation } from "../../context/TranslationContext";
 import { useAuth } from "../../context/AuthContext";
@@ -87,6 +88,7 @@ export default function ShoppingLists({
   onSelectionChange,
   initialSelectedListId = null,
 }) {
+  const PAGE_SIZE = 5;
   const { user } = useAuth();
   const [localLists, setLocalLists] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -98,7 +100,7 @@ export default function ShoppingLists({
   const [confirmModal, setConfirmModal] = useState(null);
   const [viewClosing, setViewClosing] = useState(false);
   const [showNewForm, setShowNewForm] = useState(false);
-  const [showAllLists, setShowAllLists] = useState(false);
+  const [page, setPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState("all");
   const [shareTarget, setShareTarget] = useState(null);
   const [shareSearch, setShareSearch] = useState("");
@@ -415,7 +417,15 @@ export default function ShoppingLists({
     })
     .sort(compareByNearestDueDate);
 
-  const visibleLists = showAllLists ? filteredLists : filteredLists.slice(0, 5);
+  const totalPages = Math.max(1, Math.ceil(filteredLists.length / PAGE_SIZE));
+  const visibleLists = filteredLists.slice(
+    (page - 1) * PAGE_SIZE,
+    page * PAGE_SIZE,
+  );
+
+  useEffect(() => {
+    setPage((current) => Math.min(current, totalPages));
+  }, [totalPages]);
 
   if (loading) {
     return (
@@ -621,7 +631,20 @@ export default function ShoppingLists({
                     }
                   >
                     <option value="">{t("shopping.categoryNone", "—")}</option>
-                    {["dairy","meat","fruits","vegetables","bakery","beverages","snacks","frozen","spices","household","hygiene","other"].map((cat) => (
+                    {[
+                      "dairy",
+                      "meat",
+                      "fruits",
+                      "vegetables",
+                      "bakery",
+                      "beverages",
+                      "snacks",
+                      "frozen",
+                      "spices",
+                      "household",
+                      "hygiene",
+                      "other",
+                    ].map((cat) => (
                       <option key={cat} value={cat}>
                         {t(`shopping.category.${cat}`, cat)}
                       </option>
@@ -653,7 +676,7 @@ export default function ShoppingLists({
                       )
                     }
                   >
-                    {["szt","kg","g","l","ml","opak"].map((u) => (
+                    {["szt", "kg", "g", "l", "ml", "opak"].map((u) => (
                       <option key={u} value={u}>
                         {t(`shopping.unit.${u}`, u)}
                       </option>
@@ -726,7 +749,7 @@ export default function ShoppingLists({
             className={`list-status-filter-btn${statusFilter === "all" ? " active" : ""}`}
             onClick={() => {
               setStatusFilter("all");
-              setShowAllLists(false);
+              setPage(1);
             }}
           >
             {t("shopping.filterAll", "All")} ({localLists.length})
@@ -736,7 +759,7 @@ export default function ShoppingLists({
             className={`list-status-filter-btn${statusFilter === "active" ? " active" : ""}`}
             onClick={() => {
               setStatusFilter("active");
-              setShowAllLists(false);
+              setPage(1);
             }}
           >
             {t("shopping.filterActive", "Active")} ({activeCount})
@@ -746,7 +769,7 @@ export default function ShoppingLists({
             className={`list-status-filter-btn${statusFilter === "archived" ? " active" : ""}`}
             onClick={() => {
               setStatusFilter("archived");
-              setShowAllLists(false);
+              setPage(1);
             }}
           >
             {t("shopping.filterArchived", "Archived")} ({archivedCount})
@@ -777,21 +800,20 @@ export default function ShoppingLists({
                   </span>
                 )}
               </strong>
-              <div>
+              <div className="list-item-meta">
                 <div className="list-count">
                   {(list.products || []).length} {t("shopping.items", "items")}
                 </div>
                 {list.ownerId === user?.id && (
                   <button
                     type="button"
-                    className="show-more-btn"
+                    className="show-more-btn list-share-btn"
                     title={t("shopping.shareList", "Share list")}
                     aria-label={t("shopping.shareList", "Share list")}
                     onClick={(event) => {
                       event.stopPropagation();
                       openShareModal(list);
                     }}
-                    style={{ marginTop: 6, padding: "3px 8px" }}
                   >
                     👥
                   </button>
@@ -808,22 +830,11 @@ export default function ShoppingLists({
           ))}
         </div>
 
-        {filteredLists.length > 5 && (
-          <div style={{ marginTop: 10, textAlign: "center" }}>
-            <button
-              type="button"
-              className="show-more-btn"
-              onClick={() => setShowAllLists((shown) => !shown)}
-            >
-              {showAllLists
-                ? t("common.showLess", "Show less")
-                : t(
-                    "common.showMore",
-                    `Show ${filteredLists.length - 5} more`,
-                  ).replace("{n}", filteredLists.length - 5)}
-            </button>
-          </div>
-        )}
+        <Pagination
+          page={page}
+          totalPages={totalPages}
+          onPageChange={setPage}
+        />
       </div>
       <ShareUserModal
         isOpen={Boolean(shareTarget)}

@@ -4,8 +4,20 @@
   gap: 0.6rem;
 }
 
-.product-name-field {
-  width: 100%;
+.product-form-top-row {
+  display: flex;
+  gap: 0.6rem;
+  align-items: flex-end;
+}
+
+.product-form-top-row .product-name-field {
+  flex: 2;
+  min-width: 0;
+}
+
+.product-form-top-row .product-category-field {
+  flex: 1;
+  min-width: 0;
 }
 
 .product-form-row {
@@ -19,8 +31,12 @@
   min-width: 0;
 }
 
-.product-form-row .form-field:first-child {
-  max-width: 90px;
+.product-form-row .product-qty-field {
+  max-width: 80px;
+}
+
+.product-form-row .product-unit-field {
+  max-width: 110px;
 }
 
 .product-form .form-field label {
@@ -40,7 +56,8 @@
   letter-spacing: 0;
 }
 
-.product-form input {
+.product-form input,
+.product-form select {
   width: 100%;
   box-sizing: border-box;
   padding: 0.55rem 0.75rem;
@@ -55,10 +72,48 @@
     box-shadow 0.2s;
 }
 
-.product-form input:focus {
+.product-form input:focus,
+.product-form select:focus {
   border-color: #6366f1;
   box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
   background: #fff;
+}
+
+.product-category-badge {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  background: #e0e7ff;
+  color: #4338ca;
+  padding: 0.15rem 0.45rem;
+  border-radius: 4px;
+  margin-right: 0.35rem;
+  vertical-align: middle;
+}
+
+/* inline category/unit selects in detail view */
+.product-edit select.small {
+  padding: 0.35rem 0.5rem;
+  font-size: 0.82rem;
+  border-radius: 6px;
+  border: 1.5px solid #e2e8f0;
+  background: #f8fafc;
+  color: #1e293b;
+}
+
+.product-edit select.small:focus {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.12);
+}
+
+.product-edit .input-category {
+  max-width: 110px;
+}
+
+.product-edit .input-unit {
+  max-width: 80px;
 }
 
 .add-product-btn {

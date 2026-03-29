@@ -9,7 +9,8 @@ import "./calendar.css";
 const localizer = dateFnsLocalizer({
   format,
   parse,
-  startOfWeek: (date, options) => startOfWeek(date, { ...options, weekStartsOn: 1 }),
+  startOfWeek: (date, options) =>
+    startOfWeek(date, { ...options, weekStartsOn: 1 }),
   getDay,
   locales: { en: enUS, pl },
 });
@@ -65,12 +66,17 @@ export default function AppCalendar({
         style={{ height: compact ? 340 : 560 }}
         culture={locale === "pl" ? "pl" : "en"}
         messages={messages}
-        selectable={Boolean(onSelectSlot) && !compact}
+        selectable={onSelectSlot ? "ignoreEvents" : false}
+        longPressThreshold={10}
         onSelectEvent={
-          onSelectEvent ? (selected) => onSelectEvent(selected.resource) : undefined
+          onSelectEvent
+            ? (selected) => onSelectEvent(selected.resource)
+            : undefined
         }
         onSelectSlot={
-          onSelectSlot ? ({ start, end, action }) => onSelectSlot({ start, end, action }) : undefined
+          onSelectSlot
+            ? ({ start, end, action }) => onSelectSlot({ start, end, action })
+            : undefined
         }
         popup
       />

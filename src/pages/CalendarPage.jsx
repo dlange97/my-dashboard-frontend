@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from "react";
 import NavBar from "../components/nav/NavBar";
 import InboxSidebar from "../components/notifications/InboxSidebar";
-import AppCalendar from "../components/calendar/AppCalendar";
-import EventForm from "../components/events/EventForm";
+import EventCalendar from "../components/events/EventCalendar";
 import api from "../api/api";
 import { useAuth } from "../context/AuthContext";
 import { useTranslation } from "../context/TranslationContext";
@@ -14,8 +13,6 @@ export default function CalendarPage() {
   const canManageEvents = hasPermission("events.manage");
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [showForm, setShowForm] = useState(false);
-  const [seedStartAt, setSeedStartAt] = useState(null);
 
   useEffect(() => {
     api
@@ -25,28 +22,6 @@ export default function CalendarPage() {
       .finally(() => setLoading(false));
   }, []);
 
-  const handleOpenCreate = (date = null) => {
-    if (!canManageEvents) {
-      return;
-    }
-
-    setSeedStartAt(date);
-    setShowForm(true);
-  };
-
-  const handleSave = async (payload) => {
-    try {
-      const created = await api.createEvent(payload);
-      setEvents((prev) => [...prev, created]);
-    } catch (err) {
-      alert(`${t("events.saveError", "Failed to save event")}: ${err.message}`);
-      return;
-    }
-
-    setShowForm(false);
-    setSeedStartAt(null);
-  };
-
   return (
     <div className="page-shell">
       <NavBar />
@@ -55,38 +30,26 @@ export default function CalendarPage() {
         <main className="page-content app-shell-main events-page">
           <div className="events-page-header">
             <h1>{t("calendar.pageTitle", "Calendar")}</h1>
-            <button
-              type="button"
-              className="add-event-btn"
-              disabled={!canManageEvents}
-              title={
-                canManageEvents
-                  ? t("events.add", "Add Event")
-                  : t("events.missingManagePermission", "Missing permission: events.manage")
-              }
-              onClick={() => handleOpenCreate()}
-            >
-              {t("events.addButton", "+ Add Event")}
-            </button>
+            <span style={{ color: "#64748b", fontSize: "0.9rem" }}>
+              {canManageEvents
+                ? t(
+                    "calendar.clickEmptyToCreate",
+                    "Click empty slot to create event",
+                  )
+                : t(
+                    "events.missingManagePermission",
+                    "Missing permission: events.manage",
+                  )}
+            </span>
           </div>
 
           {loading ? (
             <p>{t("common.loading", "Loading…")}</p>
           ) : (
-            <AppCalendar
+            <EventCalendar
               events={events}
-              onSelectSlot={({ start }) => handleOpenCreate(start)}
-            />
-          )}
-
-          {showForm && (
-            <EventForm
-              seedStartAt={seedStartAt}
-              onSave={handleSave}
-              onCancel={() => {
-                setShowForm(false);
-                setSeedStartAt(null);
-              }}
+              onEventsChange={setEvents}
+              canManageEvents={canManageEvents}
             />
           )}
         </main>

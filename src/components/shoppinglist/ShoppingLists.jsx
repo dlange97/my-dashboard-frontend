@@ -3,6 +3,7 @@ import ProductForm from "./ProductForm";
 import NewShoppingList from "./NewShoppingList";
 import ConfirmModal from "../ui/ConfirmModal";
 import ShareUserModal from "../ui/ShareUserModal";
+import Pagination from "../ui/Pagination";
 import api from "../../api/api";
 import { useTranslation } from "../../context/TranslationContext";
 import { useAuth } from "../../context/AuthContext";
@@ -87,6 +88,7 @@ export default function ShoppingLists({
   onSelectionChange,
   initialSelectedListId = null,
 }) {
+  const PAGE_SIZE = 5;
   const { user } = useAuth();
   const [localLists, setLocalLists] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -98,7 +100,7 @@ export default function ShoppingLists({
   const [confirmModal, setConfirmModal] = useState(null);
   const [viewClosing, setViewClosing] = useState(false);
   const [showNewForm, setShowNewForm] = useState(false);
-  const [showAllLists, setShowAllLists] = useState(false);
+  const [page, setPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState("all");
   const [shareTarget, setShareTarget] = useState(null);
   const [shareSearch, setShareSearch] = useState("");
@@ -359,6 +361,7 @@ export default function ShoppingLists({
           name: product.name,
           qty: product.qty,
           weight: product.weight || null,
+          category: product.category || null,
           bought: Boolean(product.bought),
           position: index,
         })),
@@ -414,7 +417,15 @@ export default function ShoppingLists({
     })
     .sort(compareByNearestDueDate);
 
-  const visibleLists = showAllLists ? filteredLists : filteredLists.slice(0, 5);
+  const totalPages = Math.max(1, Math.ceil(filteredLists.length / PAGE_SIZE));
+  const visibleLists = filteredLists.slice(
+    (page - 1) * PAGE_SIZE,
+    page * PAGE_SIZE,
+  );
+
+  useEffect(() => {
+    setPage((current) => Math.min(current, totalPages));
+  }, [totalPages]);
 
   if (loading) {
     return (
@@ -501,7 +512,7 @@ export default function ShoppingLists({
                 type="button"
                 onClick={() => openShareModal(selected)}
               >
-                Udostępnij
+                {t("shopping.share", "Share")}
               </button>
             )}
 
@@ -525,7 +536,7 @@ export default function ShoppingLists({
                 e.stopPropagation();
                 setConfirmModal({
                   title: t("shopping.deleteTitle", "Delete shopping list"),
-                  message: `Delete "${selected?.name}"? This cannot be undone.`,
+                  message: `${t("shopping.deleteMessage", "Delete")} "${selected?.name}"? ${t("shopping.deleteWarning", "This cannot be undone.")}`,
                   confirmLabel: t("common.delete", "Delete"),
                   cancelLabel: t("common.cancel", "Cancel"),
                   onConfirm: () => {
@@ -607,6 +618,38 @@ export default function ShoppingLists({
                       )
                     }
                   />
+                  <select
+                    className={`small input-category${isProductBought(product) ? " bought" : ""}`}
+                    value={product.category || ""}
+                    onChange={(e) =>
+                      updateProductField(
+                        selectedIndex,
+                        index,
+                        "category",
+                        e.target.value || null,
+                      )
+                    }
+                  >
+                    <option value="">{t("shopping.categoryNone", "—")}</option>
+                    {[
+                      "dairy",
+                      "meat",
+                      "fruits",
+                      "vegetables",
+                      "bakery",
+                      "beverages",
+                      "snacks",
+                      "frozen",
+                      "spices",
+                      "household",
+                      "hygiene",
+                      "other",
+                    ].map((cat) => (
+                      <option key={cat} value={cat}>
+                        {t(`shopping.category.${cat}`, cat)}
+                      </option>
+                    ))}
+                  </select>
                   <input
                     className={`small input-qty${isProductBought(product) ? " bought" : ""}`}
                     type="number"
@@ -621,10 +664,9 @@ export default function ShoppingLists({
                       )
                     }
                   />
-                  <input
-                    className={`small input-weight${isProductBought(product) ? " bought" : ""}`}
-                    placeholder={t("shopping.weightPlaceholder", "weight")}
-                    value={product.weight || ""}
+                  <select
+                    className={`small input-unit${isProductBought(product) ? " bought" : ""}`}
+                    value={product.weight || "szt"}
                     onChange={(e) =>
                       updateProductField(
                         selectedIndex,
@@ -633,7 +675,13 @@ export default function ShoppingLists({
                         e.target.value,
                       )
                     }
-                  />
+                  >
+                    {["szt", "kg", "g", "l", "ml", "opak"].map((u) => (
+                      <option key={u} value={u}>
+                        {t(`shopping.unit.${u}`, u)}
+                      </option>
+                    ))}
+                  </select>
                   <button
                     className="remove-product-icon"
                     onClick={() => removeProduct(selectedIndex, index)}
@@ -649,14 +697,14 @@ export default function ShoppingLists({
             <div className="add-product-form">
               <ProductForm
                 onAdd={(product) => addProduct(selectedIndex, product)}
-                addLabel="Add Product"
+                addLabel={t("shopping.addProduct", "Add Product")}
               />
             </div>
           </div>
         </div>
         <ShareUserModal
           isOpen={Boolean(shareTarget)}
-          title="Udostępnij listę zakupów"
+          title={t("shopping.shareTitle", "Share shopping list")}
           loading={shareUsersLoading}
           users={shareUsers}
           search={shareSearch}
@@ -701,7 +749,7 @@ export default function ShoppingLists({
             className={`list-status-filter-btn${statusFilter === "all" ? " active" : ""}`}
             onClick={() => {
               setStatusFilter("all");
-              setShowAllLists(false);
+              setPage(1);
             }}
           >
             {t("shopping.filterAll", "All")} ({localLists.length})
@@ -711,7 +759,7 @@ export default function ShoppingLists({
             className={`list-status-filter-btn${statusFilter === "active" ? " active" : ""}`}
             onClick={() => {
               setStatusFilter("active");
-              setShowAllLists(false);
+              setPage(1);
             }}
           >
             {t("shopping.filterActive", "Active")} ({activeCount})
@@ -721,7 +769,7 @@ export default function ShoppingLists({
             className={`list-status-filter-btn${statusFilter === "archived" ? " active" : ""}`}
             onClick={() => {
               setStatusFilter("archived");
-              setShowAllLists(false);
+              setPage(1);
             }}
           >
             {t("shopping.filterArchived", "Archived")} ({archivedCount})
@@ -752,21 +800,20 @@ export default function ShoppingLists({
                   </span>
                 )}
               </strong>
-              <div>
+              <div className="list-item-meta">
                 <div className="list-count">
                   {(list.products || []).length} {t("shopping.items", "items")}
                 </div>
                 {list.ownerId === user?.id && (
                   <button
                     type="button"
-                    className="show-more-btn"
-                    title="Udostępnij listę"
-                    aria-label="Udostępnij listę"
+                    className="show-more-btn list-share-btn"
+                    title={t("shopping.shareList", "Share list")}
+                    aria-label={t("shopping.shareList", "Share list")}
                     onClick={(event) => {
                       event.stopPropagation();
                       openShareModal(list);
                     }}
-                    style={{ marginTop: 6, padding: "3px 8px" }}
                   >
                     👥
                   </button>
@@ -783,22 +830,11 @@ export default function ShoppingLists({
           ))}
         </div>
 
-        {filteredLists.length > 5 && (
-          <div style={{ marginTop: 10, textAlign: "center" }}>
-            <button
-              type="button"
-              className="show-more-btn"
-              onClick={() => setShowAllLists((shown) => !shown)}
-            >
-              {showAllLists
-                ? t("common.showLess", "Show less")
-                : t(
-                    "common.showMore",
-                    `Show ${filteredLists.length - 5} more`,
-                  ).replace("{n}", filteredLists.length - 5)}
-            </button>
-          </div>
-        )}
+        <Pagination
+          page={page}
+          totalPages={totalPages}
+          onPageChange={setPage}
+        />
       </div>
       <ShareUserModal
         isOpen={Boolean(shareTarget)}

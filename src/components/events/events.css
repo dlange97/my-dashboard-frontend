@@ -70,6 +70,20 @@
   transform: translateY(-1px);
 }
 
+.event-calendar-mobile-add {
+  display: none;
+  width: 100%;
+  margin: 0 0 0.7rem;
+  border: none;
+  border-radius: 12px;
+  min-height: 44px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #fff;
+  background: linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%);
+  box-shadow: 0 6px 16px rgba(37, 99, 235, 0.26);
+}
+
 /* ── Calendar wrapper ─────────────────────────────────────── */
 .rbc-calendar-wrapper {
   background: #fff;
@@ -1336,6 +1350,13 @@
   .events-page {
     padding: 1rem;
   }
+
+  .event-calendar-mobile-add {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
   .event-form-row {
     grid-template-columns: 1fr;
   }

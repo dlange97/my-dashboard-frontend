@@ -16,6 +16,12 @@
   border-left: 4px solid var(--shopping-accent, #667eea);
 }
 
+.list-item-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
 .list-item strong {
   display: inline-flex;
   align-items: center;
@@ -289,6 +295,11 @@
   background: #eef2ff;
 }
 
+.show-more-btn.list-share-btn {
+  margin-top: 6px;
+  padding: 3px 8px;
+}
+
 .list-status-filters {
   display: flex;
   flex-wrap: wrap;
@@ -394,5 +405,69 @@
   to {
     opacity: 0;
     transform: translateX(12px) translateZ(0);
+  }
+}
+
+@media (max-width: 900px) {
+  .list-grid {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .list-item {
+    padding: 12px 11px;
+    align-items: flex-start;
+  }
+
+  .list-item-meta {
+    min-width: 108px;
+  }
+}
+
+@media (max-width: 700px) {
+  .list-item {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 8px;
+    border-left-width: 3px;
+    border-radius: 10px;
+  }
+
+  .list-item strong {
+    font-size: 0.96rem;
+    line-height: 1.25;
+    flex-wrap: wrap;
+  }
+
+  .list-item-meta {
+    align-items: flex-start;
+    width: 100%;
+  }
+
+  .list-count,
+  .list-due-date {
+    text-align: left;
+  }
+
+  .list-due-date {
+    margin-top: 0.35rem;
+    font-size: 0.76rem;
+  }
+
+  .show-more-btn.list-share-btn {
+    margin-top: 5px;
+    min-height: 30px;
+  }
+
+  .list-status-filters {
+    gap: 0.4rem;
+    margin: 0.5rem 0 0.75rem;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    padding-bottom: 2px;
+  }
+
+  .list-status-filter-btn {
+    white-space: nowrap;
   }
 }

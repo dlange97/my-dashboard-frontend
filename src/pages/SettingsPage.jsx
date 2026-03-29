@@ -71,7 +71,7 @@ export default function SettingsPage() {
         <InboxSidebar />
         <main className="page-content app-shell-main">
           <div className="settings-page">
-            <h1>⚙️ {t("settings.title", "Settings")}</h1>
+            <h1> {t("settings.title", "Settings")}</h1>
 
             <div className="settings-sections">
               {sections.map((section) => {

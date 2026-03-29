@@ -122,7 +122,7 @@ describe("ShoppingLists", () => {
     );
 
     const shareButtons = screen.queryAllByRole("button", {
-      name: /udostępnij listę/i,
+      name: /(udostępnij listę|share list)/i,
     });
     expect(shareButtons).toHaveLength(1);
   });
@@ -134,14 +134,18 @@ describe("ShoppingLists", () => {
       expect(screen.getByText("Weekly groceries")).toBeInTheDocument(),
     );
 
-    const shareBtn = screen.getByRole("button", { name: /udostępnij listę/i });
+    const shareBtn = screen.getByRole("button", {
+      name: /(udostępnij listę|share list)/i,
+    });
     await act(async () => {
       fireEvent.click(shareBtn);
     });
 
     await waitFor(() => {
       expect(screen.getByRole("dialog")).toBeInTheDocument();
-      expect(screen.getByText("Udostępnij listę zakupów")).toBeInTheDocument();
+      expect(
+        screen.getByText(/(udostępnij listę zakupów|share shopping list)/i),
+      ).toBeInTheDocument();
     });
   });
 
@@ -154,7 +158,9 @@ describe("ShoppingLists", () => {
 
     await act(async () => {
       fireEvent.click(
-        screen.getByRole("button", { name: /udostępnij listę/i }),
+        screen.getByRole("button", {
+          name: /(udostępnij listę|share list)/i,
+        }),
       );
     });
 
@@ -176,7 +182,9 @@ describe("ShoppingLists", () => {
 
     await act(async () => {
       fireEvent.click(
-        screen.getByRole("button", { name: /udostępnij listę/i }),
+        screen.getByRole("button", {
+          name: /(udostępnij listę|share list)/i,
+        }),
       );
     });
 
@@ -189,7 +197,9 @@ describe("ShoppingLists", () => {
       fireEvent.click(aliceRadio);
     });
 
-    const confirmBtn = screen.getByRole("button", { name: /^udostępnij$/i });
+    const confirmBtn = screen.getByRole("button", {
+      name: /^(udostępnij|share)$/i,
+    });
     await act(async () => {
       fireEvent.click(confirmBtn);
     });
@@ -209,21 +219,23 @@ describe("ShoppingLists", () => {
 
     await act(async () => {
       fireEvent.click(
-        screen.getByRole("button", { name: /udostępnij listę/i }),
+        screen.getByRole("button", {
+          name: /(udostępnij listę|share list)/i,
+        }),
       );
     });
 
     await waitFor(() => expect(screen.getByRole("dialog")).toBeInTheDocument());
 
     await act(async () => {
-      fireEvent.click(screen.getByRole("button", { name: /anuluj/i }));
+      fireEvent.click(screen.getByRole("button", { name: /(anuluj|cancel)/i }));
     });
 
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
     expect(apiMock.shareList).not.toHaveBeenCalled();
   });
 
-  it("shows Udostępnij button in detail view for owned lists", async () => {
+  it("shows Share button in detail view for owned lists", async () => {
     renderPage();
 
     await waitFor(() =>
@@ -236,9 +248,9 @@ describe("ShoppingLists", () => {
     });
 
     await waitFor(() => {
-      // The detail view has a "Udostępnij" text button (not icon)
+      // The detail view has a text share button (not icon)
       expect(
-        screen.getByRole("button", { name: /^udostępnij$/i }),
+        screen.getByRole("button", { name: /^(udostępnij|share)$/i }),
       ).toBeInTheDocument();
     });
   });

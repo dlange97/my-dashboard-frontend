@@ -28,7 +28,6 @@ export default function EventsSummary() {
     <div className="summary-card">
       <div className="summary-card-header">
         <div className="summary-card-title">
-          <span className="icon icon-events">📅</span>
           {t("events.pageTitle", "My Events")}
         </div>
         <Link to="/events" className="summary-go-link">

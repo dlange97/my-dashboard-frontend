@@ -5,6 +5,7 @@ import api from "../../api/api";
 import { useTranslation } from "../../context/TranslationContext";
 import { useAuth } from "../../context/AuthContext";
 import ShareUserModal from "../ui/ShareUserModal";
+import Pagination from "../ui/Pagination";
 
 const ITEM_COLORS = [
   "#2563eb",
@@ -54,8 +55,10 @@ function compareByNearestDueDate(a, b) {
 export default function TodoList({ title }) {
   const { t } = useTranslation();
   const { user } = useAuth();
+  const PAGE_SIZE = 5;
   const resolvedTitle = title ?? t("todo.title", "To-Do");
   const [localTasks, setLocalTasks] = useState([]);
+  const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showForm, setShowForm] = useState(false);
@@ -150,6 +153,15 @@ export default function TodoList({ title }) {
     () => [...localTasks].sort(compareByNearestDueDate),
     [localTasks],
   );
+  const totalPages = Math.max(1, Math.ceil(sortedTasks.length / PAGE_SIZE));
+  const pagedTasks = sortedTasks.slice(
+    (page - 1) * PAGE_SIZE,
+    page * PAGE_SIZE,
+  );
+
+  useEffect(() => {
+    setPage((current) => Math.min(current, totalPages));
+  }, [totalPages]);
 
   return (
     <div className="card todo-card">
@@ -186,19 +198,26 @@ export default function TodoList({ title }) {
         ) : localTasks.length === 0 ? (
           <p>{t("todo.empty", "No tasks")}</p>
         ) : (
-          <ul className="todo-list">
-            {sortedTasks.map((task) => (
-              <TodoItem
-                key={task.id}
-                item={task}
-                accentColor={colorForUserKey(task.createdBy ?? task.ownerId)}
-                onToggle={toggleTask}
-                onDelete={deleteTask}
-                onShare={(item) => setShareTarget(item)}
-                canShare={task.ownerId === user?.id}
-              />
-            ))}
-          </ul>
+          <>
+            <ul className="todo-list">
+              {pagedTasks.map((task) => (
+                <TodoItem
+                  key={task.id}
+                  item={task}
+                  accentColor={colorForUserKey(task.createdBy ?? task.ownerId)}
+                  onToggle={toggleTask}
+                  onDelete={deleteTask}
+                  onShare={(item) => setShareTarget(item)}
+                  canShare={task.ownerId === user?.id}
+                />
+              ))}
+            </ul>
+            <Pagination
+              page={page}
+              totalPages={totalPages}
+              onPageChange={setPage}
+            />
+          </>
         )}
       </div>
 

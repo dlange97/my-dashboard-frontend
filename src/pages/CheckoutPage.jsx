@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 
-const API_BASE = ((import.meta.env.VITE_API_BASE_URL ?? "").trim() || "http://localhost:8081");
+const API_BASE =
+  (import.meta.env.VITE_API_BASE_URL ?? "").trim() || "http://localhost:8081";
 
 export default function CheckoutPage() {
   const { hash } = useParams();
@@ -30,10 +31,15 @@ export default function CheckoutPage() {
         if (res.ok && data.valid) {
           setValid(true);
         } else {
-          setValidationError(data.reason ?? "This invite link is invalid or has already been used.");
+          setValidationError(
+            data.reason ??
+              "This invite link is invalid or has already been used.",
+          );
         }
       } catch {
-        setValidationError("Failed to validate invite link. Is the server running?");
+        setValidationError(
+          "Failed to validate invite link. Is the server running?",
+        );
       } finally {
         setValidating(false);
       }
@@ -103,8 +109,8 @@ export default function CheckoutPage() {
       <div className="checkout-page checkout-success">
         <h1>&#127881; Instance Created!</h1>
         <p>
-          Your instance <strong>{success.subdomain}</strong> is ready.
-          You are now logged in as the admin.
+          Your instance <strong>{success.subdomain}</strong> is ready. You are
+          now logged in as the admin.
         </p>
         <button
           className="btn btn-primary"
@@ -151,7 +157,9 @@ export default function CheckoutPage() {
                 type="text"
                 value={instanceSubdomain}
                 onChange={(e) =>
-                  setInstanceSubdomain(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""))
+                  setInstanceSubdomain(
+                    e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""),
+                  )
                 }
                 placeholder="acme"
                 required
@@ -196,7 +204,9 @@ export default function CheckoutPage() {
               disabled={loading}
             />
 
-            <label htmlFor="adminPassword">Password * (min. 8 characters)</label>
+            <label htmlFor="adminPassword">
+              Password * (min. 8 characters)
+            </label>
             <input
               id="adminPassword"
               type="password"

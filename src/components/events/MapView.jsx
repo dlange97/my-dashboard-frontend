@@ -539,6 +539,7 @@ export function FullMap({
             </button>
             <button
               className={`map-point-btn${addPointMode ? " active" : ""}`}
+              aria-label="Dodaj punkt"
               onClick={() => {
                 setAddPointMode((prev) => {
                   const next = !prev;
@@ -552,6 +553,7 @@ export function FullMap({
             </button>
             <button
               className={`map-event-btn${addEventMode ? " active" : ""}`}
+              aria-label="Dodaj event"
               disabled={!canManageEvents}
               title={
                 canManageEvents

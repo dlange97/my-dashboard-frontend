@@ -10,6 +10,7 @@ export default function NewShoppingList({ onCreate, onCancel }) {
   const [dueDate, setDueDate] = useState("");
   const [products, setProducts] = useState([]);
   const [closing, setClosing] = useState(false);
+  const [nameError, setNameError] = useState(false);
 
   const startClose = (cb) => {
     setClosing(true);
@@ -20,9 +21,14 @@ export default function NewShoppingList({ onCreate, onCancel }) {
 
   const submit = (e) => {
     e && e.preventDefault();
-    if (!name) return;
+    if (!name.trim()) {
+      setNameError(true);
+      return;
+    }
     startClose(
-      () => onCreate && onCreate({ name, dueDate: dueDate || null, products }),
+      () =>
+        onCreate &&
+        onCreate({ name: name.trim(), dueDate: dueDate || null, products }),
     );
   };
 
@@ -33,19 +39,41 @@ export default function NewShoppingList({ onCreate, onCancel }) {
   return (
     <div className={`modal-overlay ${closing ? "closing" : ""}`}>
       <form className={`modal ${closing ? "closing" : ""}`} onSubmit={submit}>
-        <input
-          autoFocus
-          placeholder={t("shopping.listNamePlaceholder", "List name")}
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-        />
+        <h3 className="modal-heading">{t("shopping.newList", "+ New List")}</h3>
 
-        <input
-          type="date"
-          value={dueDate}
-          onChange={(e) => setDueDate(e.target.value)}
-          aria-label={t("shopping.dueDate", "Due date")}
-        />
+        <div className="form-field">
+          <label htmlFor="new-list-name">
+            {t("shopping.listNamePlaceholder", "List name")}
+          </label>
+          <input
+            id="new-list-name"
+            autoFocus
+            className={nameError ? "input-error" : ""}
+            placeholder={t("shopping.listNamePlaceholder", "List name")}
+            value={name}
+            onChange={(e) => {
+              setName(e.target.value);
+              if (nameError && e.target.value.trim()) setNameError(false);
+            }}
+          />
+          {nameError && (
+            <span className="field-error">
+              {t("common.fieldRequired", "This field is required")}
+            </span>
+          )}
+        </div>
+
+        <div className="form-field">
+          <label htmlFor="new-list-due">
+            {t("shopping.dueDateLabel", "Due date (optional)")}
+          </label>
+          <input
+            id="new-list-due"
+            type="date"
+            value={dueDate}
+            onChange={(e) => setDueDate(e.target.value)}
+          />
+        </div>
 
         <div className="modal-products">
           <h4>{t("shopping.products", "Products")}</h4>

@@ -50,6 +50,14 @@
   background: #eef2ff;
 }
 
+/* ── Task actions (share, delete) ─────────────────────────── */
+.todo-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-shrink: 0;
+}
+
 /* ── Task label / checkbox ────────────────────────────────── */
 .todo-label {
   display: flex;

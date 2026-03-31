@@ -1,5 +1,6 @@
 import React from "react";
 import { useTranslation } from "../../context/TranslationContext";
+import IconButton from "../ui/IconButton";
 
 function parseDateLocal(dateValue) {
   if (!dateValue) return null;
@@ -66,26 +67,22 @@ export default function TodoItem({
           )}
         </span>
       </label>
-      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+      <div className="todo-actions">
         {canShare && (
-          <button
-            className="show-more-btn"
+          <IconButton
+            icon="share"
             onClick={() => onShare && onShare(item)}
-            aria-label="Share task"
-            title="Share task"
-            style={{ padding: "5px 9px" }}
-          >
-            👥
-          </button>
+            aria-label={t("todo.shareTask", "Share task")}
+            title={t("todo.shareTask", "Share task")}
+          />
         )}
-        <button
-          className="remove-product-icon"
+        <IconButton
+          icon="delete"
+          variant="danger"
           onClick={() => onDelete && onDelete(item)}
-          aria-label="Delete task"
-          title="Delete task"
-        >
-          <span className="minus">−</span>
-        </button>
+          aria-label={t("common.delete", "Delete")}
+          title={t("common.delete", "Delete")}
+        />
       </div>
     </li>
   );

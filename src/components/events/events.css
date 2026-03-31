@@ -577,6 +577,14 @@
 }
 
 /* ── Map page ─────────────────────────────────────────────── */
+/* Override global min-height on the inbox wrapper so the flex chain
+   NavBar → remaining-space works inside the fixed-height page shell. */
+.map-page-shell .app-shell-with-inbox {
+  min-height: 0;
+  flex: 1;
+  overflow: hidden;
+}
+
 .map-page {
   display: flex;
   flex-direction: column;
@@ -1382,11 +1390,6 @@
   /* Force fixed-height viewport so flex children resolve pixel heights */
   .map-page-shell {
     height: 100vh;
-    min-height: 0;
-  }
-
-  .map-page-shell .app-shell-with-inbox {
-    flex: 1;
     min-height: 0;
   }
 

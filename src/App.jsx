@@ -15,6 +15,7 @@ import "./components/notifications/notifications.css";
 
 import Login from "./components/auth/Login";
 import NotFoundPage from "./pages/NotFoundPage";
+import CheckoutPage from "./pages/CheckoutPage";
 
 const DashboardPage = lazy(() => import("./pages/DashboardPage"));
 const TodoPage = lazy(() => import("./pages/TodoPage"));
@@ -136,6 +137,7 @@ function App() {
             </ProtectedRoute>
           }
         />
+        <Route path="/checkout/:hash" element={<CheckoutPage />} />
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </Suspense>

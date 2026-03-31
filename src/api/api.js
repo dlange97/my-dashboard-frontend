@@ -14,16 +14,23 @@ function resolveApiBase() {
 
 const API_BASE = resolveApiBase();
 const TOKEN_KEY = "dashboard_token";
+const INSTANCE_KEY = "dashboard_instance_id";
 
 function getToken() {
   return localStorage.getItem(TOKEN_KEY);
 }
 
+function getInstanceId() {
+  return localStorage.getItem(INSTANCE_KEY);
+}
+
 function authHeaders() {
   const token = getToken();
+  const instanceId = getInstanceId();
   return {
     "Content-Type": "application/json",
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    ...(instanceId ? { "X-Instance-Id": instanceId } : {}),
   };
 }
 

@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 
-const API_BASE =
-  (import.meta.env.VITE_API_BASE_URL ?? "").trim() || "http://localhost:8081";
+const API_BASE = (import.meta.env.VITE_API_BASE_URL ?? "").trim() || "";
 
 export default function CheckoutPage() {
   const { hash } = useParams();

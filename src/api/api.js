@@ -2,13 +2,7 @@ function resolveApiBase() {
   const envBase = (import.meta.env.VITE_API_BASE_URL ?? "").trim();
   if (envBase) return envBase.replace(/\/$/, "");
 
-  if (typeof window !== "undefined") {
-    const { protocol, hostname, port } = window.location;
-    if (port === "5173" || port === "3000") {
-      return `${protocol}//${hostname}:8081`;
-    }
-  }
-
+  // When served through nginx (subdomain routing), all API paths are relative.
   return "";
 }
 
@@ -196,6 +190,14 @@ export const api = {
   updateMyLanguage: (language) => request("PATCH", "/auth/me", { language }),
   updateMyDashboardLayout: (dashboardLayout) =>
     request("PATCH", "/auth/me", { dashboardLayout }),
+
+  // ── Instance management ───────────────────────────────────────────────
+  resolveInstanceBySubdomain: (subdomain) =>
+    request(
+      "GET",
+      `/auth/instances/resolve?subdomain=${encodeURIComponent(subdomain)}`,
+    ),
+  getMyInstances: () => request("GET", "/auth/my-instances"),
 };
 
 export default api;

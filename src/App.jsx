@@ -16,6 +16,7 @@ import "./components/notifications/notifications.css";
 import Login from "./components/auth/Login";
 import NotFoundPage from "./pages/NotFoundPage";
 import CheckoutPage from "./pages/CheckoutPage";
+import InstancePickerPage from "./pages/InstancePickerPage";
 
 const DashboardPage = lazy(() => import("./pages/DashboardPage"));
 const TodoPage = lazy(() => import("./pages/TodoPage"));
@@ -27,13 +28,21 @@ const UsersPage = lazy(() => import("./pages/UsersPage"));
 const SettingsPage = lazy(() => import("./pages/SettingsPage"));
 
 function ProtectedRoute({ children }) {
-  const { isAuthenticated } = useAuth();
-  return isAuthenticated ? children : <Navigate to="/login" replace />;
+  const { isAuthenticated, needsInstanceSelection } = useAuth();
+  if (!isAuthenticated) return <Navigate to="/login" replace />;
+  if (needsInstanceSelection) return <Navigate to="/select-instance" replace />;
+  return children;
 }
 
 function PublicRoute({ children }) {
   const { isAuthenticated } = useAuth();
   return isAuthenticated ? <Navigate to="/" replace /> : children;
+}
+
+/** Requires authentication only — no instance selection check (used by /select-instance). */
+function AuthOnlyRoute({ children }) {
+  const { isAuthenticated } = useAuth();
+  return isAuthenticated ? children : <Navigate to="/login" replace />;
 }
 
 function PermissionRoute({ permission, children }) {
@@ -138,6 +147,14 @@ function App() {
           }
         />
         <Route path="/checkout/:hash" element={<CheckoutPage />} />
+        <Route
+          path="/select-instance"
+          element={
+            <AuthOnlyRoute>
+              <InstancePickerPage />
+            </AuthOnlyRoute>
+          }
+        />
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </Suspense>

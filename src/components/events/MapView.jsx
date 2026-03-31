@@ -512,9 +512,22 @@ export function FullMap({
     setPendingDeleteEvent(null);
   };
 
+  const [legendOpen, setLegendOpen] = useState(
+    () => window.innerWidth > 640,
+  );
+
   return (
-    <div style={{ display: "flex", flex: 1, flexDirection: "column", minHeight: 0 }}>
-      <div className={`map-filter-panel${filterOpen ? "" : " map-filter-panel--collapsed"}`}>
+    <div
+      style={{
+        display: "flex",
+        flex: 1,
+        flexDirection: "column",
+        minHeight: 0,
+      }}
+    >
+      <div
+        className={`map-filter-panel${filterOpen ? "" : " map-filter-panel--collapsed"}`}
+      >
         <div className="map-filter-header">
           <h4>🔍 Filtry Mapy</h4>
           <div className="map-filter-actions">
@@ -584,14 +597,15 @@ export function FullMap({
           <>
             {addPointMode && (
               <div className="map-point-mode-note">
-                Kliknij mapę, aby dodać punkt. Każdy punkt można potem edytować lub
-                usunąć.
+                Kliknij mapę, aby dodać punkt. Każdy punkt można potem edytować
+                lub usunąć.
               </div>
             )}
 
             {addEventMode && (
               <div className="map-event-mode-note">
-                Kliknij mapę, aby otworzyć formularz nowego eventu z tą lokalizacją.
+                Kliknij mapę, aby otworzyć formularz nowego eventu z tą
+                lokalizacją.
               </div>
             )}
 
@@ -636,14 +650,18 @@ export function FullMap({
                   type="checkbox"
                   checked={filters.upcoming}
                   onChange={() =>
-                    setFilters((prev) => ({ ...prev, upcoming: !prev.upcoming }))
+                    setFilters((prev) => ({
+                      ...prev,
+                      upcoming: !prev.upcoming,
+                    }))
                   }
                 />
                 <span>
                   📅 Zbliżające się (
                   {
-                    mappableEvents.filter((e) => getEventStatus(e) === "upcoming")
-                      .length
+                    mappableEvents.filter(
+                      (e) => getEventStatus(e) === "upcoming",
+                    ).length
                   }
                   )
                 </span>
@@ -929,8 +947,12 @@ export function FullMap({
             ))}
         </MapContainer>
 
-        <div className="map-legend">
-          <h5>Legenda</h5>
+        <div
+          className={`map-legend${legendOpen ? "" : " map-legend--collapsed"}`}
+          onClick={() => setLegendOpen((o) => !o)}
+          style={{ cursor: "pointer" }}
+        >
+          <h5>Legenda {legendOpen ? "▾" : "▸"}</h5>
           <div className="map-legend-item">
             <span className="map-legend-icon">📍</span>
             <span>Zbliżające się</span>

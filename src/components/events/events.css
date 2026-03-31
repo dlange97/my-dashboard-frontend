@@ -1379,26 +1379,48 @@
 }
 
 @media (max-width: 640px) {
+  /* Force fixed-height viewport so flex children resolve pixel heights */
+  .map-page-shell {
+    height: 100vh;
+    min-height: 0;
+  }
+
+  .map-page-shell .app-shell-with-inbox {
+    flex: 1;
+    min-height: 0;
+  }
+
   .map-page {
-    height: calc(100vh - 52px); /* match mobile navbar height */
+    height: 100%;  /* fill the inbox wrapper exactly */
   }
 
+  /* Hide the page header on mobile — "Reset mapy" is in filter bar */
   .map-page-header {
-    padding: 0.5rem 0.75rem;
-    gap: 0.5rem;
+    display: none;
   }
 
-  .map-page-header h1 {
-    font-size: 1rem;
-  }
-
+  /* Float filter panel over the map instead of eating flex space */
   .map-filter-panel {
-    padding: 0.6rem 0.75rem;
-    max-height: 240px;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 500;
+    padding: 0.5rem 0.6rem;
+    max-height: 50vh;
+    background: rgba(248, 250, 252, 0.95);
+    backdrop-filter: blur(4px);
+    border-radius: 0 0 10px 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  .map-filter-panel--collapsed {
+    padding: 0.35rem 0.6rem;
+    max-height: none;
   }
 
   .map-filter-header h4 {
-    font-size: 0.85rem;
+    font-size: 0.82rem;
   }
 
   .map-filter-actions {
@@ -1411,6 +1433,22 @@
   .map-event-btn {
     padding: 0.3rem 0.45rem;
     font-size: 0.75rem;
+  }
+
+  /* Legend: collapsed by default on mobile, toggled via JS */
+  .map-legend {
+    bottom: 8px;
+    right: 8px;
+    max-width: 140px;
+    padding: 0.4rem 0.55rem;
+  }
+
+  .map-legend.map-legend--collapsed {
+    padding: 0.35rem 0.55rem;
+  }
+
+  .map-legend.map-legend--collapsed .map-legend-item {
+    display: none;
   }
 }
 
@@ -1466,12 +1504,7 @@
     width: 100%;
   }
 
-  .map-legend {
-    right: 8px;
-    bottom: 8px;
-    max-width: 150px;
-    padding: 0.55rem 0.65rem;
-  }
+  /* legend handled in 640px breakpoint */
 }
 
 @media (max-width: 480px) {

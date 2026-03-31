@@ -601,6 +601,10 @@
 
 .map-full-container {
   flex: 1;
+  min-height: 0;    /* allow flex child height to propagate to Leaflet */
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 /* Map Filter Panel Styles */
@@ -656,6 +660,34 @@
 }
 
 .map-filter-clear-btn:hover {
+  background: #e2e8f0;
+  color: #1e293b;
+}
+
+/* Filter panel collapsed state */
+.map-filter-panel--collapsed {
+  padding: 0.5rem 1rem;
+  max-height: none;
+}
+
+.map-filter-panel--collapsed .map-filter-header {
+  margin-bottom: 0;
+}
+
+/* Filter toggle button */
+.map-filter-toggle-btn {
+  padding: 0.3rem 0.55rem;
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  border-radius: 5px;
+  color: #64748b;
+  font-size: 0.72rem;
+  font-weight: 700;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.map-filter-toggle-btn:hover {
   background: #e2e8f0;
   color: #1e293b;
 }
@@ -1346,6 +1378,42 @@
   transform: none;
 }
 
+@media (max-width: 640px) {
+  .map-page {
+    height: calc(100vh - 52px); /* match mobile navbar height */
+  }
+
+  .map-page-header {
+    padding: 0.5rem 0.75rem;
+    gap: 0.5rem;
+  }
+
+  .map-page-header h1 {
+    font-size: 1rem;
+  }
+
+  .map-filter-panel {
+    padding: 0.6rem 0.75rem;
+    max-height: 240px;
+  }
+
+  .map-filter-header h4 {
+    font-size: 0.85rem;
+  }
+
+  .map-filter-actions {
+    gap: 0.25rem;
+  }
+
+  .map-filter-clear-btn,
+  .map-route-btn,
+  .map-point-btn,
+  .map-event-btn {
+    padding: 0.3rem 0.45rem;
+    font-size: 0.75rem;
+  }
+}
+
 @media (max-width: 700px) {
   .events-page {
     padding: 1rem;
@@ -1403,5 +1471,31 @@
     bottom: 8px;
     max-width: 150px;
     padding: 0.55rem 0.65rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .events-page {
+    padding: 0.75rem;
+  }
+
+  .events-page-header h1 {
+    font-size: 1.2rem;
+  }
+
+  .events-view-tabs {
+    width: 100%;
+  }
+
+  .tab-btn {
+    flex: 1;
+    text-align: center;
+    padding: 0.4rem 0.5rem;
+    font-size: 0.8rem;
+  }
+
+  .event-item {
+    padding: 0.6rem;
+    border-radius: 10px;
   }
 }

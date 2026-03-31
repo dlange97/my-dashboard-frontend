@@ -108,6 +108,33 @@
   box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.12);
 }
 
+/* ── Mobile Adjustments ───────────────────────────────────── */
+@media (max-width: 600px) {
+  .product-form-top-row {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .product-form-row {
+    flex-wrap: wrap;
+  }
+
+  .product-form-row .product-qty-field {
+    max-width: none;
+    flex: 1;
+  }
+
+  .product-form-row .product-unit-field {
+    max-width: none;
+    flex: 1;
+  }
+
+  .product-form input,
+  .product-form select {
+    font-size: 16px; /* prevents iOS zoom on focus */
+  }
+}
+
 .product-edit .input-category {
   max-width: 110px;
 }

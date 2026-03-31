@@ -1,64 +1,16 @@
-import React, { useEffect, useMemo, useState } from "react";
-import api from "../../api/api";
-import { useAuth } from "../../context/AuthContext";
+import React, { useState } from "react";
+import { useInbox } from "../../context/InboxContext";
 import { ConfirmModal } from "../ui";
 
 export default function InboxSidebar() {
-  const { isAuthenticated } = useAuth();
-  const [items, setItems] = useState([]);
-  const [unreadCount, setUnreadCount] = useState(0);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const { topItems, unreadCount, loading, error, markRead, clearAll } =
+    useInbox();
   const [collapsed, setCollapsed] = useState(true);
   const [showClearConfirm, setShowClearConfirm] = useState(false);
 
-  const topItems = useMemo(() => items.slice(0, 12), [items]);
-
-  async function loadInbox() {
-    if (!isAuthenticated) return;
-
-    try {
-      const data = await api.getInboxNotifications();
-      setItems(Array.isArray(data?.items) ? data.items : []);
-      setUnreadCount(data?.unreadCount ?? 0);
-      setError("");
-    } catch (err) {
-      setError(err.message || "Failed to load inbox.");
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  useEffect(() => {
-    loadInbox();
-    const timer = setInterval(loadInbox, 25000);
-    return () => clearInterval(timer);
-  }, [isAuthenticated]);
-
-  async function markRead(item) {
-    if (item?.isRead) return;
-
-    try {
-      const updated = await api.markInboxRead(item.id);
-      setItems((prev) =>
-        prev.map((it) => (it.id === updated.id ? { ...it, ...updated } : it)),
-      );
-      setUnreadCount((prev) => Math.max(0, prev - 1));
-    } catch {
-      // silent fail in sidebar interaction
-    }
-  }
-
   async function handleClearInbox() {
-    try {
-      await api.clearInboxNotifications();
-      setItems([]);
-      setUnreadCount(0);
-      setShowClearConfirm(false);
-    } catch (err) {
-      setError(err.message || "Nie udało się wyczyścić inbox.");
-      setShowClearConfirm(false);
-    }
+    await clearAll();
+    setShowClearConfirm(false);
   }
 
   return (

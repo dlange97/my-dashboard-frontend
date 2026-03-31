@@ -14,8 +14,8 @@ export default function ShoppingPage() {
       <div className="app-shell-with-inbox">
         <InboxSidebar />
         <main
-          className="page-content app-shell-main"
-          style={{ padding: "2rem", maxWidth: "960px", margin: "0 auto" }}
+          className="page-content app-shell-main page-main-padded"
+          style={{ maxWidth: "960px", margin: "0 auto" }}
         >
           <ShoppingLists
             onSelectionChange={() => {}}

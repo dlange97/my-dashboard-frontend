@@ -157,7 +157,9 @@
   border-radius: 0;
   box-shadow: none;
   opacity: 0.72;
-  transition: opacity 0.18s ease, transform 0.18s ease;
+  transition:
+    opacity 0.18s ease,
+    transform 0.18s ease;
   z-index: 10;
   user-select: none;
   -webkit-user-select: none;
@@ -195,7 +197,6 @@
   transform: translateY(-0.5px) scale(1.02);
 }
 
-
 @media (max-width: 900px) {
   .summary-grid {
     gap: 1rem;
@@ -212,12 +213,89 @@
 }
 
 @media (max-width: 700px) {
+  .dashboard-page {
+    padding: 1rem;
+  }
+
   .summary-grid {
     grid-template-columns: 1fr;
+    gap: 0.75rem;
   }
 
   .summary-tile[class*="tile-span-"] {
     grid-column: span 1;
+  }
+
+  .summary-tile {
+    min-height: auto;
+  }
+
+  .summary-tile.summary-tile-wide {
+    min-height: auto;
+  }
+
+  .dashboard-header h1 {
+    font-size: 1.35rem;
+  }
+
+  .dashboard-header .greeting {
+    font-size: 0.82rem;
+  }
+
+  .dashboard-reset-layout-btn {
+    font-size: 0.78rem;
+    padding: 0.4rem 0.7rem;
+    width: 100%;
+    text-align: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .dashboard-page {
+    padding: 0.75rem;
+  }
+
+  .summary-grid {
+    gap: 0.6rem;
+  }
+
+  .summary-card {
+    padding: 1rem;
+    gap: 0.65rem;
+    border-radius: 12px;
+  }
+
+  .summary-card-header {
+    flex-wrap: wrap;
+    gap: 0.35rem;
+  }
+
+  .summary-card-title {
+    font-size: 0.9rem;
+    gap: 0.45rem;
+  }
+
+  .summary-card-title .icon {
+    width: 28px;
+    height: 28px;
+    font-size: 0.85rem;
+    border-radius: 7px;
+  }
+
+  .summary-go-link {
+    font-size: 0.75rem;
+  }
+
+  .dashboard-header h1 {
+    font-size: 1.2rem;
+  }
+
+  .dashboard-header .greeting {
+    font-size: 0.78rem;
+  }
+
+  .summary-tile {
+    border-radius: 12px;
   }
 }
 
@@ -275,6 +353,37 @@
   min-height: 470px;
 }
 
+@media (max-width: 480px) {
+  .summary-card-calendar {
+    min-height: 340px;
+  }
+
+  .todo-summary-text {
+    font-size: 0.82rem;
+  }
+
+  .todo-summary-item {
+    padding: 0.35rem 0.45rem;
+  }
+
+  .shop-summary-item {
+    padding: 0.35rem 0.45rem;
+  }
+
+  .shop-item-name {
+    font-size: 0.82rem;
+  }
+
+  .summary-stat {
+    font-size: 0.72rem;
+  }
+
+  .empty-state {
+    padding: 1rem;
+    font-size: 0.8rem;
+  }
+}
+
 .calendar-summary-note {
   font-size: 0.82rem;
   color: #475569;
@@ -317,6 +426,8 @@
   padding: 0.45rem 0.6rem;
   border-radius: 8px;
   background: #f8fafc;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .todo-summary-link {
@@ -324,6 +435,7 @@
   align-items: center;
   gap: 0.6rem;
   width: 100%;
+  min-width: 0;
   text-decoration: none;
 }
 
@@ -352,9 +464,10 @@
 .todo-summary-text {
   font-size: 0.88rem;
   color: #334155;
-  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
 }
 
 .todo-summary-text.done {
@@ -380,9 +493,11 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 0.5rem;
   padding: 0.45rem 0.6rem;
   border-radius: 8px;
   background: #f8fafc;
+  min-width: 0;
 }
 
 .shop-summary-link {
@@ -397,6 +512,11 @@
   font-size: 0.88rem;
   font-weight: 500;
   color: #334155;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+  flex: 1;
 }
 
 .shop-item-count {
@@ -406,6 +526,8 @@
   padding: 0.15rem 0.5rem;
   border-radius: 99px;
   font-weight: 600;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .empty-state {
@@ -425,4 +547,20 @@
 
 .page-content {
   flex: 1;
+}
+
+.page-main-padded {
+  padding: 2rem;
+}
+
+@media (max-width: 600px) {
+  .page-main-padded {
+    padding: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .page-main-padded {
+    padding: 0.75rem;
+  }
 }

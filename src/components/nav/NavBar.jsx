@@ -2,6 +2,7 @@ import React, { useRef, useState } from "react";
 import { NavLink } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { useTranslation } from "../../context/TranslationContext";
+import { useInbox } from "../../context/InboxContext";
 import api from "../../api/api";
 import "./nav.css";
 
@@ -69,6 +70,16 @@ const SUPPORTED_LOCALES = ["en", "pl"];
 export default function NavBar() {
   const { user, logout, hasPermission } = useAuth();
   const { t, locale, changeLocale } = useTranslation();
+  const {
+    unreadCount,
+    topItems,
+    loading,
+    error,
+    markRead,
+    clearAll,
+    mobileOpen,
+    setMobileOpen,
+  } = useInbox();
   const [menuOpen, setMenuOpen] = useState(false);
   const [langOpen, setLangOpen] = useState(false);
   const langRef = useRef(null);
@@ -89,10 +100,10 @@ export default function NavBar() {
 
   return (
     <header className="top-nav">
-      <div className="nav-brand">
+      <NavLink to="/" end className="nav-brand">
         <span className="nav-brand-icon">📊</span>
         <span className="nav-brand-name">{t("nav.brand", "My Dashboard")}</span>
-      </div>
+      </NavLink>
 
       {/* Desktop links */}
       <nav className="nav-links" aria-label="Main navigation">
@@ -147,11 +158,29 @@ export default function NavBar() {
           {t("nav.signOut", "Sign out")}
         </button>
 
+        {/* Mobile inbox button */}
+        <button
+          className="nav-inbox-btn"
+          aria-label="Inbox"
+          onClick={() => {
+            setMobileOpen((o) => !o);
+            setMenuOpen(false);
+          }}
+        >
+          📬
+          {unreadCount > 0 && (
+            <span className="nav-inbox-badge">{unreadCount}</span>
+          )}
+        </button>
+
         {/* Mobile hamburger */}
         <button
           className="nav-hamburger"
           aria-label="Toggle menu"
-          onClick={() => setMenuOpen((o) => !o)}
+          onClick={() => {
+            setMenuOpen((o) => !o);
+            setMobileOpen(false);
+          }}
         >
           {menuOpen ? "✕" : "☰"}
         </button>
@@ -185,6 +214,54 @@ export default function NavBar() {
             🚪 {t("nav.signOut", "Sign out")}
           </button>
         </nav>
+      )}
+
+      {/* Mobile inbox panel */}
+      {mobileOpen && (
+        <div className="nav-mobile-inbox" onClick={(e) => e.stopPropagation()}>
+          <div className="nav-mobile-inbox-header">
+            <span>📬 Inbox</span>
+            {unreadCount > 0 && (
+              <span className="inbox-badge">{unreadCount}</span>
+            )}
+            <button
+              className="nav-mobile-inbox-close"
+              onClick={() => setMobileOpen(false)}
+            >
+              ✕
+            </button>
+          </div>
+          {loading ? (
+            <div className="nav-mobile-inbox-empty">Ładowanie…</div>
+          ) : error ? (
+            <div className="nav-mobile-inbox-empty">{error}</div>
+          ) : topItems.length === 0 ? (
+            <div className="nav-mobile-inbox-empty">Brak wiadomości.</div>
+          ) : (
+            <>
+              <div className="nav-mobile-inbox-list">
+                {topItems.map((item) => (
+                  <button
+                    key={item.id}
+                    className={`inbox-item${item.isRead ? "" : " unread"}`}
+                    onClick={() => markRead(item)}
+                  >
+                    <div className="inbox-item-title">{item.title}</div>
+                    <div className="inbox-item-body">{item.body}</div>
+                    <div className="inbox-item-time">
+                      {item.createdAt
+                        ? new Date(item.createdAt).toLocaleString("pl-PL")
+                        : ""}
+                    </div>
+                  </button>
+                ))}
+              </div>
+              <button className="nav-mobile-inbox-clear" onClick={clearAll}>
+                Wyczyść wiadomości
+              </button>
+            </>
+          )}
+        </div>
       )}
     </header>
   );

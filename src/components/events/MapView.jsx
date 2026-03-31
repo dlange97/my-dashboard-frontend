@@ -189,6 +189,17 @@ function MapClickCapture({ enabled, onMapClick }) {
   return null;
 }
 
+/** Calls invalidateSize after mount so Leaflet recalculates when flex layout is ready. */
+function MapResizer() {
+  const map = useMap();
+  useEffect(() => {
+    // Small delay ensures the flex container has finished painting
+    const id = setTimeout(() => map.invalidateSize(), 100);
+    return () => clearTimeout(id);
+  }, [map]);
+  return null;
+}
+
 export function MapModal({ location, title, onClose }) {
   const hasLocation = hasValidCoords(location);
   const lat = toNumber(location?.lat);
@@ -275,6 +286,8 @@ export function FullMap({
   const [pointSaving, setPointSaving] = useState(false);
   const [pendingDeletePointId, setPendingDeletePointId] = useState(null);
   const [pendingDeleteEvent, setPendingDeleteEvent] = useState(null);
+  // Start collapsed on mobile so the map has room to render
+  const [filterOpen, setFilterOpen] = useState(() => window.innerWidth > 640);
 
   useEffect(() => {
     let mounted = true;
@@ -500,8 +513,8 @@ export function FullMap({
   };
 
   return (
-    <div style={{ display: "flex", height: "100%", flexDirection: "column" }}>
-      <div className="map-filter-panel">
+    <div style={{ display: "flex", flex: 1, flexDirection: "column", minHeight: 0 }}>
+      <div className={`map-filter-panel${filterOpen ? "" : " map-filter-panel--collapsed"}`}>
         <div className="map-filter-header">
           <h4>🔍 Filtry Mapy</h4>
           <div className="map-filter-actions">
@@ -526,6 +539,7 @@ export function FullMap({
             </button>
             <button
               className={`map-point-btn${addPointMode ? " active" : ""}`}
+              aria-label="Dodaj punkt"
               onClick={() => {
                 setAddPointMode((prev) => {
                   const next = !prev;
@@ -535,10 +549,11 @@ export function FullMap({
               }}
               title="Tryb dodawania punktów"
             >
-              📌 {addPointMode ? "Kliknij mapę" : "Dodaj punkt"}
+              📌
             </button>
             <button
               className={`map-event-btn${addEventMode ? " active" : ""}`}
+              aria-label="Dodaj event"
               disabled={!canManageEvents}
               title={
                 canManageEvents
@@ -553,139 +568,151 @@ export function FullMap({
                 });
               }}
             >
-              ➕ {addEventMode ? "Kliknij mapę" : "Event"}
+              ➕
+            </button>
+            <button
+              className="map-filter-toggle-btn"
+              onClick={() => setFilterOpen((o) => !o)}
+              title={filterOpen ? "Zwiń filtry" : "Rozwiń filtry"}
+            >
+              {filterOpen ? "▲" : "▼"}
             </button>
           </div>
         </div>
 
-        {addPointMode && (
-          <div className="map-point-mode-note">
-            Kliknij mapę, aby dodać punkt. Każdy punkt można potem edytować lub
-            usunąć.
-          </div>
-        )}
-
-        {addEventMode && (
-          <div className="map-event-mode-note">
-            Kliknij mapę, aby otworzyć formularz nowego eventu z tą lokalizacją.
-          </div>
-        )}
-
-        <div className="map-filter-row">
-          <input
-            type="text"
-            placeholder="Szukaj po nazwie lub lokalizacji..."
-            value={searchText}
-            onChange={(e) => setSearchText(e.target.value)}
-            className="map-filter-search"
-          />
-        </div>
-
-        <div className="map-filter-row map-filter-row-dates">
-          <label>
-            Od:
-            <input
-              type="date"
-              value={dateRange.start}
-              onChange={(e) =>
-                setDateRange((prev) => ({ ...prev, start: e.target.value }))
-              }
-              className="map-filter-date"
-            />
-          </label>
-          <label>
-            Do:
-            <input
-              type="date"
-              value={dateRange.end}
-              onChange={(e) =>
-                setDateRange((prev) => ({ ...prev, end: e.target.value }))
-              }
-              className="map-filter-date"
-            />
-          </label>
-        </div>
-
-        <div className="map-filter-row">
-          <label className="map-filter-checkbox">
-            <input
-              type="checkbox"
-              checked={filters.upcoming}
-              onChange={() =>
-                setFilters((prev) => ({ ...prev, upcoming: !prev.upcoming }))
-              }
-            />
-            <span>
-              📅 Zbliżające się (
-              {
-                mappableEvents.filter((e) => getEventStatus(e) === "upcoming")
-                  .length
-              }
-              )
-            </span>
-          </label>
-          <label className="map-filter-checkbox">
-            <input
-              type="checkbox"
-              checked={filters.today}
-              onChange={() =>
-                setFilters((prev) => ({ ...prev, today: !prev.today }))
-              }
-            />
-            <span>
-              🔴 Trwające (
-              {
-                mappableEvents.filter((e) => getEventStatus(e) === "today")
-                  .length
-              }
-              )
-            </span>
-          </label>
-          <label className="map-filter-checkbox">
-            <input
-              type="checkbox"
-              checked={filters.past}
-              onChange={() =>
-                setFilters((prev) => ({ ...prev, past: !prev.past }))
-              }
-            />
-            <span>
-              ⚫ Minione (
-              {
-                mappableEvents.filter((e) => getEventStatus(e) === "past")
-                  .length
-              }
-              )
-            </span>
-          </label>
-        </div>
-
-        <div className="map-filter-info">
-          <div className="map-filter-info-row">
-            <span>
-              Wyniki: <strong>{filteredEvents.length}</strong> z{" "}
-              <strong>{mappableEvents.length}</strong> eventów
-            </span>
-            {!loadingRoutes && routes.length > 0 && (
-              <span>
-                Trasy: <strong>{routes.length}</strong>
-              </span>
+        {filterOpen && (
+          <>
+            {addPointMode && (
+              <div className="map-point-mode-note">
+                Kliknij mapę, aby dodać punkt. Każdy punkt można potem edytować lub
+                usunąć.
+              </div>
             )}
-            {!loadingPoints && customPoints.length > 0 && (
-              <span>
-                Punkty: <strong>{customPoints.length}</strong>
-              </span>
+
+            {addEventMode && (
+              <div className="map-event-mode-note">
+                Kliknij mapę, aby otworzyć formularz nowego eventu z tą lokalizacją.
+              </div>
             )}
-          </div>
-        </div>
+
+            <div className="map-filter-row">
+              <input
+                type="text"
+                placeholder="Szukaj po nazwie lub lokalizacji..."
+                value={searchText}
+                onChange={(e) => setSearchText(e.target.value)}
+                className="map-filter-search"
+              />
+            </div>
+
+            <div className="map-filter-row map-filter-row-dates">
+              <label>
+                Od:
+                <input
+                  type="date"
+                  value={dateRange.start}
+                  onChange={(e) =>
+                    setDateRange((prev) => ({ ...prev, start: e.target.value }))
+                  }
+                  className="map-filter-date"
+                />
+              </label>
+              <label>
+                Do:
+                <input
+                  type="date"
+                  value={dateRange.end}
+                  onChange={(e) =>
+                    setDateRange((prev) => ({ ...prev, end: e.target.value }))
+                  }
+                  className="map-filter-date"
+                />
+              </label>
+            </div>
+
+            <div className="map-filter-row">
+              <label className="map-filter-checkbox">
+                <input
+                  type="checkbox"
+                  checked={filters.upcoming}
+                  onChange={() =>
+                    setFilters((prev) => ({ ...prev, upcoming: !prev.upcoming }))
+                  }
+                />
+                <span>
+                  📅 Zbliżające się (
+                  {
+                    mappableEvents.filter((e) => getEventStatus(e) === "upcoming")
+                      .length
+                  }
+                  )
+                </span>
+              </label>
+              <label className="map-filter-checkbox">
+                <input
+                  type="checkbox"
+                  checked={filters.today}
+                  onChange={() =>
+                    setFilters((prev) => ({ ...prev, today: !prev.today }))
+                  }
+                />
+                <span>
+                  🔴 Trwające (
+                  {
+                    mappableEvents.filter((e) => getEventStatus(e) === "today")
+                      .length
+                  }
+                  )
+                </span>
+              </label>
+              <label className="map-filter-checkbox">
+                <input
+                  type="checkbox"
+                  checked={filters.past}
+                  onChange={() =>
+                    setFilters((prev) => ({ ...prev, past: !prev.past }))
+                  }
+                />
+                <span>
+                  ⚫ Minione (
+                  {
+                    mappableEvents.filter((e) => getEventStatus(e) === "past")
+                      .length
+                  }
+                  )
+                </span>
+              </label>
+            </div>
+
+            <div className="map-filter-info">
+              <div className="map-filter-info-row">
+                <span>
+                  Wyniki: <strong>{filteredEvents.length}</strong> z{" "}
+                  <strong>{mappableEvents.length}</strong> eventów
+                </span>
+                {!loadingRoutes && routes.length > 0 && (
+                  <span>
+                    Trasy: <strong>{routes.length}</strong>
+                  </span>
+                )}
+                {!loadingPoints && customPoints.length > 0 && (
+                  <span>
+                    Punkty: <strong>{customPoints.length}</strong>
+                  </span>
+                )}
+              </div>
+            </div>
+          </>
+        )}
       </div>
 
-      <div style={{ flex: 1, position: "relative" }}>
+      <div style={{ flex: 1, position: "relative", minHeight: 0 }}>
         <MapContainer
           center={POLAND_CENTER}
           zoom={POLAND_ZOOM}
-          style={{ height: "100%", width: "100%" }}
+          style={{ height: "100%", width: "100%", minHeight: "200px" }}
         >
+          <MapResizer />
           <MapClickCapture
             enabled={addPointMode || addEventMode}
             onMapClick={handleMapClick}

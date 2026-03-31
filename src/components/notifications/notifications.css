@@ -229,7 +229,12 @@
 }
 
 @media (max-width: 820px) {
-  .inbox-sidebar {
+  .inbox-sidebar,
+  .inbox-sidebar.collapsed {
     display: none;
+  }
+
+  .app-shell-with-inbox {
+    flex-direction: column;
   }
 }

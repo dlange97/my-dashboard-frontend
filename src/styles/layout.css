@@ -33,3 +33,21 @@
   width: 700px;
   max-width: 94%;
 }
+
+/* ── Mobile Adjustments ───────────────────────────────────── */
+@media (max-width: 700px) {
+  .split {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .split {
+    gap: 12px;
+  }
+
+  .card-header {
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+}

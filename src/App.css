@@ -453,3 +453,93 @@ button.add-list-btn:active {
 button.add-list-btn:focus {
   outline: none;
 }
+
+/* ── Mobile Adjustments ────────────────────────────────────── */
+@media (max-width: 700px) {
+  .split {
+    grid-template-columns: 1fr;
+  }
+
+  .list-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .card {
+    padding: 14px;
+    min-height: auto;
+    border-radius: 10px;
+  }
+
+  .card h2 {
+    font-size: 1.1rem;
+    margin-bottom: 10px;
+  }
+
+  .card p {
+    font-size: 1rem;
+    margin-bottom: 12px;
+  }
+
+  .list-grid {
+    gap: 6px;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 10px;
+  }
+
+  .container h1 {
+    font-size: 1.25rem;
+  }
+
+  .container p {
+    font-size: 0.88rem;
+    margin-bottom: 10px;
+  }
+
+  .card {
+    padding: 12px;
+    border-radius: 10px;
+  }
+
+  .card h2 {
+    font-size: 1rem;
+    margin-bottom: 8px;
+  }
+
+  .card p {
+    font-size: 0.88rem;
+    margin-bottom: 10px;
+  }
+
+  .split {
+    gap: 10px;
+  }
+
+  .card-header {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .product-edit {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .product-edit .input-name {
+    flex: 1 1 100%;
+  }
+
+  .add-list-form {
+    flex-wrap: wrap;
+  }
+
+  .add-list-form input {
+    flex: 1;
+    min-width: 0;
+  }
+}

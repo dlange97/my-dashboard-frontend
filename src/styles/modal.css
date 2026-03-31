@@ -146,3 +146,21 @@
   border-color: #dc2626;
   box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.12);
 }
+
+/* ── Mobile Adjustments ───────────────────────────────────── */
+@media (max-width: 600px) {
+  .modal {
+    padding: 1.25rem;
+    border-radius: 12px;
+    max-width: calc(100vw - 1.25rem);
+  }
+
+  .modal-actions {
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .modal-actions button {
+    width: 100%;
+  }
+}

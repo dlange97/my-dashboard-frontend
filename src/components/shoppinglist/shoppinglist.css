@@ -14,18 +14,26 @@
   justify-content: space-between;
   align-items: center;
   border-left: 4px solid var(--shopping-accent, #667eea);
+  gap: 8px;
+  min-width: 0;
 }
 
 .list-item-meta {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
+  flex-shrink: 0;
 }
 
 .list-item strong {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  word-break: break-word;
+  line-height: 1.3;
 }
 
 .list-status-badge {
@@ -256,6 +264,9 @@
   margin: 0;
   color: #667eea;
   flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .add-list-plus {
@@ -433,43 +444,55 @@
   }
 
   .list-item {
-    padding: 12px 11px;
-    align-items: flex-start;
+    padding: 10px;
   }
 
   .list-item-meta {
-    min-width: 108px;
+    min-width: 90px;
   }
 }
 
 @media (max-width: 700px) {
   .list-item {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 8px;
+    padding: 10px 8px;
     border-left-width: 3px;
     border-radius: 10px;
+    gap: 6px;
   }
 
   .list-item strong {
-    font-size: 0.96rem;
+    font-size: 0.88rem;
     line-height: 1.25;
     flex-wrap: wrap;
   }
 
   .list-item-meta {
-    align-items: flex-start;
-    width: 100%;
+    min-width: 80px;
+    gap: 2px;
   }
 
-  .list-count,
-  .list-due-date {
-    text-align: left;
+  .list-count {
+    font-size: 0.8rem;
   }
 
   .list-due-date {
-    margin-top: 0.35rem;
+    font-size: 0.72rem;
+  }
+
+  .list-status-filters {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 2px;
+    gap: 0.35rem;
+    margin: 0.4rem 0 0.6rem;
+  }
+
+  .list-status-filter-btn {
+    white-space: nowrap;
+    flex-shrink: 0;
     font-size: 0.76rem;
+    padding: 0.28rem 0.6rem;
   }
 
   .show-more-btn.list-share-btn {
@@ -477,21 +500,20 @@
     min-height: 30px;
   }
 
-  .list-status-filters {
-    gap: 0.4rem;
-    margin: 0.5rem 0 0.75rem;
-    overflow-x: auto;
-    flex-wrap: nowrap;
-    padding-bottom: 2px;
+  .list-item .icon-btn {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
   }
 
-  .list-status-filter-btn {
-    white-space: nowrap;
+  .list-item .icon-btn svg {
+    width: 14px;
+    height: 14px;
   }
 
   /* Detail view mobile */
   .list-view-title {
-    font-size: 1.35rem;
+    font-size: 1.15rem;
   }
 
   .list-detail-toolbar {

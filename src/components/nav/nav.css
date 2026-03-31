@@ -19,6 +19,7 @@
   gap: 0.5rem;
   text-decoration: none;
   flex-shrink: 0;
+  cursor: pointer;
 }
 
 .nav-brand-icon {
@@ -212,6 +213,38 @@
   background: rgba(99, 102, 241, 0.35);
 }
 
+/* ── Mobile Inbox Button (hidden on desktop) ──────────────── */
+.nav-inbox-btn {
+  display: none;
+  position: relative;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: #fff;
+  border-radius: 7px;
+  padding: 0.35rem 0.55rem;
+  font-size: 1.1rem;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.nav-inbox-badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: #ef4444;
+  color: #fff;
+  font-size: 0.65rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
 /* ── Hamburger (mobile) ────────────────────────────────────── */
 .nav-hamburger {
   display: none;
@@ -280,6 +313,19 @@
 
 /* ── Responsive ────────────────────────────────────────────── */
 @media (max-width: 640px) {
+  .top-nav {
+    padding: 0 0.75rem;
+    height: 52px;
+  }
+
+  .nav-brand-name {
+    font-size: 0.88rem;
+  }
+
+  .nav-brand-icon {
+    font-size: 1.1rem;
+  }
+
   .nav-links {
     display: none;
   }
@@ -300,6 +346,12 @@
     display: none;
   }
 
+  .nav-inbox-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
   .nav-hamburger {
     display: flex;
     align-items: center;
@@ -308,5 +360,95 @@
 
   .nav-mobile-menu {
     display: flex;
+    top: 52px;
   }
+}
+
+/* ── Mobile Inbox Panel ────────────────────────────────────── */
+.nav-mobile-inbox {
+  position: absolute;
+  top: 52px;
+  left: 0;
+  right: 0;
+  background: #ffffff;
+  padding: 0.75rem 1rem;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
+  z-index: 99;
+  max-height: calc(100vh - 52px);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.nav-mobile-inbox-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.6rem;
+  font-weight: 700;
+  font-size: 1rem;
+  color: #0f172a;
+}
+
+.nav-mobile-inbox-close {
+  margin-left: auto;
+  background: none;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  color: #64748b;
+  cursor: pointer;
+  padding: 0.2rem 0.5rem;
+  line-height: 1;
+}
+
+.nav-mobile-inbox-close:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+
+.nav-mobile-inbox-empty {
+  font-size: 0.86rem;
+  color: #64748b;
+  padding: 1rem 0;
+  text-align: center;
+}
+
+.nav-mobile-inbox-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.nav-mobile-inbox-list .inbox-item {
+  width: 100%;
+  text-align: left;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 0.55rem;
+  cursor: pointer;
+  color: #0f172a;
+  font-size: 0.82rem;
+}
+
+.nav-mobile-inbox-list .inbox-item.unread {
+  border-color: #818cf8;
+  background: #eef2ff;
+}
+
+.nav-mobile-inbox-clear {
+  margin-top: 0.5rem;
+  width: 100%;
+  border: 1px solid #fecaca;
+  color: #b91c1c;
+  background: #fff;
+  border-radius: 8px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 0.4rem 0.55rem;
+  cursor: pointer;
+}
+
+.nav-mobile-inbox-clear:hover {
+  background: #fef2f2;
 }

@@ -4,6 +4,7 @@ import NewShoppingList from "./NewShoppingList";
 import ConfirmModal from "../ui/ConfirmModal";
 import ShareUserModal from "../ui/ShareUserModal";
 import Pagination from "../ui/Pagination";
+import IconButton from "../ui/IconButton";
 import api from "../../api/api";
 import { useTranslation } from "../../context/TranslationContext";
 import { useAuth } from "../../context/AuthContext";
@@ -18,6 +19,53 @@ const ITEM_COLORS = [
   "#0f766e",
   "#d97706",
 ];
+
+const CATEGORIES = [
+  "dairy",
+  "meat",
+  "fruits",
+  "vegetables",
+  "bakery",
+  "beverages",
+  "snacks",
+  "frozen",
+  "spices",
+  "household",
+  "hygiene",
+  "other",
+];
+
+const CATEGORY_ORDER = Object.fromEntries(CATEGORIES.map((cat, i) => [cat, i]));
+
+function sortProductsByCategory(products) {
+  return [...products].sort((a, b) => {
+    const catA = CATEGORY_ORDER[a.category] ?? 999;
+    const catB = CATEGORY_ORDER[b.category] ?? 999;
+    if (catA !== catB) return catA - catB;
+    return String(a.name ?? "").localeCompare(String(b.name ?? ""), "pl");
+  });
+}
+
+function groupProductsByCategory(products, t) {
+  const sorted = sortProductsByCategory(products);
+  const groups = [];
+  let currentCat = null;
+  for (const product of sorted) {
+    const cat = product.category || "";
+    if (cat !== currentCat) {
+      currentCat = cat;
+      groups.push({
+        category: cat,
+        label: cat
+          ? t(`shopping.category.${cat}`, cat)
+          : t("shopping.categoryNone", "Other"),
+        products: [],
+      });
+    }
+    groups[groups.length - 1].products.push(product);
+  }
+  return groups;
+}
 
 function colorForUserKey(value) {
   const key = String(value ?? "unknown");
@@ -106,6 +154,8 @@ export default function ShoppingLists({
   const [shareSearch, setShareSearch] = useState("");
   const [shareUsers, setShareUsers] = useState([]);
   const [shareUsersLoading, setShareUsersLoading] = useState(false);
+  const [listNameError, setListNameError] = useState(false);
+  const [editMode, setEditMode] = useState(false);
   const ANIM_MS = 360;
   const { t } = useTranslation();
 
@@ -318,6 +368,8 @@ export default function ShoppingLists({
     setSelectedIndex(null);
     setEditingList(null);
     setIsDirty(false);
+    setEditMode(false);
+    setListNameError(false);
   };
 
   const handleSelect = (index) => {
@@ -329,6 +381,8 @@ export default function ShoppingLists({
       ),
     );
     setIsDirty(false);
+    setEditMode(false);
+    setListNameError(false);
   };
 
   const addListFromPrompt = (item) => {
@@ -350,7 +404,11 @@ export default function ShoppingLists({
 
   const saveEditing = () => {
     if (!editingList || selectedIndex === null) return;
-
+    if (!editingList.name.trim()) {
+      setListNameError(true);
+      return;
+    }
+    setListNameError(false);
     setSaving(true);
     api
       .updateList(editingList.id, {
@@ -447,135 +505,325 @@ export default function ShoppingLists({
 
   if (selectedIndex !== null) {
     const selected = editingList || localLists[selectedIndex];
+    const productGroups = groupProductsByCategory(selected.products || [], t);
+    const boughtCount = (selected.products || []).filter(
+      (p) => p.bought,
+    ).length;
+    const totalCount = (selected.products || []).length;
 
+    const handleBack = () => {
+      if (isDirty) {
+        setConfirmModal({
+          title: t("shopping.leaveTitle", "Leave without saving?"),
+          message: t(
+            "shopping.leaveMessage",
+            "You have unsaved changes. Leave without saving?",
+          ),
+          confirmLabel: t("shopping.leaveConfirm", "Leave"),
+          cancelLabel: t("common.cancel", "Cancel"),
+          onConfirm: () => {
+            setConfirmModal(null);
+            closeEditor();
+          },
+          onCancel: () => setConfirmModal(null),
+        });
+        return;
+      }
+      setViewClosing(true);
+      setTimeout(() => {
+        setViewClosing(false);
+        closeEditor();
+      }, ANIM_MS);
+    };
+
+    const handlePrint = () => {
+      window.print();
+    };
+
+    const handleDelete = (e) => {
+      e.stopPropagation();
+      setConfirmModal({
+        title: t("shopping.deleteTitle", "Delete shopping list"),
+        message: `${t("shopping.deleteMessage", "Delete")} "${selected?.name}"? ${t("shopping.deleteWarning", "This cannot be undone.")}`,
+        confirmLabel: t("common.delete", "Delete"),
+        cancelLabel: t("common.cancel", "Cancel"),
+        onConfirm: () => {
+          removeList(selectedIndex);
+          setConfirmModal(null);
+        },
+        onCancel: () => setConfirmModal(null),
+      });
+    };
+
+    /* ───── READ-ONLY VIEW ───── */
+    if (!editMode) {
+      return (
+        <>
+          <h2 className={`list-view-title ${viewClosing ? "exit" : "enter"}`}>
+            {selected.name}
+          </h2>
+          <div
+            className={`card list-detail ${viewClosing ? "exit" : "enter"}`}
+            id="shopping-list-print"
+          >
+            <div className="list-detail-toolbar">
+              <button className="back-button" onClick={handleBack}>
+                {t("common.back", "\u2190 Back")}
+              </button>
+
+              <div className="list-detail-actions">
+                <IconButton
+                  icon="edit"
+                  onClick={() => {
+                    setEditMode(true);
+                    setListNameError(false);
+                  }}
+                  title={t("common.edit", "Edit")}
+                  aria-label={t("common.edit", "Edit")}
+                />
+
+                {selected.ownerId === user?.id && (
+                  <IconButton
+                    icon="share"
+                    onClick={() => openShareModal(selected)}
+                    title={t("shopping.share", "Share")}
+                    aria-label={t("shopping.share", "Share")}
+                  />
+                )}
+
+                <IconButton
+                  icon={selected.status === "archived" ? "restore" : "archive"}
+                  disabled={saving}
+                  onClick={() =>
+                    changeListStatus(
+                      selected.status === "archived" ? "active" : "archived",
+                    )
+                  }
+                  title={
+                    selected.status === "archived"
+                      ? t("shopping.restore", "Restore")
+                      : t("shopping.archive", "Archive")
+                  }
+                  aria-label={
+                    selected.status === "archived"
+                      ? t("shopping.restore", "Restore")
+                      : t("shopping.archive", "Archive")
+                  }
+                />
+
+                <IconButton
+                  icon="print"
+                  onClick={handlePrint}
+                  title={t("shopping.print", "Print")}
+                  aria-label={t("shopping.print", "Print")}
+                />
+
+                <IconButton
+                  icon="delete"
+                  variant="danger"
+                  onClick={handleDelete}
+                  title={t("common.delete", "Delete")}
+                  aria-label={t("common.delete", "Delete")}
+                />
+              </div>
+            </div>
+
+            {/* Due date & progress */}
+            <div className="list-detail-meta">
+              {selected.dueDate && (
+                <span
+                  className={`list-detail-due${getDueDateStatus(selected.dueDate) ? ` is-${getDueDateStatus(selected.dueDate)}` : ""}`}
+                >
+                  {t("shopping.dueDate", "Due:")}{" "}
+                  {formatDueDate(selected.dueDate)}
+                </span>
+              )}
+              {selected.status === "archived" && (
+                <span className="list-status-badge">
+                  {t("shopping.archived", "Archived")}
+                </span>
+              )}
+              {totalCount > 0 && (
+                <span className="list-detail-progress">
+                  {boughtCount}/{totalCount} {t("shopping.bought", "bought")}
+                </span>
+              )}
+            </div>
+
+            {/* Mark all toggle */}
+            {totalCount > 0 && (
+              <label className="shopping-bought-toggle list-toggle">
+                <input
+                  type="checkbox"
+                  checked={isListBought(selected.products || [])}
+                  onChange={(e) => setAllProductsBought(e.target.checked)}
+                />
+                <span>
+                  {t("shopping.markAllBought", "Mark all as purchased")}
+                </span>
+              </label>
+            )}
+
+            {/* Products grouped by category */}
+            {totalCount === 0 && (
+              <p className="list-empty-hint">
+                {t("shopping.noProducts", "No products")}
+              </p>
+            )}
+
+            {productGroups.map((group) => (
+              <div className="product-group" key={group.category || "__none"}>
+                <h4 className="product-group-label">{group.label}</h4>
+                {group.products.map((product) => {
+                  const originalIndex = (selected.products || []).indexOf(
+                    product,
+                  );
+                  const bought = isProductBought(product);
+                  return (
+                    <div
+                      className={`product-view-row${bought ? " is-bought" : ""}`}
+                      key={originalIndex}
+                      role="button"
+                      tabIndex={0}
+                      onClick={() => setProductBought(originalIndex, !bought)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          setProductBought(originalIndex, !bought);
+                        }
+                      }}
+                    >
+                      <span
+                        className={`product-view-check${bought ? " checked" : ""}`}
+                      >
+                        {bought && (
+                          <svg
+                            width="14"
+                            height="14"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="3"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <polyline points="20 6 9 17 4 12" />
+                          </svg>
+                        )}
+                      </span>
+                      <span
+                        className={`product-view-name${bought ? " bought" : ""}`}
+                      >
+                        {product.name}
+                      </span>
+                      <span className="product-view-qty">
+                        {product.qty}{" "}
+                        {t(
+                          `shopping.unit.${product.weight || "szt"}`,
+                          product.weight || "szt",
+                        )}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            ))}
+          </div>
+          <ShareUserModal
+            isOpen={Boolean(shareTarget)}
+            title={t("shopping.shareTitle", "Share shopping list")}
+            loading={shareUsersLoading}
+            users={shareUsers}
+            search={shareSearch}
+            onSearchChange={setShareSearch}
+            currentUserId={user?.id}
+            alreadySharedUserIds={shareTarget?.sharedWithUserIds ?? []}
+            onClose={closeShareModal}
+            onConfirm={handleShareList}
+          />
+          {confirmModal && <ConfirmModal {...confirmModal} />}
+        </>
+      );
+    }
+
+    /* ───── EDIT MODE ───── */
     return (
       <>
         <h2 className={`list-view-title ${viewClosing ? "exit" : "enter"}`}>
           {selected.name}
         </h2>
         <div className={`card list-detail ${viewClosing ? "exit" : "enter"}`}>
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              gap: "0.5rem",
-              flexWrap: "wrap",
-            }}
-          >
+          <div className="list-detail-toolbar">
             <button
               className="back-button"
               onClick={() => {
                 if (isDirty) {
-                  setConfirmModal({
-                    title: t("shopping.leaveTitle", "Leave without saving?"),
-                    message: t(
-                      "shopping.leaveMessage",
-                      "You have unsaved changes. Leave without saving?",
-                    ),
-                    confirmLabel: t("shopping.leaveConfirm", "Leave"),
-                    cancelLabel: t("common.cancel", "Cancel"),
-                    onConfirm: () => {
-                      setConfirmModal(null);
-                      closeEditor();
-                    },
-                    onCancel: () => setConfirmModal(null),
-                  });
+                  handleBack();
                   return;
                 }
-
-                setViewClosing(true);
-                setTimeout(() => {
-                  setViewClosing(false);
-                  closeEditor();
-                }, ANIM_MS);
+                setEditMode(false);
               }}
             >
               {t("common.back", "\u2190 Back")}
             </button>
 
-            {isDirty && (
-              <button
-                className="save-button"
-                disabled={saving}
-                onClick={saveEditing}
-              >
-                {saving
-                  ? t("common.saving", "Saving\u2026")
-                  : t("common.save", "Save")}
-              </button>
-            )}
-
-            {selected.ownerId === user?.id && (
-              <button
-                className="archive-list-btn"
-                type="button"
-                onClick={() => openShareModal(selected)}
-              >
-                {t("shopping.share", "Share")}
-              </button>
-            )}
-
-            <button
-              className="archive-list-btn"
-              disabled={saving}
-              onClick={() =>
-                changeListStatus(
-                  selected.status === "archived" ? "active" : "archived",
-                )
-              }
-            >
-              {selected.status === "archived"
-                ? t("shopping.restore", "Restore")
-                : t("shopping.archive", "Archive")}
-            </button>
-
-            <button
-              className="remove-list-btn"
-              onClick={(e) => {
-                e.stopPropagation();
-                setConfirmModal({
-                  title: t("shopping.deleteTitle", "Delete shopping list"),
-                  message: `${t("shopping.deleteMessage", "Delete")} "${selected?.name}"? ${t("shopping.deleteWarning", "This cannot be undone.")}`,
-                  confirmLabel: t("common.delete", "Delete"),
-                  cancelLabel: t("common.cancel", "Cancel"),
-                  onConfirm: () => {
-                    removeList(selectedIndex);
-                    setConfirmModal(null);
-                  },
-                  onCancel: () => setConfirmModal(null),
-                });
-              }}
-              aria-label="Delete list"
-              title="Delete list"
-            >
-              <span className="minus">−</span>
-            </button>
+            <div className="list-detail-actions">
+              {isDirty && (
+                <button
+                  className="save-button"
+                  disabled={saving}
+                  onClick={saveEditing}
+                >
+                  {saving
+                    ? t("common.saving", "Saving\u2026")
+                    : t("common.save", "Save")}
+                </button>
+              )}
+              <IconButton
+                icon="delete"
+                variant="danger"
+                onClick={handleDelete}
+                title={t("common.delete", "Delete")}
+                aria-label={t("common.delete", "Delete")}
+              />
+            </div>
           </div>
 
           <div>
             <input
-              className="list-name-input"
+              className={`list-name-input${listNameError ? " input-error" : ""}`}
               value={selected.name}
-              onChange={(e) =>
-                updateListField(selectedIndex, "name", e.target.value)
-              }
+              onChange={(e) => {
+                updateListField(selectedIndex, "name", e.target.value);
+                if (listNameError && e.target.value.trim())
+                  setListNameError(false);
+              }}
               placeholder={t("shopping.listNamePlaceholder", "List name")}
             />
+            {listNameError && (
+              <span className="field-error">
+                {t("common.fieldRequired", "This field is required")}
+              </span>
+            )}
 
-            <input
-              className="list-name-input list-date-input"
-              type="date"
-              value={selected.dueDate || ""}
-              onChange={(e) =>
-                updateListField(
-                  selectedIndex,
-                  "dueDate",
-                  e.target.value || null,
-                )
-              }
-              aria-label="Shopping list due date"
-            />
+            <div className="list-date-field">
+              <label className="list-date-label" htmlFor="edit-list-due">
+                {t("shopping.dueDateLabel", "Due date (optional)")}
+              </label>
+              <input
+                id="edit-list-due"
+                className="list-name-input list-date-input"
+                type="date"
+                value={selected.dueDate || ""}
+                onChange={(e) =>
+                  updateListField(
+                    selectedIndex,
+                    "dueDate",
+                    e.target.value || null,
+                  )
+                }
+              />
+            </div>
 
             <div className="products-edit">
               {selected.products && selected.products.length === 0 && (
@@ -631,20 +879,7 @@ export default function ShoppingLists({
                     }
                   >
                     <option value="">{t("shopping.categoryNone", "—")}</option>
-                    {[
-                      "dairy",
-                      "meat",
-                      "fruits",
-                      "vegetables",
-                      "bakery",
-                      "beverages",
-                      "snacks",
-                      "frozen",
-                      "spices",
-                      "household",
-                      "hygiene",
-                      "other",
-                    ].map((cat) => (
+                    {CATEGORIES.map((cat) => (
                       <option key={cat} value={cat}>
                         {t(`shopping.category.${cat}`, cat)}
                       </option>
@@ -653,7 +888,7 @@ export default function ShoppingLists({
                   <input
                     className={`small input-qty${isProductBought(product) ? " bought" : ""}`}
                     type="number"
-                    min="0"
+                    min="1"
                     value={product.qty}
                     onChange={(e) =>
                       updateProductField(
@@ -685,8 +920,8 @@ export default function ShoppingLists({
                   <button
                     className="remove-product-icon"
                     onClick={() => removeProduct(selectedIndex, index)}
-                    title="Remove product"
-                    aria-label="Remove product"
+                    title={t("shopping.removeProduct", "Remove product")}
+                    aria-label={t("shopping.removeProduct", "Remove product")}
                   >
                     <span className="minus">−</span>
                   </button>
@@ -805,18 +1040,15 @@ export default function ShoppingLists({
                   {(list.products || []).length} {t("shopping.items", "items")}
                 </div>
                 {list.ownerId === user?.id && (
-                  <button
-                    type="button"
-                    className="show-more-btn list-share-btn"
+                  <IconButton
+                    icon="share"
                     title={t("shopping.shareList", "Share list")}
                     aria-label={t("shopping.shareList", "Share list")}
                     onClick={(event) => {
                       event.stopPropagation();
                       openShareModal(list);
                     }}
-                  >
-                    👥
-                  </button>
+                  />
                 )}
                 <div
                   className={`list-due-date${getDueDateStatus(list.dueDate) ? ` is-${getDueDateStatus(list.dueDate)}` : ""}`}
@@ -838,7 +1070,7 @@ export default function ShoppingLists({
       </div>
       <ShareUserModal
         isOpen={Boolean(shareTarget)}
-        title="Udostępnij listę zakupów"
+        title={t("shopping.shareTitle", "Share shopping list")}
         loading={shareUsersLoading}
         users={shareUsers}
         search={shareSearch}

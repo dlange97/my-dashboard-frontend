@@ -14,7 +14,7 @@ import "./components/events/events.css";
 import "./components/notifications/notifications.css";
 
 import Login from "./components/auth/Login";
-import Forbidden from "./components/auth/Forbidden";
+import NotFoundPage from "./pages/NotFoundPage";
 
 const DashboardPage = lazy(() => import("./pages/DashboardPage"));
 const TodoPage = lazy(() => import("./pages/TodoPage"));
@@ -37,7 +37,11 @@ function PublicRoute({ children }) {
 
 function PermissionRoute({ permission, children }) {
   const { hasPermission } = useAuth();
-  return hasPermission(permission) ? children : <Forbidden />;
+  return hasPermission(permission) ? (
+    children
+  ) : (
+    <NotFoundPage type="forbidden" />
+  );
 }
 
 function App() {
@@ -132,7 +136,7 @@ function App() {
             </ProtectedRoute>
           }
         />
-        <Route path="*" element={<Navigate to="/" replace />} />
+        <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </Suspense>
   );

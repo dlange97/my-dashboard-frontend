@@ -223,7 +223,7 @@ export default function TodoList({ title }) {
 
       <ShareUserModal
         isOpen={Boolean(shareTarget)}
-        title="Udostępnij zadanie"
+        title={t("todo.shareTitle", "Share task")}
         loading={shareUsersLoading}
         users={shareUsers}
         search={shareSearch}

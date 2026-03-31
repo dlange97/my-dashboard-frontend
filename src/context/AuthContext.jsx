@@ -1,9 +1,17 @@
-import React, { createContext, useContext, useState, useCallback } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useCallback,
+  useEffect,
+  useRef,
+} from "react";
 import {
   decodeJwtClaims,
   hasAnyPermission,
   hasPermission,
 } from "../auth/permissions";
+import api from "../api/api";
 
 const AuthContext = createContext(null);
 
@@ -50,7 +58,8 @@ export function AuthProvider({ children }) {
       roles: newUser?.roles ?? claims.roles ?? ["ROLE_USER"],
       status: newUser?.status ?? claims.status ?? "active",
       language: newUser?.language ?? claims.language ?? "en",
-      dashboardLayout: newUser?.dashboardLayout ?? claims.dashboardLayout ?? null,
+      dashboardLayout:
+        newUser?.dashboardLayout ?? claims.dashboardLayout ?? null,
       permissions: newUser?.permissions ?? claims.permissions ?? [],
     };
 
@@ -70,6 +79,44 @@ export function AuthProvider({ children }) {
     setToken(null);
     setUser(null);
   }, []);
+
+  // After login (or on every cold start with a stored token), fetch /auth/me to
+  // get the server's current permissions for this user.  This ensures that if an
+  // admin changed the user's role while they were away, the next page load
+  // reflects the new permission set — no stale localStorage data.
+  const hasHydrated = useRef(false);
+  useEffect(() => {
+    if (!token || hasHydrated.current) return;
+    hasHydrated.current = true;
+
+    api
+      .me()
+      .then((data) => {
+        if (!data?.user) return;
+        const fresh = data.user;
+        const updated = {
+          id: fresh.id,
+          email: fresh.email,
+          firstName: fresh.firstName,
+          lastName: fresh.lastName,
+          roles: fresh.roles,
+          status: fresh.status,
+          language: fresh.language,
+          dashboardLayout: fresh.dashboardLayout,
+          permissions: fresh.permissions ?? [],
+        };
+        localStorage.setItem(USER_KEY, JSON.stringify(updated));
+        if (updated.language) {
+          localStorage.setItem(LANG_KEY, updated.language);
+        }
+        setUser(updated);
+      })
+      .catch(() => {
+        // Token is expired or invalid — clear stale session so the user is
+        // redirected to /login by ProtectedRoute.
+        logout();
+      });
+  }, [token, logout]);
 
   return (
     <AuthContext.Provider

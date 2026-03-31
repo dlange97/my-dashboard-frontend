@@ -123,7 +123,7 @@ describe("TodoList", () => {
 
     await waitFor(() => {
       expect(screen.getByRole("dialog")).toBeInTheDocument();
-      expect(screen.getByText("Udostępnij zadanie")).toBeInTheDocument();
+      expect(screen.getByText("Share task")).toBeInTheDocument();
     });
   });
 

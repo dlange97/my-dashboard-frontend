@@ -25,13 +25,18 @@ export default function ProductForm({
 }) {
   const { t } = useTranslation();
   const [product, setProduct] = useState(initial);
+  const [nameError, setNameError] = useState(false);
 
   const resolvedAddLabel = addLabel || t("shopping.addProduct", "Add product");
 
   const submit = (e) => {
     e && e.preventDefault();
-    if (!product.name) return;
-    onAdd && onAdd({ ...product });
+    if (!product.name.trim()) {
+      setNameError(true);
+      return;
+    }
+    setNameError(false);
+    onAdd && onAdd({ ...product, name: product.name.trim() });
     setProduct(initial);
   };
 
@@ -50,12 +55,19 @@ export default function ProductForm({
           </label>
           <input
             id="pf-name"
+            className={nameError ? "input-error" : ""}
             placeholder={t("shopping.productNamePlaceholder", "e.g. Apples")}
             value={product.name}
-            onChange={(e) =>
-              setProduct((p) => ({ ...p, name: e.target.value }))
-            }
+            onChange={(e) => {
+              setProduct((p) => ({ ...p, name: e.target.value }));
+              if (nameError && e.target.value.trim()) setNameError(false);
+            }}
           />
+          {nameError && (
+            <span className="field-error">
+              {t("common.fieldRequired", "This field is required")}
+            </span>
+          )}
         </div>
         <div className="form-field product-category-field">
           <label htmlFor="pf-category">
@@ -83,7 +95,7 @@ export default function ProductForm({
           <input
             id="pf-qty"
             type="number"
-            min="0"
+            min="1"
             step="1"
             value={product.qty}
             onChange={(e) =>

@@ -116,6 +116,17 @@
   max-width: 80px;
 }
 
+.product-form input.input-error {
+  border-color: #ef4444;
+  background: #fff5f5;
+}
+
+.product-form input.input-error:focus {
+  border-color: #dc2626;
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.12);
+  background: #fff;
+}
+
 .add-product-btn {
   background: linear-gradient(135deg, #6366f1 0%, #818cf8 100%);
   color: white;

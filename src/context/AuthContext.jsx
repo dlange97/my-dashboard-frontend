@@ -18,6 +18,7 @@ const AuthContext = createContext(null);
 const TOKEN_KEY = "dashboard_token";
 const USER_KEY = "dashboard_user";
 const LANG_KEY = "dashboard_lang";
+const INSTANCE_KEY = "dashboard_instance_id";
 
 export function AuthProvider({ children }) {
   const [token, setToken] = useState(() => {
@@ -61,6 +62,7 @@ export function AuthProvider({ children }) {
       dashboardLayout:
         newUser?.dashboardLayout ?? claims.dashboardLayout ?? null,
       permissions: newUser?.permissions ?? claims.permissions ?? [],
+      instanceId: newUser?.instanceId ?? claims.instanceId ?? null,
     };
 
     localStorage.setItem(TOKEN_KEY, newToken);
@@ -69,6 +71,11 @@ export function AuthProvider({ children }) {
     if (mergedUser.language) {
       localStorage.setItem(LANG_KEY, mergedUser.language);
     }
+    if (mergedUser.instanceId) {
+      localStorage.setItem(INSTANCE_KEY, mergedUser.instanceId);
+    } else {
+      localStorage.removeItem(INSTANCE_KEY);
+    }
     setToken(newToken);
     setUser(mergedUser);
   }, []);
@@ -76,6 +83,7 @@ export function AuthProvider({ children }) {
   const logout = useCallback(() => {
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(USER_KEY);
+    localStorage.removeItem(INSTANCE_KEY);
     setToken(null);
     setUser(null);
   }, []);

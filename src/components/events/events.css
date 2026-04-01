@@ -1390,11 +1390,18 @@
   /* Force fixed-height viewport so flex children resolve pixel heights */
   .map-page-shell {
     height: 100vh;
+    height: 100dvh; /* prefer dynamic viewport on mobile browsers */
     min-height: 0;
+  }
+
+  /* Prevent the navbar from being squeezed out by flex children */
+  .map-page-shell .top-nav {
+    flex-shrink: 0;
   }
 
   .map-page {
     height: 100%;  /* fill the inbox wrapper exactly */
+    min-height: 0;
   }
 
   /* Hide the page header on mobile — "Reset mapy" is in filter bar */

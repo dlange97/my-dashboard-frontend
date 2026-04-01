@@ -54,6 +54,10 @@ vi.mock("../components/dashboard/CalendarSummary", () => ({
   default: () => <section className="summary-card">Calendar card</section>,
 }));
 
+vi.mock("../components/dashboard/NotesSummary", () => ({
+  default: () => <section className="summary-card">Notes card</section>,
+}));
+
 describe("DashboardPage tile resizing", () => {
   beforeEach(() => {
     meMock.mockResolvedValue({ user: { dashboardLayout: null } });

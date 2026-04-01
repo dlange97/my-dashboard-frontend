@@ -4,6 +4,7 @@ import TodoSummary from "../components/dashboard/TodoSummary";
 import ShoppingSummary from "../components/dashboard/ShoppingSummary";
 import CalendarSummary from "../components/dashboard/CalendarSummary";
 import EventsSummary from "../components/events/EventsSummary";
+import NotesSummary from "../components/dashboard/NotesSummary";
 import InboxSidebar from "../components/notifications/InboxSidebar";
 import { ConfirmModal } from "../components/ui";
 import api from "../api/api";
@@ -28,6 +29,11 @@ const TILE_DEFINITIONS = [
     id: "events",
     permission: "events.view",
     render: () => <EventsSummary />,
+  },
+  {
+    id: "notes",
+    permission: "notes.view",
+    render: () => <NotesSummary />,
   },
   {
     id: "calendar",

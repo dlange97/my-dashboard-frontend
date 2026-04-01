@@ -12,6 +12,7 @@ import "./components/shoppinglist/product-form.css";
 import "./components/todolist/todo.css";
 import "./components/events/events.css";
 import "./components/notifications/notifications.css";
+import "./components/notes/notes.css";
 
 import Login from "./components/auth/Login";
 import NotFoundPage from "./pages/NotFoundPage";
@@ -26,6 +27,7 @@ const CalendarPage = lazy(() => import("./pages/CalendarPage"));
 const MapPage = lazy(() => import("./pages/MapPage"));
 const UsersPage = lazy(() => import("./pages/UsersPage"));
 const SettingsPage = lazy(() => import("./pages/SettingsPage"));
+const NotesPage = lazy(() => import("./pages/NotesPage"));
 
 function ProtectedRoute({ children }) {
   const { isAuthenticated, needsInstanceSelection } = useAuth();
@@ -142,6 +144,16 @@ function App() {
             <ProtectedRoute>
               <PermissionRoute permission="settings.view">
                 <SettingsPage />
+              </PermissionRoute>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/notes"
+          element={
+            <ProtectedRoute>
+              <PermissionRoute permission="notes.view">
+                <NotesPage />
               </PermissionRoute>
             </ProtectedRoute>
           }

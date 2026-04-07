@@ -45,7 +45,9 @@
   font-family: "SF Mono", "Fira Code", "Cascadia Code", monospace;
   cursor: pointer;
   white-space: nowrap;
-  transition: background 0.15s, color 0.15s;
+  transition:
+    background 0.15s,
+    color 0.15s;
 }
 
 .notes-tab:hover {
@@ -71,7 +73,9 @@
   padding: 0 2px;
   border-radius: 3px;
   cursor: pointer;
-  transition: color 0.15s, background 0.15s;
+  transition:
+    color 0.15s,
+    background 0.15s;
 }
 
 .notes-tab-close:hover {
@@ -91,7 +95,9 @@
   color: #64748b;
   font-size: 1.2rem;
   cursor: pointer;
-  transition: color 0.15s, background 0.15s;
+  transition:
+    color 0.15s,
+    background 0.15s;
 }
 
 .notes-tab-new:hover {
@@ -110,7 +116,7 @@
   display: flex;
   flex-direction: column;
   min-height: 0;
-  background: #0f172a;
+  background: linear-gradient(180deg, #f8fafc 0%, #eef2ff 100%);
 }
 
 .notes-editor-toolbar {
@@ -118,16 +124,16 @@
   align-items: center;
   gap: 1rem;
   padding: 0.5rem 1rem;
-  background: #1e293b;
-  border-bottom: 1px solid #334155;
+  background: rgba(255, 255, 255, 0.9);
+  border-bottom: 1px solid #dbe4f0;
 }
 
 .notes-title-input {
   flex: 1;
-  background: transparent;
-  border: 1px solid transparent;
+  background: #fff;
+  border: 1px solid #dbe4f0;
   border-radius: 4px;
-  color: #e2e8f0;
+  color: #0f172a;
   font-size: 0.9rem;
   font-weight: 600;
   padding: 0.3rem 0.5rem;
@@ -138,7 +144,7 @@
 .notes-title-input:focus {
   outline: none;
   border-color: #6366f1;
-  background: #0f172a;
+  background: #fff;
 }
 
 .notes-save-indicator {
@@ -148,52 +154,225 @@
   white-space: nowrap;
 }
 
-/* ── Code editor area ────────────────────────────────── */
+/* ── Formatting toolbar ─────────────────────────────── */
+.notes-format-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 0.25rem 0.75rem;
+  background: rgba(255, 255, 255, 0.9);
+  border-bottom: 1px solid #dbe4f0;
+  flex-wrap: wrap;
+}
+
+.notes-fmt-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  height: 26px;
+  padding: 0 0.4rem;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  color: #475569;
+  font-size: 0.8rem;
+  font-family: inherit;
+  cursor: pointer;
+  transition:
+    background 0.12s,
+    border-color 0.12s,
+    color 0.12s;
+  user-select: none;
+  line-height: 1;
+}
+
+.notes-fmt-btn:hover {
+  background: #eef2ff;
+  border-color: #c7d2fe;
+  color: #4338ca;
+}
+
+.notes-fmt-btn:active,
+.notes-fmt-btn.active {
+  background: #e0e7ff;
+  border-color: #a5b4fc;
+  color: #3730a3;
+}
+
+.notes-fmt-strike {
+  text-decoration: line-through;
+}
+
+.notes-fmt-divider {
+  width: 1px;
+  height: 18px;
+  background: #dbe4f0;
+  margin: 0 0.2rem;
+  flex-shrink: 0;
+}
+
+/* ── Color picker ────────────────────────────────────── */
+.notes-fmt-color-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 26px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  transition:
+    border-color 0.12s,
+    background 0.12s;
+}
+
+.notes-fmt-color-wrap:hover {
+  background: #eef2ff;
+  border-color: #c7d2fe;
+}
+
+.notes-fmt-color-swatch {
+  width: 16px;
+  height: 16px;
+  border-radius: 3px;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  pointer-events: none;
+  flex-shrink: 0;
+}
+
+.notes-fmt-color-input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+  padding: 0;
+  border: none;
+}
+
+/* ── Editor area ─────────────────────────────────────── */
 .notes-editor-container {
   flex: 1;
   display: flex;
   min-height: 0;
   overflow: hidden;
+  padding: 1rem;
 }
 
-.notes-line-numbers {
-  width: 48px;
-  flex-shrink: 0;
-  padding: 0.75rem 0.5rem;
-  background: #0f172a;
-  color: #475569;
-  font-family: "SF Mono", "Fira Code", "Cascadia Code", monospace;
-  font-size: 0.82rem;
-  line-height: 1.6;
-  text-align: right;
-  white-space: pre;
-  overflow: hidden;
-  user-select: none;
-  border-right: 1px solid #1e293b;
-}
-
-.notes-code-editor {
+.notes-rich-editor-shell {
   flex: 1;
-  padding: 0.75rem 1rem;
-  background: #0f172a;
-  color: #e2e8f0;
-  border: none;
+  min-height: 0;
+  display: flex;
+}
+
+.notes-tiptap {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+}
+
+.notes-tiptap .ProseMirror {
+  flex: 1;
+  min-height: 360px;
+  overflow-y: auto;
+  border: 1px solid #dbe4f0;
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 0.95rem;
+  line-height: 1.7;
+  color: #0f172a;
+  background: #fff;
+  box-shadow: 0 14px 36px rgba(15, 23, 42, 0.08);
   outline: none;
-  resize: none;
-  font-family: "SF Mono", "Fira Code", "Cascadia Code", monospace;
-  font-size: 0.82rem;
-  line-height: 1.6;
-  tab-size: 2;
-  white-space: pre;
-  overflow: auto;
+  word-break: break-word;
 }
 
-.notes-code-editor::placeholder {
+.notes-tiptap .ProseMirror:focus {
+  border-color: #6366f1;
+  box-shadow:
+    0 0 0 2px rgba(99, 102, 241, 0.15),
+    0 14px 36px rgba(15, 23, 42, 0.08);
+}
+
+.notes-tiptap .ProseMirror p {
+  margin: 0.25rem 0;
+}
+
+.notes-tiptap .ProseMirror h1 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin: 0.8rem 0 0.4rem;
+  color: #1e293b;
+}
+
+.notes-tiptap .ProseMirror h2 {
+  font-size: 1.35rem;
+  font-weight: 600;
+  margin: 0.7rem 0 0.35rem;
+  color: #1e293b;
+}
+
+.notes-tiptap .ProseMirror blockquote {
+  border-left: 3px solid #6366f1;
+  margin: 0.6rem 0;
+  padding: 0.25rem 0 0.25rem 1rem;
   color: #475569;
+  font-style: italic;
 }
 
-.notes-code-editor::selection {
-  background: #334155;
+.notes-tiptap .ProseMirror code {
+  background: #f1f5f9;
+  border-radius: 4px;
+  padding: 0.1em 0.35em;
+  font-family: "SF Mono", "Fira Code", monospace;
+  font-size: 0.875em;
+  color: #be185d;
+}
+
+.notes-tiptap .ProseMirror pre {
+  background: #1e293b;
+  color: #e2e8f0;
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  overflow-x: auto;
+  margin: 0.5rem 0;
+}
+
+.notes-tiptap .ProseMirror pre code {
+  background: none;
+  color: inherit;
+  padding: 0;
+  font-size: 0.875rem;
+}
+
+.notes-tiptap .ProseMirror ul,
+.notes-tiptap .ProseMirror ol {
+  padding-left: 1.5rem;
+  margin: 0.35rem 0;
+}
+
+.notes-tiptap .ProseMirror ul {
+  list-style: disc;
+}
+
+.notes-tiptap .ProseMirror ol {
+  list-style: decimal;
+}
+
+.notes-tiptap .ProseMirror a {
+  color: #6366f1;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.notes-tiptap .ProseMirror hr {
+  border: none;
+  border-top: 2px solid #e2e8f0;
+  margin: 1rem 0;
 }
 
 /* ── Empty state ─────────────────────────────────────── */
@@ -236,6 +415,42 @@
 /* ── Dashboard summary ───────────────────────────────── */
 .icon-notes {
   background: #fef3c7;
+}
+
+.notes-summary-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.notes-summary-create-btn {
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #cbd5e1;
+  border-radius: 7px;
+  background: #fff;
+  color: #475569;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    background 0.15s,
+    color 0.15s,
+    border-color 0.15s;
+}
+
+.notes-summary-create-btn:hover {
+  background: #eef2ff;
+  color: #4338ca;
+  border-color: #a5b4fc;
+}
+
+.notes-summary-create-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
 }
 
 .notes-summary-list {
@@ -297,22 +512,24 @@
     font-size: 0.76rem;
   }
 
-  .notes-line-numbers {
-    width: 36px;
-    font-size: 0.74rem;
-    padding: 0.5rem 0.3rem;
-  }
-
-  .notes-code-editor {
-    font-size: 0.76rem;
-    padding: 0.5rem;
-  }
-
   .notes-editor-toolbar {
     padding: 0.35rem 0.6rem;
   }
 
   .notes-title-input {
     font-size: 0.82rem;
+  }
+
+  .notes-format-toolbar {
+    padding: 0.3rem 0.45rem;
+  }
+
+  .notes-editor-container {
+    padding: 0.6rem;
+  }
+
+  .notes-tiptap .ProseMirror {
+    padding: 0.85rem 0.9rem;
+    font-size: 0.9rem;
   }
 }

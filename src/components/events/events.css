@@ -609,7 +609,7 @@
 
 .map-full-container {
   flex: 1;
-  min-height: 0;    /* allow flex child height to propagate to Leaflet */
+  min-height: 0; /* allow flex child height to propagate to Leaflet */
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -1400,7 +1400,7 @@
   }
 
   .map-page {
-    height: 100%;  /* fill the inbox wrapper exactly */
+    height: 100%; /* fill the inbox wrapper exactly */
     min-height: 0;
   }
 

@@ -512,9 +512,7 @@ export function FullMap({
     setPendingDeleteEvent(null);
   };
 
-  const [legendOpen, setLegendOpen] = useState(
-    () => window.innerWidth > 640,
-  );
+  const [legendOpen, setLegendOpen] = useState(() => window.innerWidth > 640);
 
   return (
     <div

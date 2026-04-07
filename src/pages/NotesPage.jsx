@@ -1,4 +1,9 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
+import { useEditor, EditorContent } from "@tiptap/react";
+import StarterKit from "@tiptap/starter-kit";
+import { Color } from "@tiptap/extension-color";
+import { TextStyle } from "@tiptap/extension-text-style";
+import Link from "@tiptap/extension-link";
 import NavBar from "../components/nav/NavBar";
 import InboxSidebar from "../components/notifications/InboxSidebar";
 import api from "../api/api";
@@ -12,9 +17,35 @@ export default function NotesPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [creating, setCreating] = useState(false);
+  const [isDirty, setIsDirty] = useState(false);
+  const [draftTitle, setDraftTitle] = useState("");
   const dirtyRef = useRef(false);
-  const editorRef = useRef(null);
   const titleRef = useRef(null);
+  // Refs to avoid stale closures in flushSave
+  const activeIdRef = useRef(null);
+  const draftTitleRef = useRef("");
+
+  useEffect(() => {
+    activeIdRef.current = activeId;
+  }, [activeId]);
+  useEffect(() => {
+    draftTitleRef.current = draftTitle;
+  }, [draftTitle]);
+
+  // ── Tiptap editor ─────────────────────────────────────────
+  const editor = useEditor({
+    extensions: [
+      StarterKit,
+      TextStyle,
+      Color,
+      Link.configure({ openOnClick: false }),
+    ],
+    content: "",
+    onUpdate: () => {
+      dirtyRef.current = true;
+      setIsDirty(true);
+    },
+  });
 
   // ── Load notes ────────────────────────────────────────────
   useEffect(() => {
@@ -23,11 +54,10 @@ export default function NotesPage() {
       .then((data) => {
         const list = Array.isArray(data) ? data : [];
         setNotes(list);
-        // Auto-select from URL or first note
         const params = new URLSearchParams(window.location.search);
         const urlId = Number(params.get("noteId"));
         const firstMatch = list.find((n) => n.id === urlId);
-        setActiveId(firstMatch ? firstMatch.id : list[0]?.id ?? null);
+        setActiveId(firstMatch ? firstMatch.id : (list[0]?.id ?? null));
       })
       .catch(() => {})
       .finally(() => setLoading(false));
@@ -35,47 +65,29 @@ export default function NotesPage() {
 
   const activeNote = notes.find((n) => n.id === activeId) ?? null;
 
-  // ── Auto-save on blur / mouse-leave ───────────────────────
+  // ── Auto-save ─────────────────────────────────────────────
   const flushSave = useCallback(async () => {
-    if (!dirtyRef.current || !activeNote) return;
-    dirtyRef.current = false;
-
-    const title = titleRef.current?.value?.trim() || activeNote.title;
-    const content = editorRef.current?.value ?? activeNote.content;
+    if (!dirtyRef.current || !activeIdRef.current || !editor) return;
+    const noteId = activeIdRef.current;
+    const title =
+      draftTitleRef.current.trim() || t("notes.untitled", "Untitled");
+    const content = editor.getHTML();
 
     setSaving(true);
     try {
-      const updated = await api.updateNote(activeNote.id, { title, content });
-      setNotes((prev) =>
-        prev.map((n) => (n.id === updated.id ? updated : n)),
-      );
+      const updated = await api.updateNote(noteId, { title, content });
+      setNotes((prev) => prev.map((n) => (n.id === updated.id ? updated : n)));
+      setDraftTitle(updated.title ?? title);
+      dirtyRef.current = false;
+      setIsDirty(false);
     } catch {
       // silently fail — user can retry
     } finally {
       setSaving(false);
     }
-  }, [activeNote]);
+  }, [editor, t]);
 
-  // Save when navigating away
-  useEffect(() => {
-    const handleBeforeUnload = () => {
-      if (dirtyRef.current && activeNote) {
-        const title = titleRef.current?.value?.trim() || activeNote.title;
-        const content = editorRef.current?.value ?? activeNote.content;
-        const body = JSON.stringify({ title, content });
-        navigator.sendBeacon?.(
-          `/dashboard/notes/${activeNote.id}`,
-        ) || void 0;
-        // Best-effort: sendBeacon doesn't support PATCH easily,
-        // so we just rely on blur/mouseleave in practice.
-        void body;
-      }
-    };
-    window.addEventListener("beforeunload", handleBeforeUnload);
-    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
-  }, [activeNote]);
-
-  // ── Tab switch saves first ────────────────────────────────
+  // ── Tab switch: save first, then load ────────────────────
   const switchTab = useCallback(
     async (noteId) => {
       await flushSave();
@@ -83,6 +95,16 @@ export default function NotesPage() {
     },
     [flushSave],
   );
+
+  // ── Sync editor when active note changes ─────────────────
+  useEffect(() => {
+    if (!editor) return;
+    const note = notes.find((n) => n.id === activeId) ?? null;
+    editor.commands.setContent(note?.content || "");
+    setDraftTitle(note?.title ?? "");
+    dirtyRef.current = false;
+    setIsDirty(false);
+  }, [activeId, editor]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Create new note ───────────────────────────────────────
   const handleCreate = async () => {
@@ -107,9 +129,7 @@ export default function NotesPage() {
       await api.deleteNote(noteId);
       setNotes((prev) => {
         const next = prev.filter((n) => n.id !== noteId);
-        if (activeId === noteId) {
-          setActiveId(next[0]?.id ?? null);
-        }
+        if (activeId === noteId) setActiveId(next[0]?.id ?? null);
         return next;
       });
     } catch {
@@ -117,31 +137,20 @@ export default function NotesPage() {
     }
   };
 
-  // ── Handle keyboard shortcuts ─────────────────────────────
-  const handleEditorKeyDown = (e) => {
-    // Tab inserts spaces instead of changing focus
-    if (e.key === "Tab") {
-      e.preventDefault();
-      const el = editorRef.current;
-      const start = el.selectionStart;
-      const end = el.selectionEnd;
-      const val = el.value;
-      el.value = val.substring(0, start) + "  " + val.substring(end);
-      el.selectionStart = el.selectionEnd = start + 2;
-      dirtyRef.current = true;
+  // ── Toolbar helpers ───────────────────────────────────────
+  const a = (type, attrs) => editor?.isActive(type, attrs) ?? false;
+
+  const handleLink = () => {
+    const url = window.prompt("URL:");
+    if (!url || !editor) return;
+    if (editor.state.selection.empty) {
+      editor.chain().focus().insertContent(`<a href="${url}">${url}</a>`).run();
+    } else {
+      editor.chain().focus().setLink({ href: url }).run();
     }
   };
 
-  // ── Sync editor contents when active note changes ─────────
-  useEffect(() => {
-    if (editorRef.current && activeNote) {
-      editorRef.current.value = activeNote.content;
-    }
-    if (titleRef.current && activeNote) {
-      titleRef.current.value = activeNote.title;
-    }
-    dirtyRef.current = false;
-  }, [activeId]); // eslint-disable-line react-hooks/exhaustive-deps
+  const currentColor = editor?.getAttributes("textStyle").color || "#0f172a";
 
   return (
     <div className="page-shell">
@@ -150,9 +159,7 @@ export default function NotesPage() {
         <InboxSidebar />
         <main className="page-content app-shell-main notes-page">
           {loading ? (
-            <div className="empty-state">
-              {t("common.loading", "Loading…")}
-            </div>
+            <div className="empty-state">{t("common.loading", "Loading…")}</div>
           ) : (
             <>
               {/* ── Tab bar ──────────────────────────────── */}
@@ -200,49 +207,184 @@ export default function NotesPage() {
 
               {/* ── Editor area ──────────────────────────── */}
               {activeNote ? (
-                <div
-                  className="notes-editor-wrap"
-                  onMouseLeave={flushSave}
-                >
+                <div className="notes-editor-wrap" onMouseLeave={flushSave}>
+                  {/* Title + save indicator */}
                   <div className="notes-editor-toolbar">
                     <input
                       ref={titleRef}
                       className="notes-title-input"
-                      defaultValue={activeNote.title}
+                      value={draftTitle}
                       placeholder={t("notes.titlePlaceholder", "Note title…")}
-                      onChange={() => {
+                      onChange={(e) => {
+                        setDraftTitle(e.target.value);
                         dirtyRef.current = true;
+                        setIsDirty(true);
                       }}
-                      onBlur={flushSave}
+                      onBlur={() => void flushSave()}
                     />
                     <span className="notes-save-indicator">
                       {saving
                         ? t("notes.saving", "Saving…")
-                        : dirtyRef.current
+                        : isDirty
                           ? ""
                           : t("notes.saved", "Saved")}
                     </span>
                   </div>
+
+                  {/* Formatting toolbar */}
+                  <div className="notes-format-toolbar">
+                    <button
+                      type="button"
+                      className={`notes-fmt-btn${a("bold") ? " active" : ""}`}
+                      onClick={() => editor.chain().focus().toggleBold().run()}
+                      title="Bold"
+                    >
+                      <b>B</b>
+                    </button>
+                    <button
+                      type="button"
+                      className={`notes-fmt-btn${a("italic") ? " active" : ""}`}
+                      onClick={() =>
+                        editor.chain().focus().toggleItalic().run()
+                      }
+                      title="Italic"
+                    >
+                      <i>I</i>
+                    </button>
+                    <button
+                      type="button"
+                      className={`notes-fmt-btn notes-fmt-strike${a("strike") ? " active" : ""}`}
+                      onClick={() =>
+                        editor.chain().focus().toggleStrike().run()
+                      }
+                      title="Strikethrough"
+                    >
+                      S
+                    </button>
+                    <span className="notes-fmt-divider" />
+                    <button
+                      type="button"
+                      className={`notes-fmt-btn${a("heading", { level: 1 }) ? " active" : ""}`}
+                      onClick={() =>
+                        editor.chain().focus().toggleHeading({ level: 1 }).run()
+                      }
+                      title="Heading 1"
+                    >
+                      H1
+                    </button>
+                    <button
+                      type="button"
+                      className={`notes-fmt-btn${a("heading", { level: 2 }) ? " active" : ""}`}
+                      onClick={() =>
+                        editor.chain().focus().toggleHeading({ level: 2 }).run()
+                      }
+                      title="Heading 2"
+                    >
+                      H2
+                    </button>
+                    <span className="notes-fmt-divider" />
+                    <button
+                      type="button"
+                      className={`notes-fmt-btn${a("blockquote") ? " active" : ""}`}
+                      onClick={() =>
+                        editor.chain().focus().toggleBlockquote().run()
+                      }
+                      title="Blockquote"
+                    >
+                      ❝
+                    </button>
+                    <button
+                      type="button"
+                      className={`notes-fmt-btn${a("code") ? " active" : ""}`}
+                      onClick={() => editor.chain().focus().toggleCode().run()}
+                      title="Inline code"
+                    >
+                      {"`"}
+                    </button>
+                    <button
+                      type="button"
+                      className={`notes-fmt-btn${a("codeBlock") ? " active" : ""}`}
+                      onClick={() =>
+                        editor.chain().focus().toggleCodeBlock().run()
+                      }
+                      title="Code block"
+                    >
+                      {"```"}
+                    </button>
+                    <span className="notes-fmt-divider" />
+                    <button
+                      type="button"
+                      className={`notes-fmt-btn${a("bulletList") ? " active" : ""}`}
+                      onClick={() =>
+                        editor.chain().focus().toggleBulletList().run()
+                      }
+                      title="Bullet list"
+                    >
+                      • —
+                    </button>
+                    <button
+                      type="button"
+                      className={`notes-fmt-btn${a("orderedList") ? " active" : ""}`}
+                      onClick={() =>
+                        editor.chain().focus().toggleOrderedList().run()
+                      }
+                      title="Numbered list"
+                    >
+                      1.
+                    </button>
+                    <span className="notes-fmt-divider" />
+                    <button
+                      type="button"
+                      className={`notes-fmt-btn${a("link") ? " active" : ""}`}
+                      onClick={handleLink}
+                      title="Link"
+                    >
+                      🔗
+                    </button>
+                    <button
+                      type="button"
+                      className="notes-fmt-btn"
+                      onClick={() =>
+                        editor.chain().focus().setHorizontalRule().run()
+                      }
+                      title="Horizontal rule"
+                    >
+                      —
+                    </button>
+                    <span className="notes-fmt-divider" />
+                    {/* Color picker */}
+                    <label
+                      className="notes-fmt-color-wrap"
+                      title="Kolor tekstu"
+                    >
+                      <span
+                        className="notes-fmt-color-swatch"
+                        style={{ background: currentColor }}
+                      />
+                      <input
+                        type="color"
+                        className="notes-fmt-color-input"
+                        value={currentColor}
+                        onChange={(e) =>
+                          editor?.chain().focus().setColor(e.target.value).run()
+                        }
+                      />
+                    </label>
+                    <button
+                      type="button"
+                      className="notes-fmt-btn"
+                      onClick={() => editor?.chain().focus().unsetColor().run()}
+                      title="Usuń kolor"
+                    >
+                      A↺
+                    </button>
+                  </div>
+
+                  {/* WYSIWYG editor */}
                   <div className="notes-editor-container">
-                    <div
-                      className="notes-line-numbers"
-                      aria-hidden="true"
-                      id="notes-line-nums"
-                    />
-                    <textarea
-                      ref={editorRef}
-                      className="notes-code-editor"
-                      defaultValue={activeNote.content}
-                      spellCheck={false}
-                      wrap="off"
-                      onChange={() => {
-                        dirtyRef.current = true;
-                        updateLineNumbers();
-                      }}
-                      onScroll={syncScroll}
-                      onBlur={flushSave}
-                      onKeyDown={handleEditorKeyDown}
-                    />
+                    <div className="notes-rich-editor-shell">
+                      <EditorContent editor={editor} className="notes-tiptap" />
+                    </div>
                   </div>
                 </div>
               ) : (
@@ -264,31 +406,4 @@ export default function NotesPage() {
       </div>
     </div>
   );
-}
-
-// ── Line number helpers (outside component to avoid re-creation) ────
-function updateLineNumbers() {
-  const editor = document.querySelector(".notes-code-editor");
-  const lineNums = document.getElementById("notes-line-nums");
-  if (!editor || !lineNums) return;
-
-  const lines = editor.value.split("\n").length;
-  const nums = [];
-  for (let i = 1; i <= lines; i++) {
-    nums.push(i);
-  }
-  lineNums.textContent = nums.join("\n");
-}
-
-function syncScroll() {
-  const editor = document.querySelector(".notes-code-editor");
-  const lineNums = document.getElementById("notes-line-nums");
-  if (editor && lineNums) {
-    lineNums.scrollTop = editor.scrollTop;
-  }
-}
-
-// Initialize line numbers after first render
-if (typeof window !== "undefined") {
-  requestAnimationFrame(updateLineNumbers);
 }

@@ -152,7 +152,7 @@ function App() {
           path="/notes"
           element={
             <ProtectedRoute>
-              <PermissionRoute permission="notes.view">
+              <PermissionRoute permission="dashboard.view">
                 <NotesPage />
               </PermissionRoute>
             </ProtectedRoute>

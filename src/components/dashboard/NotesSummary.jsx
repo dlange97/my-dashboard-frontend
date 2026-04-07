@@ -1,20 +1,51 @@
-import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import React, { useCallback, useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import api from "../../api/api";
 import { useTranslation } from "../../context/TranslationContext";
 
+function getPlainTextPreview(value) {
+  return String(value ?? "")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&nbsp;/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 export default function NotesSummary() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const [notes, setNotes] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [creating, setCreating] = useState(false);
 
-  useEffect(() => {
-    api
+  const loadNotes = useCallback(() => {
+    setLoading(true);
+    return api
       .getNotes()
       .then((data) => setNotes(Array.isArray(data) ? data : []))
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
+
+  useEffect(() => {
+    loadNotes();
+  }, [loadNotes]);
+
+  const handleCreate = async () => {
+    setCreating(true);
+    try {
+      const created = await api.createNote({
+        title: t("notes.untitled", "Untitled"),
+        content: "",
+      });
+      navigate(`/notes?noteId=${created.id}`);
+    } catch {
+      // leave tile as-is when backend rejects create
+      await loadNotes();
+    } finally {
+      setCreating(false);
+    }
+  };
 
   const shown = notes.slice(0, 4);
 
@@ -25,17 +56,27 @@ export default function NotesSummary() {
           <span className="icon icon-notes">📝</span>
           {t("notes.title", "Notes")}
         </div>
-        <Link to="/notes" className="summary-go-link">
-          {t("common.viewAll", "View all")} →
-        </Link>
+        <div className="notes-summary-actions">
+          <button
+            type="button"
+            className="notes-summary-create-btn"
+            onClick={handleCreate}
+            disabled={creating}
+            aria-label={t("notes.createFromDashboard", "Create note")}
+            title={t("notes.createFromDashboard", "Create note")}
+          >
+            {creating ? "…" : "+"}
+          </button>
+          <Link to="/notes" className="summary-go-link">
+            {t("common.viewAll", "View all")} →
+          </Link>
+        </div>
       </div>
 
       {loading ? (
         <div className="empty-state">{t("common.loading", "Loading…")}</div>
       ) : notes.length === 0 ? (
-        <div className="empty-state">
-          {t("notes.empty", "No notes yet.")}
-        </div>
+        <div className="empty-state">{t("notes.empty", "No notes yet.")}</div>
       ) : (
         <>
           <ul className="notes-summary-list">
@@ -47,8 +88,8 @@ export default function NotesSummary() {
                 >
                   <span className="notes-summary-title">{note.title}</span>
                   <span className="notes-summary-preview">
-                    {(note.content || "").substring(0, 60)}
-                    {(note.content || "").length > 60 ? "…" : ""}
+                    {getPlainTextPreview(note.content).substring(0, 60)}
+                    {getPlainTextPreview(note.content).length > 60 ? "…" : ""}
                   </span>
                 </Link>
               </li>

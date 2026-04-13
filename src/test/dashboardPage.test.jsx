@@ -54,6 +54,10 @@ vi.mock("../components/dashboard/CalendarSummary", () => ({
   default: () => <section className="summary-card">Calendar card</section>,
 }));
 
+vi.mock("../components/dashboard/NotesSummary", () => ({
+  default: () => <section className="summary-card">Notes card</section>,
+}));
+
 describe("DashboardPage tile resizing", () => {
   beforeEach(() => {
     meMock.mockResolvedValue({ user: { dashboardLayout: null } });
@@ -102,9 +106,12 @@ describe("DashboardPage tile resizing", () => {
 
     fireEvent.mouseUp(document);
 
-    await waitFor(() => expect(updateMyDashboardLayoutMock).toHaveBeenCalled(), {
-      timeout: 1200,
-    });
+    await waitFor(
+      () => expect(updateMyDashboardLayoutMock).toHaveBeenCalled(),
+      {
+        timeout: 1200,
+      },
+    );
   });
 
   it("resets resized tiles back to defaults", async () => {
@@ -123,7 +130,9 @@ describe("DashboardPage tile resizing", () => {
       expect(todoTile.style.getPropertyValue("--tile-scale-x")).not.toBe("1");
     });
 
-    fireEvent.click(screen.getByRole("button", { name: "Reset tile settings" }));
+    fireEvent.click(
+      screen.getByRole("button", { name: "Reset tile settings" }),
+    );
     fireEvent.click(screen.getByRole("button", { name: "Reset" }));
 
     await waitFor(() => {
@@ -131,5 +140,14 @@ describe("DashboardPage tile resizing", () => {
       expect(todoTile.style.getPropertyValue("--tile-scale-y")).toBe("1");
       expect(todoTile.className).toContain("tile-span-4");
     });
+  });
+
+  it("renders notes tile on dashboard", async () => {
+    render(<DashboardPage />);
+
+    const notesTile = await screen.findByTestId("dashboard-tile-notes");
+
+    expect(notesTile).toBeInTheDocument();
+    expect(screen.getByText("Notes card")).toBeInTheDocument();
   });
 });

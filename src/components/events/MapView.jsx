@@ -512,6 +512,8 @@ export function FullMap({
     setPendingDeleteEvent(null);
   };
 
+  const [legendOpen, setLegendOpen] = useState(() => window.innerWidth > 640);
+
   return (
     <div style={{ display: "flex", flex: 1, flexDirection: "column", minHeight: 0 }}>
       <div className={`map-filter-panel${filterOpen ? "" : " map-filter-panel--collapsed"}`}>
@@ -929,8 +931,12 @@ export function FullMap({
             ))}
         </MapContainer>
 
-        <div className="map-legend">
-          <h5>Legenda</h5>
+        <div
+          className={`map-legend${legendOpen ? "" : " map-legend--collapsed"}`}
+          onClick={() => setLegendOpen((o) => !o)}
+          style={{ cursor: "pointer" }}
+        >
+          <h5>Legenda {legendOpen ? "▾" : "▸"}</h5>
           <div className="map-legend-item">
             <span className="map-legend-icon">📍</span>
             <span>Zbliżające się</span>

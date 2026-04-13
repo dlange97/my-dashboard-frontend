@@ -4,6 +4,7 @@ import TodoSummary from "../components/dashboard/TodoSummary";
 import ShoppingSummary from "../components/dashboard/ShoppingSummary";
 import CalendarSummary from "../components/dashboard/CalendarSummary";
 import EventsSummary from "../components/events/EventsSummary";
+import NotesSummary from "../components/dashboard/NotesSummary";
 import InboxSidebar from "../components/notifications/InboxSidebar";
 import { ConfirmModal } from "../components/ui";
 import api from "../api/api";
@@ -28,6 +29,11 @@ const TILE_DEFINITIONS = [
     id: "events",
     permission: "events.view",
     render: () => <EventsSummary />,
+  },
+  {
+    id: "notes",
+    permission: "dashboard.view",
+    render: () => <NotesSummary />,
   },
   {
     id: "calendar",
@@ -117,7 +123,10 @@ function normalizeDashboardLayout(layout) {
 export default function DashboardPage() {
   const { user, hasPermission } = useAuth();
   const { t } = useTranslation();
-  const firstName = user?.firstName ?? user?.email?.split("@")[0] ?? t("dashboard.guest", "there");
+  const firstName =
+    user?.firstName ??
+    user?.email?.split("@")[0] ??
+    t("dashboard.guest", "there");
   const initialLayout = normalizeDashboardLayout(user?.dashboardLayout ?? null);
   const [tileOrder, setTileOrder] = useState(initialLayout.order);
   const [tileScales, setTileScales] = useState(initialLayout.scales);
@@ -157,7 +166,9 @@ export default function DashboardPage() {
     api
       .me()
       .then((response) => {
-        normalized = normalizeDashboardLayout(response?.user?.dashboardLayout ?? null);
+        normalized = normalizeDashboardLayout(
+          response?.user?.dashboardLayout ?? null,
+        );
         if (!active) return;
         setTileOrder(normalized.order);
         setTileScales(normalized.scales);
@@ -253,7 +264,8 @@ export default function DashboardPage() {
         if (!pending) return;
 
         setTileScales((current) => {
-          const currentScale = current[pending.tileId] ?? DEFAULT_SCALES[pending.tileId];
+          const currentScale =
+            current[pending.tileId] ?? DEFAULT_SCALES[pending.tileId];
           if (
             currentScale.x === pending.scale.x &&
             currentScale.y === pending.scale.y
@@ -308,7 +320,8 @@ export default function DashboardPage() {
             <div className="dashboard-header-copy">
               <h1>{t("dashboard.title", "Dashboard")}</h1>
               <p className="greeting">
-                {t("dashboard.welcomeBack", "Welcome back")}, {firstName}! {t("dashboard.overview", "Here's your overview.")}
+                {t("dashboard.welcomeBack", "Welcome back")}, {firstName}!{" "}
+                {t("dashboard.overview", "Here's your overview.")}
               </p>
             </div>
             <button
@@ -328,8 +341,12 @@ export default function DashboardPage() {
                   dropTargetTileId === tile.id ? " drop-target" : ""
                 }${resizingTileId === tile.id ? " resizing" : ""}`}
                 style={{
-                  "--tile-scale-x": (tileScales[tile.id] ?? DEFAULT_SCALES[tile.id]).x,
-                  "--tile-scale-y": (tileScales[tile.id] ?? DEFAULT_SCALES[tile.id]).y,
+                  "--tile-scale-x": (
+                    tileScales[tile.id] ?? DEFAULT_SCALES[tile.id]
+                  ).x,
+                  "--tile-scale-y": (
+                    tileScales[tile.id] ?? DEFAULT_SCALES[tile.id]
+                  ).y,
                 }}
                 draggable={resizingTileId === null}
                 onDragStart={(e) => {

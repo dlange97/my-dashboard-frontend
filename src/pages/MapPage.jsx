@@ -132,7 +132,7 @@ export default function MapPage() {
 
   return (
     <div
-      className="page-shell"
+      className="page-shell map-page-shell"
       style={{ display: "flex", flexDirection: "column", overflow: "hidden" }}
     >
       <NavBar />

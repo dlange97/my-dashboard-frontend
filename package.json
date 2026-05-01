@@ -12,6 +12,12 @@
     "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
+    "@tiptap/extension-color": "^3.22.2",
+    "@tiptap/extension-link": "^3.22.2",
+    "@tiptap/extension-text-style": "^3.22.2",
+    "@tiptap/pm": "^3.22.2",
+    "@tiptap/react": "^3.22.2",
+    "@tiptap/starter-kit": "^3.22.2",
     "date-fns": "^4.1.0",
     "leaflet": "^1.9.4",
     "leaflet-draw": "^1.0.4",

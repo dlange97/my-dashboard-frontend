@@ -88,6 +88,20 @@ export const api = {
       `/dashboard/todos/${id}/share/${encodeURIComponent(userId)}`,
     ),
 
+  // ── Notes ─────────────────────────────────────────────────────────────
+  getNotes: () => request("GET", "/dashboard/notes"),
+  createNote: (payload) => request("POST", "/dashboard/notes", payload),
+  updateNote: (id, payload) =>
+    request("PATCH", `/dashboard/notes/${id}`, payload),
+  deleteNote: (id) => request("DELETE", `/dashboard/notes/${id}`),
+  shareNote: (id, userId) =>
+    request("POST", `/dashboard/notes/${id}/share`, { userId }),
+  unshareNote: (id, userId) =>
+    request(
+      "DELETE",
+      `/dashboard/notes/${id}/share/${encodeURIComponent(userId)}`,
+    ),
+
   getEvents: () => request("GET", "/events"),
   createEvent: (payload) => request("POST", "/events", payload),
   updateEvent: (id, payload) => request("PUT", `/events/${id}`, payload),

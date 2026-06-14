@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import NavBar from "../components/nav/NavBar";
 import AccessSettings from "../components/auth/AccessSettings";
 import JwtSessionSettings from "../components/auth/JwtSessionSettings";
+import SecurityLogSettings from "../components/auth/SecurityLogSettings";
 import NotificationSettings from "../components/notifications/NotificationSettings";
 import TranslationSettings from "../components/translations/TranslationSettings";
 import InboxSidebar from "../components/notifications/InboxSidebar";
@@ -55,6 +56,15 @@ export default function SettingsPage() {
               "Manage UI translation keys",
             ),
             component: <TranslationSettings />,
+          },
+          {
+            id: "security-log",
+            label: t("settings.securityLog", "🛡️ Security Log"),
+            subtitle: t(
+              "settings.securityLogSubtitle",
+              "Rate-limit blocks — DDoS & brute-force audit",
+            ),
+            component: <SecurityLogSettings />,
           },
         ]
       : []),

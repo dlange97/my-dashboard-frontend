@@ -8,7 +8,7 @@ function formatEventDate(dateStr) {
   return { day: format(d, "d"), month: format(d, "MMM", { locale: pl }) };
 }
 
-export default function EventItem({
+export default React.memo(function EventItem({
   event,
   onEdit,
   onDelete,
@@ -83,4 +83,4 @@ export default function EventItem({
       </div>
     </div>
   );
-}
+});

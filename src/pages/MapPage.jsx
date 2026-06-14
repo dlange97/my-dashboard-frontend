@@ -6,6 +6,7 @@ import InboxSidebar from "../components/notifications/InboxSidebar";
 import ShareUserModal from "../components/ui/ShareUserModal";
 import api from "../api/api";
 import { useAuth } from "../context/AuthContext";
+import { useShareModal } from "../hooks/useShareModal";
 import "../components/events/events.css";
 
 export default function MapPage() {
@@ -22,10 +23,15 @@ export default function MapPage() {
   const [seedLocation, setSeedLocation] = useState(null);
   const [seedTitle, setSeedTitle] = useState("");
   const [mapResetKey, setMapResetKey] = useState(0);
-  const [shareTarget, setShareTarget] = useState(null);
-  const [shareSearch, setShareSearch] = useState("");
-  const [shareUsers, setShareUsers] = useState([]);
-  const [shareUsersLoading, setShareUsersLoading] = useState(false);
+  const {
+    shareTarget,
+    shareSearch,
+    shareUsers,
+    shareUsersLoading,
+    openShareModal,
+    closeShareModal,
+    setShareSearch,
+  } = useShareModal();
 
   useEffect(() => {
     api
@@ -33,26 +39,6 @@ export default function MapPage() {
       .then((data) => setEvents(data ?? []))
       .catch(() => {});
   }, []);
-
-  useEffect(() => {
-    if (!shareTarget) {
-      return;
-    }
-
-    setShareUsersLoading(true);
-    api
-      .getShareableUsers({ page: 1, perPage: 50, search: shareSearch })
-      .then((response) => {
-        const users = Array.isArray(response)
-          ? response
-          : Array.isArray(response?.items)
-            ? response.items
-            : [];
-        setShareUsers(users);
-      })
-      .catch(() => setShareUsers([]))
-      .finally(() => setShareUsersLoading(false));
-  }, [shareTarget, shareSearch]);
 
   const handleCreateEventAtLocation = (location) => {
     setEditingEvent(null);
@@ -105,12 +91,6 @@ export default function MapPage() {
     setSeedTitle("");
   };
 
-  const closeShareModal = () => {
-    setShareTarget(null);
-    setShareSearch("");
-    setShareUsers([]);
-  };
-
   const handleShareEvent = async (selectedUser) => {
     if (!shareTarget?.id || !selectedUser?.id) {
       return;
@@ -125,23 +105,20 @@ export default function MapPage() {
         setEditingEvent(updated);
       }
       closeShareModal();
-    } catch (err) {
-      alert(`Failed to share event: ${err.message}`);
+    } catch {
+      // share error is non-critical; modal stays open so user can retry
     }
   };
 
   return (
-    <div
-      className="page-shell map-page-shell"
-      style={{ display: "flex", flexDirection: "column", overflow: "hidden" }}
-    >
+    <div className="page-shell map-page-shell">
       <NavBar />
       <div className="app-shell-with-inbox">
         <InboxSidebar />
         <div className="map-page app-shell-main">
           <div className="map-page-header">
             <h1>🗺 Map</h1>
-            <span style={{ fontSize: "0.85rem", color: "#64748b" }}>
+            <span className="map-page-event-count">
               {events.filter((e) => e.location?.lat).length} event(s) on map
             </span>
             <button
@@ -164,7 +141,7 @@ export default function MapPage() {
               onCreateEventAtLocation={handleCreateEventAtLocation}
               onEditEvent={handleEditEvent}
               onDeleteEvent={handleDeleteEvent}
-              onShareEvent={setShareTarget}
+              onShareEvent={openShareModal}
             />
           </div>
         </div>
@@ -176,7 +153,7 @@ export default function MapPage() {
           seedLocation={seedLocation}
           seedTitle={seedTitle}
           canShare={editingEvent?.ownerId === user?.id}
-          onShare={setShareTarget}
+          onShare={openShareModal}
           onSave={handleSaveEvent}
           onCancel={() => {
             setShowForm(false);

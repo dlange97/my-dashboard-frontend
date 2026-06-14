@@ -9,6 +9,7 @@ import Pagination from "../components/ui/Pagination";
 import api from "../api/api";
 import { useAuth } from "../context/AuthContext";
 import { useTranslation } from "../context/TranslationContext";
+import { useShareModal } from "../hooks/useShareModal";
 import "../components/events/events.css";
 
 const MapModal = lazy(() => import("../components/events/MapModal"));
@@ -25,10 +26,15 @@ export default function EventsPage() {
   const [showForm, setShowForm] = useState(false);
   const [editingEvent, setEditingEvent] = useState(null);
   const [mapEvent, setMapEvent] = useState(null);
-  const [shareTarget, setShareTarget] = useState(null);
-  const [shareSearch, setShareSearch] = useState("");
-  const [shareUsers, setShareUsers] = useState([]);
-  const [shareUsersLoading, setShareUsersLoading] = useState(false);
+  const {
+    shareTarget,
+    shareSearch,
+    shareUsers,
+    shareUsersLoading,
+    openShareModal,
+    closeShareModal,
+    setShareSearch,
+  } = useShareModal();
 
   useEffect(() => {
     api
@@ -37,29 +43,6 @@ export default function EventsPage() {
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
-
-  useEffect(() => {
-    if (!shareTarget) {
-      return;
-    }
-
-    setShareUsersLoading(true);
-    api
-      .getShareableUsers({ page: 1, perPage: 50, search: shareSearch })
-      .then((response) => {
-        const users = Array.isArray(response)
-          ? response
-          : Array.isArray(response?.items)
-            ? response.items
-            : [];
-        setShareUsers(users);
-      })
-      .catch((err) => {
-        alert(`Failed to load users: ${err.message}`);
-        setShareUsers([]);
-      })
-      .finally(() => setShareUsersLoading(false));
-  }, [shareTarget, shareSearch]);
 
   const sorted = [...events].sort(
     (a, b) => new Date(a.startAt) - new Date(b.startAt),
@@ -111,12 +94,6 @@ export default function EventsPage() {
     }
   };
 
-  const closeShareModal = () => {
-    setShareTarget(null);
-    setShareSearch("");
-    setShareUsers([]);
-  };
-
   const handleShareEvent = async (selectedUser) => {
     if (!shareTarget?.id || !selectedUser?.id) {
       return;
@@ -131,8 +108,8 @@ export default function EventsPage() {
         setEditingEvent(updated);
       }
       closeShareModal();
-    } catch (err) {
-      alert(`Failed to share event: ${err.message}`);
+    } catch {
+      // share error is non-critical; modal stays open so user can retry
     }
   };
 
@@ -204,7 +181,7 @@ export default function EventsPage() {
                     onEdit={handleEdit}
                     onDelete={handleDelete}
                     onViewMap={setMapEvent}
-                    onShare={setShareTarget}
+                    onShare={openShareModal}
                   />
                 ))}
               </div>
@@ -220,7 +197,7 @@ export default function EventsPage() {
             <EventForm
               initial={editingEvent}
               canShare={editingEvent?.ownerId === user?.id}
-              onShare={setShareTarget}
+              onShare={openShareModal}
               onSave={handleSave}
               onCancel={() => {
                 setShowForm(false);

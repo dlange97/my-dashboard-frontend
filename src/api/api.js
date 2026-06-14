@@ -7,29 +7,29 @@ function resolveApiBase() {
 }
 
 const API_BASE = resolveApiBase();
-const TOKEN_KEY = "dashboard_token";
+// INSTANCE_KEY: non-sensitive, kept in localStorage for subdomain routing.
 const INSTANCE_KEY = "dashboard_instance_id";
-
-function getToken() {
-  return localStorage.getItem(TOKEN_KEY);
-}
 
 function getInstanceId() {
   return localStorage.getItem(INSTANCE_KEY);
 }
 
-function authHeaders() {
-  const token = getToken();
+function requestHeaders() {
   const instanceId = getInstanceId();
   return {
     "Content-Type": "application/json",
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    // JWT is sent automatically as an httpOnly cookie — no Authorization header needed.
     ...(instanceId ? { "X-Instance-Id": instanceId } : {}),
   };
 }
 
 async function request(method, path, body) {
-  const options = { method, headers: authHeaders() };
+  const options = {
+    method,
+    headers: requestHeaders(),
+    // credentials:'include' ensures the httpOnly JWT cookie is sent with every request.
+    credentials: "include",
+  };
   if (body !== undefined) {
     options.body = JSON.stringify(body);
   }
@@ -126,6 +126,7 @@ export const api = {
 
   login: (email, password) =>
     request("POST", "/auth/login", { email, password }),
+  logout: () => request("POST", "/auth/logout"),
   register: (email, password, firstName, lastName) =>
     request("POST", "/auth/register", { email, password, firstName, lastName }),
   requestAccess: (payload) => request("POST", "/auth/request-access", payload),
@@ -212,6 +213,15 @@ export const api = {
       `/auth/instances/resolve?subdomain=${encodeURIComponent(subdomain)}`,
     ),
   getMyInstances: () => request("GET", "/auth/my-instances"),
+
+  // ── Security logs (admin only) ────────────────────────────────────────
+  getSecurityLogs: (service, { page = 1, perPage = 50 } = {}) =>
+    request(
+      "GET",
+      `/${service}/admin/security-log?page=${page}&perPage=${perPage}`,
+    ),
+  clearSecurityLogs: (service) =>
+    request("DELETE", `/${service}/admin/security-log/clear`),
 };
 
 export default api;

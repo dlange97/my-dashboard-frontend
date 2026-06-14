@@ -30,20 +30,23 @@ const SettingsPage = lazy(() => import("./pages/SettingsPage"));
 const NotesPage = lazy(() => import("./pages/NotesPage"));
 
 function ProtectedRoute({ children }) {
-  const { isAuthenticated, needsInstanceSelection } = useAuth();
+  const { isAuthenticated, isReady, needsInstanceSelection } = useAuth();
+  if (!isReady) return <div className="app-page-loading">Loading…</div>;
   if (!isAuthenticated) return <Navigate to="/login" replace />;
   if (needsInstanceSelection) return <Navigate to="/select-instance" replace />;
   return children;
 }
 
 function PublicRoute({ children }) {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isReady } = useAuth();
+  if (!isReady) return <div className="app-page-loading">Loading…</div>;
   return isAuthenticated ? <Navigate to="/" replace /> : children;
 }
 
 /** Requires authentication only — no instance selection check (used by /select-instance). */
 function AuthOnlyRoute({ children }) {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isReady } = useAuth();
+  if (!isReady) return <div className="app-page-loading">Loading…</div>;
   return isAuthenticated ? children : <Navigate to="/login" replace />;
 }
 

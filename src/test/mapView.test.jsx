@@ -24,6 +24,35 @@ const { apiMock } = vi.hoisted(() => ({
   },
 }));
 
+// Helpers to build events with deterministic status
+const futureDate = () => {
+  const d = new Date();
+  d.setFullYear(d.getFullYear() + 1);
+  return d.toISOString();
+};
+const pastDate = () => {
+  const d = new Date();
+  d.setFullYear(d.getFullYear() - 1);
+  return d.toISOString();
+};
+const nowDate = () => new Date().toISOString();
+
+function makeEvent(id, overrides = {}) {
+  return {
+    id,
+    title: `Event ${id}`,
+    startAt: futureDate(),
+    endAt: null,
+    location: {
+      display_name: `Miejsce ${id}`,
+      lat: 52 + id * 0.1,
+      lon: 21 + id * 0.1,
+    },
+    ownerId: "u1",
+    ...overrides,
+  };
+}
+
 vi.mock("react-leaflet", () => {
   const SimpleWrap = ({ children }) => <div>{children}</div>;
   const LayersControl = ({ children }) => <div>{children}</div>;
@@ -234,5 +263,236 @@ describe("FullMap", () => {
         suggestedTitle: "Event: Punkt testowy",
       }),
     );
+  });
+
+  it("shows correct event counts per status in filter panel", async () => {
+    const events = [
+      makeEvent(1, { startAt: futureDate() }), // upcoming
+      makeEvent(2, { startAt: futureDate() }), // upcoming
+      makeEvent(3, { startAt: pastDate(), endAt: pastDate() }), // past
+      makeEvent(4, { startAt: nowDate(), endAt: futureDate() }), // today
+    ];
+
+    render(
+      <FullMap
+        events={events}
+        canManageRoutes={false}
+        canManageEvents={false}
+        onCreateEventAtLocation={vi.fn()}
+        onEditEvent={vi.fn()}
+        onDeleteEvent={vi.fn()}
+      />,
+    );
+
+    await waitFor(() => expect(apiMock.getMapPoints).toHaveBeenCalled());
+
+    expect(screen.getByText(/Zbliżające się \(2\)/)).toBeInTheDocument();
+    expect(screen.getByText(/Trwające \(1\)/)).toBeInTheDocument();
+    expect(screen.getByText(/Minione \(1\)/)).toBeInTheDocument();
+  });
+
+  it("filters events by search text", async () => {
+    const events = [
+      makeEvent(10, {
+        title: "Festiwal Jazzowy",
+        location: { display_name: "Kraków", lat: 50.06, lon: 19.94 },
+      }),
+      makeEvent(11, {
+        title: "Konferencja IT",
+        location: { display_name: "Warszawa", lat: 52.23, lon: 21.01 },
+      }),
+    ];
+
+    render(
+      <FullMap
+        events={events}
+        canManageRoutes={false}
+        canManageEvents={false}
+        onCreateEventAtLocation={vi.fn()}
+        onEditEvent={vi.fn()}
+        onDeleteEvent={vi.fn()}
+      />,
+    );
+
+    await waitFor(() => expect(apiMock.getMapPoints).toHaveBeenCalled());
+
+    // Both visible initially — text is split by <strong> tags so use textContent
+    const infoEl = () => screen.getByText(/Wyniki:/);
+    expect(infoEl().textContent.replace(/\s+/g, " ")).toContain(
+      "Wyniki: 2 z 2",
+    );
+
+    fireEvent.change(screen.getByPlaceholderText(/Szukaj po nazwie/), {
+      target: { value: "jazz" },
+    });
+
+    expect(infoEl().textContent.replace(/\s+/g, " ")).toContain(
+      "Wyniki: 1 z 2",
+    );
+  });
+
+  it("filters events by date range", async () => {
+    const jan2030 = "2030-01-15T10:00:00.000Z";
+    const jun2030 = "2030-06-15T10:00:00.000Z";
+
+    const events = [
+      makeEvent(20, {
+        startAt: jan2030,
+        location: { display_name: "Warszawa", lat: 52.23, lon: 21.01 },
+      }),
+      makeEvent(21, {
+        startAt: jun2030,
+        location: { display_name: "Gdańsk", lat: 54.35, lon: 18.65 },
+      }),
+    ];
+
+    render(
+      <FullMap
+        events={events}
+        canManageRoutes={false}
+        canManageEvents={false}
+        onCreateEventAtLocation={vi.fn()}
+        onEditEvent={vi.fn()}
+        onDeleteEvent={vi.fn()}
+      />,
+    );
+
+    await waitFor(() => expect(apiMock.getMapPoints).toHaveBeenCalled());
+
+    const infoEl = () => screen.getByText(/Wyniki:/);
+    expect(infoEl().textContent.replace(/\s+/g, " ")).toContain(
+      "Wyniki: 2 z 2",
+    );
+
+    // Restrict to Jan–Mar 2030: only jan event passes
+    fireEvent.change(screen.getByLabelText(/Od:/), {
+      target: { value: "2030-01-01" },
+    });
+    fireEvent.change(screen.getByLabelText(/Do:/), {
+      target: { value: "2030-03-31" },
+    });
+
+    expect(infoEl().textContent.replace(/\s+/g, " ")).toContain(
+      "Wyniki: 1 z 2",
+    );
+  });
+
+  it("clears all filters via Wyczyść button", async () => {
+    const events = [
+      makeEvent(30, { startAt: pastDate(), endAt: pastDate() }), // past
+    ];
+
+    render(
+      <FullMap
+        events={events}
+        canManageRoutes={false}
+        canManageEvents={false}
+        onCreateEventAtLocation={vi.fn()}
+        onEditEvent={vi.fn()}
+        onDeleteEvent={vi.fn()}
+      />,
+    );
+
+    await waitFor(() => expect(apiMock.getMapPoints).toHaveBeenCalled());
+
+    const infoEl = () => screen.getByText(/Wyniki:/);
+
+    // "past" filter is off by default → event not shown
+    expect(infoEl().textContent.replace(/\s+/g, " ")).toContain(
+      "Wyniki: 0 z 1",
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Wyczyść" }));
+
+    // After clear, past is still off (default state) — count unchanged
+    expect(infoEl().textContent.replace(/\s+/g, " ")).toContain(
+      "Wyniki: 0 z 1",
+    );
+  });
+
+  it("does not render edit/delete popup buttons when canManageEvents is false", async () => {
+    const events = [makeEvent(40, { startAt: futureDate() })];
+
+    render(
+      <FullMap
+        events={events}
+        canManageRoutes={false}
+        canManageEvents={false}
+        onCreateEventAtLocation={vi.fn()}
+        onEditEvent={vi.fn()}
+        onDeleteEvent={vi.fn()}
+      />,
+    );
+
+    await waitFor(() => expect(apiMock.getMapPoints).toHaveBeenCalled());
+
+    expect(screen.queryByRole("button", { name: "Edytuj" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Usuń" })).toBeNull();
+  });
+
+  it("renders route drawing panel when canManageRoutes and toggled", async () => {
+    render(
+      <FullMap
+        events={[]}
+        canManageRoutes={true}
+        canManageEvents={false}
+        onCreateEventAtLocation={vi.fn()}
+        onEditEvent={vi.fn()}
+        onDeleteEvent={vi.fn()}
+      />,
+    );
+
+    await waitFor(() => expect(apiMock.getMapPoints).toHaveBeenCalled());
+
+    expect(screen.queryByTestId("route-drawing")).toBeNull();
+
+    fireEvent.click(screen.getByRole("button", { name: /Trasa/i }));
+
+    expect(screen.getByTestId("route-drawing")).toBeInTheDocument();
+
+    // Toggle off
+    fireEvent.click(screen.getByRole("button", { name: /Zamknij/i }));
+    expect(screen.queryByTestId("route-drawing")).toBeNull();
+  });
+
+  it("updates point name via edit form", async () => {
+    apiMock.getMapPoints.mockResolvedValueOnce([
+      { id: 55, name: "Stary punkt", description: "", lat: 50.0, lon: 19.0 },
+    ]);
+    apiMock.updateMapPoint.mockResolvedValue({
+      id: 55,
+      name: "Nowa nazwa",
+      description: "",
+      lat: 50.0,
+      lon: 19.0,
+    });
+
+    render(
+      <FullMap
+        events={[]}
+        canManageRoutes={false}
+        canManageEvents={false}
+        onCreateEventAtLocation={vi.fn()}
+        onEditEvent={vi.fn()}
+        onDeleteEvent={vi.fn()}
+      />,
+    );
+
+    await waitFor(() => expect(apiMock.getMapPoints).toHaveBeenCalled());
+
+    fireEvent.click(screen.getByRole("button", { name: "Edytuj punkt" }));
+
+    const nameInput = screen.getByDisplayValue("Stary punkt");
+    fireEvent.change(nameInput, { target: { value: "Nowa nazwa" } });
+    fireEvent.click(screen.getByRole("button", { name: "Zapisz" }));
+
+    await waitFor(() => {
+      expect(apiMock.updateMapPoint).toHaveBeenCalledWith(
+        55,
+        expect.objectContaining({
+          name: "Nowa nazwa",
+        }),
+      );
+    });
   });
 });

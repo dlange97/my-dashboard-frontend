@@ -51,3 +51,9 @@
     flex-wrap: wrap;
   }
 }
+
+/* ── Page-specific layout helpers ─────────────────────────── */
+.todo-page-main {
+  max-width: 720px;
+  margin: 0 auto;
+}

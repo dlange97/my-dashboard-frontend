@@ -572,11 +572,129 @@
   color: #94a3b8;
 }
 
+.events-summary-btn {
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  padding: 0.45rem 0;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: background 0.12s;
+}
+
+.events-summary-btn:hover {
+  background: #f1f5f9;
+  padding-left: 0.4rem;
+  padding-right: 0.4rem;
+}
+
+.events-summary-pin {
+  font-size: 0.85rem;
+  flex-shrink: 0;
+  opacity: 0.7;
+}
+
+/* ── Event Preview Modal ──────────────────────────────────── */
+.event-preview-card {
+  border-radius: 16px !important;
+  padding: 1.5rem !important;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.18) !important;
+}
+
+.event-preview-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.1rem;
+}
+
+.event-preview-type-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #6366f1, #818cf8);
+  flex-shrink: 0;
+}
+
+.event-preview-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  margin-bottom: 0.75rem;
+}
+
+.event-preview-icon {
+  font-size: 1.1rem;
+  flex-shrink: 0;
+  margin-top: 0.05rem;
+}
+
+.event-preview-label {
+  font-size: 0.73rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #94a3b8;
+  margin-bottom: 0.1rem;
+}
+
+.event-preview-value {
+  font-size: 0.9rem;
+  color: #1e293b;
+  font-weight: 500;
+}
+
+.event-preview-map-section {
+  margin-top: 0.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.event-preview-minimap {
+  position: relative;
+  height: 180px;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid #e2e8f0;
+}
+
+.event-preview-expand-map {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 0.3rem 0.65rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #6366f1;
+  cursor: pointer;
+  backdrop-filter: blur(4px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: background 0.15s;
+}
+
+.event-preview-expand-map:hover {
+  background: #fff;
+}
+
 .icon-events {
   background: #ede9fe;
 }
 
 /* ── Map page ─────────────────────────────────────────────── */
+.map-page-shell {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.map-page-event-count {
+  font-size: 0.85rem;
+  color: #64748b;
+}
+
 /* Override global min-height on the inbox wrapper so the flex chain
    NavBar → remaining-space works inside the fixed-height page shell. */
 .map-page-shell .app-shell-with-inbox {
@@ -613,6 +731,7 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  position: relative; /* contain the absolutely-positioned filter panel on mobile */
 }
 
 /* Map Filter Panel Styles */
@@ -712,6 +831,33 @@
   display: grid;
   grid-template-columns: repeat(2, minmax(150px, 220px));
   gap: 0.7rem;
+}
+
+@media (max-width: 640px) {
+  .map-page-header {
+    padding: 0.6rem 1rem;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .map-filter-panel {
+    padding: 0.6rem 0.75rem;
+    max-height: 240px;
+  }
+
+  .map-filter-actions {
+    gap: 0.3rem;
+    flex-wrap: wrap;
+  }
+
+  .map-filter-row-dates {
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+  }
+
+  .map-filter-search {
+    min-width: 0;
+  }
 }
 
 .map-filter-row-dates label {

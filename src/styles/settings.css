@@ -521,3 +521,173 @@
     padding: 12px;
   }
 }
+
+/* ── Security Log Settings ──────────────────────────────────── */
+.security-log-settings {
+  padding: 4px 0;
+}
+
+.security-log-description {
+  color: var(--text-secondary, #6b7280);
+  margin-bottom: 16px;
+  font-size: 0.9rem;
+}
+
+.security-log-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.security-log-service-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.security-log-tab {
+  padding: 4px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--border, #d1d5db);
+  background: transparent;
+  cursor: pointer;
+  font-size: 0.82rem;
+  text-transform: capitalize;
+  transition:
+    background 0.15s,
+    color 0.15s;
+}
+
+.security-log-tab.active {
+  background: var(--accent, #3b82f6);
+  color: #fff;
+  border-color: var(--accent, #3b82f6);
+}
+
+.security-log-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-danger {
+  padding: 6px 14px;
+  border-radius: 6px;
+  border: 1px solid #ef4444;
+  background: #ef4444;
+  color: #fff;
+  cursor: pointer;
+  font-size: 0.875rem;
+}
+
+.btn-danger:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.security-log-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  font-size: 0.85rem;
+  color: var(--text-secondary, #6b7280);
+  margin-bottom: 12px;
+}
+
+.security-log-empty {
+  color: var(--text-secondary, #6b7280);
+  font-style: italic;
+}
+
+.security-log-table-wrapper {
+  overflow-x: auto;
+}
+
+.security-log-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+}
+
+.security-log-table th,
+.security-log-table td {
+  padding: 6px 10px;
+  border: 1px solid var(--border, #e5e7eb);
+  text-align: left;
+  vertical-align: top;
+}
+
+.security-log-table th {
+  background: var(--surface-secondary, #f3f4f6);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.security-log-table tr.row-sensitive td {
+  background: #fff7ed;
+}
+
+.cell-mono {
+  font-family: monospace;
+  font-size: 0.78rem;
+}
+
+.cell-path {
+  word-break: break-all;
+  max-width: 260px;
+}
+
+.cell-center {
+  text-align: center;
+}
+
+.cell-nowrap {
+  white-space: nowrap;
+}
+
+.method-badge {
+  display: inline-block;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #fff;
+}
+
+.method-get {
+  background: #10b981;
+}
+.method-post {
+  background: #3b82f6;
+}
+.method-put {
+  background: #f59e0b;
+}
+.method-patch {
+  background: #8b5cf6;
+}
+.method-delete {
+  background: #ef4444;
+}
+
+.security-log-pagination {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-top: 12px;
+  font-size: 0.875rem;
+}
+
+.security-log-pagination button {
+  padding: 4px 10px;
+  border: 1px solid var(--border, #d1d5db);
+  border-radius: 6px;
+  background: transparent;
+  cursor: pointer;
+}
+
+.security-log-pagination button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}

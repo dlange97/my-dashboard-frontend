@@ -9,10 +9,7 @@ export default function TodoPage() {
       <NavBar />
       <div className="app-shell-with-inbox">
         <InboxSidebar />
-        <main
-          className="page-content app-shell-main page-main-padded"
-          style={{ maxWidth: "720px", margin: "0 auto" }}
-        >
+        <main className="page-content app-shell-main page-main-padded todo-page-main">
           <TodoList />
         </main>
       </div>

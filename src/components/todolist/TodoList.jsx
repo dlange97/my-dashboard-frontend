@@ -6,6 +6,7 @@ import { useTranslation } from "../../context/TranslationContext";
 import { useAuth } from "../../context/AuthContext";
 import ShareUserModal from "../ui/ShareUserModal";
 import Pagination from "../ui/Pagination";
+import { useShareModal } from "../../hooks/useShareModal";
 
 const ITEM_COLORS = [
   "#2563eb",
@@ -62,10 +63,15 @@ export default function TodoList({ title }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showForm, setShowForm] = useState(false);
-  const [shareTarget, setShareTarget] = useState(null);
-  const [shareSearch, setShareSearch] = useState("");
-  const [shareUsers, setShareUsers] = useState([]);
-  const [shareUsersLoading, setShareUsersLoading] = useState(false);
+  const {
+    shareTarget,
+    shareSearch,
+    shareUsers,
+    shareUsersLoading,
+    openShareModal,
+    closeShareModal,
+    setShareSearch,
+  } = useShareModal();
 
   // ── Load from API on mount ─────────────────────────────────
   useEffect(() => {
@@ -81,7 +87,7 @@ export default function TodoList({ title }) {
     api
       .createTodo({ text: item.text, dueDate: item.dueDate || null })
       .then((created) => setLocalTasks((prev) => [...prev, created]))
-      .catch((err) => alert(`Failed to add task: ${err.message}`));
+      .catch(() => {});
   };
 
   const toggleTask = (item) => {
@@ -92,7 +98,7 @@ export default function TodoList({ title }) {
           prev.map((task) => (task.id === updated.id ? updated : task)),
         ),
       )
-      .catch((err) => alert(`Failed to toggle task: ${err.message}`));
+      .catch(() => {});
   };
 
   const deleteTask = (item) => {
@@ -101,36 +107,7 @@ export default function TodoList({ title }) {
       .then(() =>
         setLocalTasks((prev) => prev.filter((task) => task.id !== item.id)),
       )
-      .catch((err) => alert(`Failed to delete task: ${err.message}`));
-  };
-
-  useEffect(() => {
-    if (!shareTarget) {
-      return;
-    }
-
-    setShareUsersLoading(true);
-    api
-      .getShareableUsers({ page: 1, perPage: 50, search: shareSearch })
-      .then((response) => {
-        const users = Array.isArray(response)
-          ? response
-          : Array.isArray(response?.items)
-            ? response.items
-            : [];
-        setShareUsers(users);
-      })
-      .catch((err) => {
-        alert(`Failed to load users: ${err.message}`);
-        setShareUsers([]);
-      })
-      .finally(() => setShareUsersLoading(false));
-  }, [shareTarget, shareSearch]);
-
-  const closeShareModal = () => {
-    setShareTarget(null);
-    setShareSearch("");
-    setShareUsers([]);
+      .catch(() => {});
   };
 
   const handleShareTask = async (selectedUser) => {
@@ -144,8 +121,8 @@ export default function TodoList({ title }) {
         prev.map((task) => (task.id === updated.id ? updated : task)),
       );
       closeShareModal();
-    } catch (err) {
-      alert(`Failed to share task: ${err.message}`);
+    } catch {
+      // share error is non-critical; modal stays open so user can retry
     }
   };
 
@@ -207,7 +184,7 @@ export default function TodoList({ title }) {
                   accentColor={colorForUserKey(task.createdBy ?? task.ownerId)}
                   onToggle={toggleTask}
                   onDelete={deleteTask}
-                  onShare={(item) => setShareTarget(item)}
+                  onShare={(item) => openShareModal(item)}
                   canShare={task.ownerId === user?.id}
                 />
               ))}

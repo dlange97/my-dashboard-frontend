@@ -4,11 +4,15 @@ import { format } from "date-fns";
 import { pl } from "date-fns/locale";
 import api from "../../api/api";
 import { useTranslation } from "../../context/TranslationContext";
+import EventPreviewModal from "./EventPreviewModal";
+import MapModal from "./MapModal";
 
 export default function EventsSummary() {
   const { t } = useTranslation();
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [selectedEvent, setSelectedEvent] = useState(null);
+  const [showMap, setShowMap] = useState(false);
 
   useEffect(() => {
     api
@@ -24,38 +28,79 @@ export default function EventsSummary() {
       .finally(() => setLoading(false));
   }, []);
 
+  function hasLocation(ev) {
+    const lat = Number(ev?.location?.lat);
+    const lon = Number(ev?.location?.lon);
+    return Number.isFinite(lat) && Number.isFinite(lon);
+  }
+
   return (
-    <div className="summary-card">
-      <div className="summary-card-header">
-        <div className="summary-card-title">
-          {t("events.pageTitle", "My Events")}
+    <>
+      <div className="summary-card">
+        <div className="summary-card-header">
+          <div className="summary-card-title">
+            {t("events.pageTitle", "My Events")}
+          </div>
+          <Link to="/events" className="summary-go-link">
+            {t("events.viewAll", "View all")} →
+          </Link>
         </div>
-        <Link to="/events" className="summary-go-link">
-          {t("events.viewAll", "View all")} →
-        </Link>
+
+        {loading ? (
+          <div className="empty-state">{t("common.loading", "Loading…")}</div>
+        ) : events.length === 0 ? (
+          <div className="empty-state">
+            {t("events.noUpcoming", "No upcoming events.")}
+          </div>
+        ) : (
+          <div className="events-summary-list">
+            {events.map((ev) => (
+              <button
+                key={ev.id}
+                className="events-summary-item events-summary-btn"
+                onClick={() => setSelectedEvent(ev)}
+                type="button"
+              >
+                <div className="events-summary-dot" />
+                <div className="events-summary-info">
+                  <div className="events-summary-title">{ev.title}</div>
+                  <div className="events-summary-date">
+                    {format(new Date(ev.startAt), "d MMM yyyy, HH:mm", {
+                      locale: pl,
+                    })}
+                  </div>
+                </div>
+                {hasLocation(ev) && (
+                  <span className="events-summary-pin" title="Has location">
+                    📍
+                  </span>
+                )}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
-      {loading ? (
-        <div className="empty-state">{t("common.loading", "Loading…")}</div>
-      ) : events.length === 0 ? (
-        <div className="empty-state">{t("events.noUpcoming", "No upcoming events.")}</div>
-      ) : (
-        <div className="events-summary-list">
-          {events.map((ev) => (
-            <div key={ev.id} className="events-summary-item">
-              <div className="events-summary-dot" />
-              <div className="events-summary-info">
-                <div className="events-summary-title">{ev.title}</div>
-                <div className="events-summary-date">
-                  {format(new Date(ev.startAt), "d MMM yyyy, HH:mm", {
-                    locale: pl,
-                  })}
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
+      {selectedEvent && (
+        <EventPreviewModal
+          event={selectedEvent}
+          locale="pl"
+          canManageEvents={false}
+          onClose={() => {
+            setSelectedEvent(null);
+            setShowMap(false);
+          }}
+          onShowMap={() => setShowMap(true)}
+        />
       )}
-    </div>
+
+      {showMap && selectedEvent && (
+        <MapModal
+          location={selectedEvent.location}
+          title={selectedEvent.title}
+          onClose={() => setShowMap(false)}
+        />
+      )}
+    </>
   );
 }

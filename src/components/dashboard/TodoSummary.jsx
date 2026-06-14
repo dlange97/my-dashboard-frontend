@@ -4,6 +4,11 @@ import ConfirmModal from "../ui/ConfirmModal";
 import api from "../../api/api";
 import { useTranslation } from "../../context/TranslationContext";
 
+function shortText(text) {
+  if (!text) return "—";
+  return text.replace(/^seed\d+\s+/i, "");
+}
+
 export default function TodoSummary() {
   const { t } = useTranslation();
   const [todos, setTodos] = useState([]);
@@ -82,8 +87,9 @@ export default function TodoSummary() {
                   />
                   <span
                     className={`todo-summary-text${todo.done ? " done" : ""}`}
+                    title={todo.text}
                   >
-                    {todo.text}
+                    {shortText(todo.text)}
                   </span>
                 </button>
               </li>

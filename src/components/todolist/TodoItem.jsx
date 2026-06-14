@@ -33,7 +33,7 @@ function getDueDateStatus(dateValue) {
   return null;
 }
 
-export default function TodoItem({
+export default React.memo(function TodoItem({
   item,
   onToggle,
   onDelete,
@@ -86,4 +86,4 @@ export default function TodoItem({
       </div>
     </li>
   );
-}
+});

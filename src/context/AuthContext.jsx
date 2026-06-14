@@ -4,6 +4,7 @@ import React, {
   useState,
   useCallback,
   useEffect,
+  useMemo,
   useRef,
 } from "react";
 import {
@@ -15,6 +16,9 @@ import api from "../api/api";
 
 const AuthContext = createContext(null);
 
+// TOKEN_KEY is no longer written to localStorage — the JWT is stored as an
+// httpOnly cookie by the auth-service. We keep the constant only to migrate
+// away any previously stored value on first load.
 const TOKEN_KEY = "dashboard_token";
 const USER_KEY = "dashboard_user";
 const LANG_KEY = "dashboard_lang";
@@ -33,22 +37,14 @@ function extractSubdomain() {
 }
 
 export function AuthProvider({ children }) {
-  const [token, setToken] = useState(() => {
-    const storedUser = localStorage.getItem(USER_KEY);
-    if (!storedUser) {
-      return localStorage.getItem(TOKEN_KEY);
-    }
-
-    try {
-      JSON.parse(storedUser);
-      return localStorage.getItem(TOKEN_KEY);
-    } catch {
-      localStorage.removeItem(USER_KEY);
-      localStorage.removeItem(TOKEN_KEY);
-      return null;
-    }
-  });
+  // We no longer persist the raw JWT in localStorage.
+  // isAuthenticated is derived from whether `user` is populated.
+  // On cold start we call /auth/me — if the httpOnly cookie is still valid the
+  // server returns the current user; if not, the user is treated as logged out.
   const [user, setUser] = useState(() => {
+    // Migrate: clear any token that was stored by a previous version.
+    localStorage.removeItem(TOKEN_KEY);
+
     const stored = localStorage.getItem(USER_KEY);
     if (!stored) return null;
 
@@ -56,14 +52,19 @@ export function AuthProvider({ children }) {
       return JSON.parse(stored);
     } catch {
       localStorage.removeItem(USER_KEY);
-      localStorage.removeItem(TOKEN_KEY);
       return null;
     }
   });
 
   const [needsInstanceSelection, setNeedsInstanceSelection] = useState(false);
+  // isReady: false until the initial /auth/me check completes, so we don't
+  // flash a login screen while the cookie-based session is being verified.
+  const [isReady, setIsReady] = useState(false);
 
   const login = useCallback((newToken, newUser) => {
+    // The actual JWT is stored as an httpOnly cookie by the auth-service.
+    // We decode the token body here only to extract user claims immediately,
+    // so the UI can render without waiting for a /auth/me round-trip.
     const claims = decodeJwtClaims(newToken) ?? {};
     const mergedUser = {
       id: newUser?.id ?? claims.id,
@@ -79,7 +80,7 @@ export function AuthProvider({ children }) {
       instanceId: newUser?.instanceId ?? claims.instanceId ?? null,
     };
 
-    localStorage.setItem(TOKEN_KEY, newToken);
+    // Store only non-sensitive user profile data — never the raw token.
     localStorage.setItem(USER_KEY, JSON.stringify(mergedUser));
 
     if (mergedUser.language) {
@@ -91,7 +92,6 @@ export function AuthProvider({ children }) {
     } else {
       localStorage.removeItem(INSTANCE_KEY);
     }
-    setToken(newToken);
     setUser(mergedUser);
 
     // If the JWT has no instanceId, check how many instances the user has
@@ -121,10 +121,10 @@ export function AuthProvider({ children }) {
   }, []);
 
   const logout = useCallback(() => {
-    localStorage.removeItem(TOKEN_KEY);
+    // Ask the server to clear the httpOnly cookie.
+    api.logout().catch(() => {});
     localStorage.removeItem(USER_KEY);
     localStorage.removeItem(INSTANCE_KEY);
-    setToken(null);
     setUser(null);
     setNeedsInstanceSelection(false);
   }, []);
@@ -154,17 +154,20 @@ export function AuthProvider({ children }) {
       });
   }, []);
 
-  // After login (or on every cold start with a stored token), fetch /auth/me to
-  // get the server's current permissions for this user.
+  // On cold start: call /auth/me to verify the httpOnly cookie is still valid
+  // and refresh the user's permissions from the server.
   const hasHydrated = useRef(false);
   useEffect(() => {
-    if (!token || hasHydrated.current) return;
+    if (hasHydrated.current) return;
     hasHydrated.current = true;
 
     api
       .me()
       .then((data) => {
-        if (!data?.user) return;
+        if (!data?.user) {
+          setUser(null);
+          return;
+        }
         const fresh = data.user;
         const updated = {
           id: fresh.id,
@@ -185,26 +188,33 @@ export function AuthProvider({ children }) {
         setUser(updated);
       })
       .catch(() => {
-        logout();
+        // Cookie expired or invalid — treat as logged out.
+        localStorage.removeItem(USER_KEY);
+        setUser(null);
+      })
+      .finally(() => {
+        setIsReady(true);
       });
-  }, [token, logout]);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const contextValue = useMemo(
+    () => ({
+      user,
+      login,
+      logout,
+      selectInstance,
+      needsInstanceSelection,
+      isReady,
+      isAuthenticated: !!user,
+      hasPermission: (permission) => hasPermission(user, permission),
+      hasAnyPermission: (permissions) => hasAnyPermission(user, permissions),
+    }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [user, login, logout, selectInstance, needsInstanceSelection, isReady],
+  );
 
   return (
-    <AuthContext.Provider
-      value={{
-        token,
-        user,
-        login,
-        logout,
-        selectInstance,
-        needsInstanceSelection,
-        isAuthenticated: !!token,
-        hasPermission: (permission) => hasPermission(user, permission),
-        hasAnyPermission: (permissions) => hasAnyPermission(user, permissions),
-      }}
-    >
-      {children}
-    </AuthContext.Provider>
+    <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>
   );
 }
 

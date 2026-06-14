@@ -13,12 +13,11 @@ describe("api request helper", () => {
     localStorage.clear();
   });
 
-  it("adds Authorization header when a token is stored", async () => {
-    localStorage.setItem("dashboard_token", "test-jwt");
-    const capturedHeaders = {};
+  it("sends credentials:include on every request (cookie-based auth)", async () => {
+    let capturedOptions = {};
 
     global.fetch = vi.fn().mockImplementation((url, opts) => {
-      Object.assign(capturedHeaders, opts.headers);
+      capturedOptions = opts;
       return Promise.resolve({
         status: 200,
         ok: true,
@@ -29,10 +28,12 @@ describe("api request helper", () => {
     const { default: api } = await import("../api/api.js");
     await api.getTodos();
 
-    expect(capturedHeaders["Authorization"]).toBe("Bearer test-jwt");
+    expect(capturedOptions.credentials).toBe("include");
+    // JWT is an httpOnly cookie — no Authorization header should be set by the client.
+    expect(capturedOptions.headers["Authorization"]).toBeUndefined();
   });
 
-  it("omits Authorization header when no token is stored", async () => {
+  it("never sends Authorization header (JWT is in httpOnly cookie)", async () => {
     localStorage.removeItem("dashboard_token");
     const capturedHeaders = {};
 

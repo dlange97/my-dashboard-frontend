@@ -159,8 +159,10 @@ export default function UsersList({
                       }
                       onClick={() => onSelectUser?.(user)}
                     >
-                      <td>{user.email}</td>
-                      <td>
+                      <td data-label={t("users.colEmail", "Email")}>
+                        {user.email}
+                      </td>
+                      <td data-label={t("users.colName", "Name")}>
                         <div className="auth-users-name-cell">
                           <strong>
                             {`${user.firstName ?? ""} ${user.lastName ?? ""}`.trim() ||
@@ -168,7 +170,7 @@ export default function UsersList({
                           </strong>
                         </div>
                       </td>
-                      <td>
+                      <td data-label={t("users.colStatus", "Status")}>
                         <span
                           className={`auth-user-status-chip ${
                             user.status === "inactive"
@@ -181,10 +183,10 @@ export default function UsersList({
                             : t("users.statusActive", "Active")}
                         </span>
                       </td>
-                      <td>
+                      <td data-label={t("users.colRole", "Role")}>
                         <span>{user.role}</span>
                       </td>
-                      <td>
+                      <td data-label={t("users.colCreated", "Created")}>
                         {user.createdAt
                           ? new Date(user.createdAt).toLocaleDateString("pl-PL")
                           : "—"}

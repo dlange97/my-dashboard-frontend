@@ -8,6 +8,7 @@ import IconButton from "../ui/IconButton";
 import api from "../../api/api";
 import { useTranslation } from "../../context/TranslationContext";
 import { useAuth } from "../../context/AuthContext";
+import { useShareModal } from "../../hooks/useShareModal";
 
 const ITEM_COLORS = [
   "#2563eb",
@@ -150,14 +151,19 @@ export default function ShoppingLists({
   const [showNewForm, setShowNewForm] = useState(false);
   const [page, setPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState("all");
-  const [shareTarget, setShareTarget] = useState(null);
-  const [shareSearch, setShareSearch] = useState("");
-  const [shareUsers, setShareUsers] = useState([]);
-  const [shareUsersLoading, setShareUsersLoading] = useState(false);
   const [listNameError, setListNameError] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const ANIM_MS = 360;
   const { t } = useTranslation();
+  const {
+    shareTarget,
+    shareSearch,
+    shareUsers,
+    shareUsersLoading,
+    openShareModal,
+    closeShareModal,
+    setShareSearch,
+  } = useShareModal();
 
   useEffect(() => {
     setLoading(true);
@@ -188,42 +194,6 @@ export default function ShoppingLists({
     }
   }, [selectedIndex, onSelectionChange]);
 
-  useEffect(() => {
-    if (!shareTarget) {
-      return;
-    }
-
-    setShareUsersLoading(true);
-    api
-      .getShareableUsers({ page: 1, perPage: 50, search: shareSearch })
-      .then((response) => {
-        const users = Array.isArray(response)
-          ? response
-          : Array.isArray(response?.items)
-            ? response.items
-            : [];
-        setShareUsers(users);
-      })
-      .catch((err) => {
-        alert(`Failed to load users: ${err.message}`);
-        setShareUsers([]);
-      })
-      .finally(() => setShareUsersLoading(false));
-  }, [shareTarget, shareSearch]);
-
-  const closeShareModal = () => {
-    setShareTarget(null);
-    setShareSearch("");
-    setShareUsers([]);
-  };
-
-  const openShareModal = (list) => {
-    if (!list) {
-      return;
-    }
-    setShareTarget(list);
-  };
-
   const handleShareList = async (selectedUser) => {
     if (!shareTarget?.id || !selectedUser?.id) {
       return;
@@ -238,8 +208,8 @@ export default function ShoppingLists({
         setEditingList(JSON.parse(JSON.stringify(updated)));
       }
       closeShareModal();
-    } catch (err) {
-      alert(`Failed to share list: ${err.message}`);
+    } catch {
+      // share error is non-critical; modal stays open so user can retry
     }
   };
 

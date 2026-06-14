@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 const API_BASE = (import.meta.env.VITE_API_BASE_URL ?? "").trim() || "";
 
 export default function CheckoutPage() {
   const { hash } = useParams();
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const [validating, setValidating] = useState(true);
   const [valid, setValid] = useState(false);
@@ -114,7 +116,9 @@ export default function CheckoutPage() {
         <button
           className="btn btn-primary"
           onClick={() => {
-            localStorage.setItem("dashboard_token", success.token);
+            // Use the login function so user claims are decoded and stored
+            // properly. The JWT itself is in the httpOnly cookie set by the server.
+            login(success.token);
             navigate("/");
           }}
         >

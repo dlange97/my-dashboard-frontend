@@ -3,6 +3,22 @@ import { Link } from "react-router-dom";
 import api from "../../api/api";
 import { useTranslation } from "../../context/TranslationContext";
 
+const STATUS_STYLES = {
+  active: { bg: "#d1fae5", color: "#065f46" },
+  completed: { bg: "#dbeafe", color: "#1e40af" },
+  pending: { bg: "#fef9c3", color: "#854d0e" },
+};
+
+function getStatusStyle(status) {
+  return STATUS_STYLES[status] ?? { bg: "#f1f5f9", color: "#475569" };
+}
+
+function shortName(name) {
+  if (!name) return "—";
+  // Strip ugly seed prefix like "seed20260329201222 "
+  return name.replace(/^seed\d+\s+/i, "");
+}
+
 export default function ShoppingSummary() {
   const { t } = useTranslation();
   const [lists, setLists] = useState([]);
@@ -41,18 +57,27 @@ export default function ShoppingSummary() {
       ) : (
         <>
           <div className="shop-summary-list">
-            {shown.map((l) => (
-              <Link
-                key={l.id}
-                to={`/shopping?listId=${l.id}`}
-                className="shop-summary-item shop-summary-link"
-              >
-                <span className="shop-item-name">{l.name}</span>
-                <span className="shop-item-count">
-                  {l.products?.length ?? 0} {t("shopping.items", "items")}
-                </span>
-              </Link>
-            ))}
+            {shown.map((l) => {
+              const style = getStatusStyle(l.status);
+              const count = l.products?.length ?? 0;
+              return (
+                <Link
+                  key={l.id}
+                  to={`/shopping?listId=${l.id}`}
+                  className="shop-summary-item shop-summary-link"
+                  title={l.name}
+                >
+                  <span className="shop-item-icon">🛒</span>
+                  <span className="shop-item-name">{shortName(l.name)}</span>
+                  <span
+                    className="shop-item-count"
+                    style={{ background: style.bg, color: style.color }}
+                  >
+                    {count} {t("shopping.items", "prod.")}
+                  </span>
+                </Link>
+              );
+            })}
           </div>
           {lists.length > 4 && (
             <div className="summary-stat">

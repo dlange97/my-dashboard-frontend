@@ -16,6 +16,7 @@
   overflow: hidden;
 }
 
+<<<<<<< HEAD
 .notes-list-toggle {
   border: none;
   border-right: 1px solid #334155;
@@ -27,6 +28,8 @@
   cursor: pointer;
 }
 
+=======
+>>>>>>> origin/main
 .notes-tabs-scroll {
   display: flex;
   overflow-x: auto;
@@ -34,6 +37,7 @@
   scrollbar-width: thin;
 }
 
+<<<<<<< HEAD
 .notes-tab-title-badge {
   border-radius: 999px;
   padding: 0.08rem 0.4rem;
@@ -79,6 +83,8 @@
   padding: 0;
 }
 
+=======
+>>>>>>> origin/main
 .notes-tabs-scroll::-webkit-scrollbar {
   height: 3px;
 }
@@ -479,6 +485,7 @@
   gap: 0.55rem;
 }
 
+<<<<<<< HEAD
 .notes-summary-toggle-btn {
   border: 1px solid #cbd5e1;
   border-radius: 999px;
@@ -582,6 +589,8 @@
   color: #0f172a;
 }
 
+=======
+>>>>>>> origin/main
 .notes-summary-create-btn {
   width: 28px;
   height: 28px;
@@ -646,9 +655,12 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+<<<<<<< HEAD
   align-self: flex-start;
   border-radius: 999px;
   padding: 0.08rem 0.45rem;
+=======
+>>>>>>> origin/main
 }
 
 .notes-summary-preview {
@@ -674,6 +686,7 @@
     font-size: 0.76rem;
   }
 
+<<<<<<< HEAD
   .notes-tabs-scroll {
     display: none;
   }
@@ -687,6 +700,8 @@
     padding: 0 0.55rem;
   }
 
+=======
+>>>>>>> origin/main
   .notes-editor-toolbar {
     padding: 0.35rem 0.6rem;
   }
@@ -707,6 +722,7 @@
     padding: 0.85rem 0.9rem;
     font-size: 0.9rem;
   }
+<<<<<<< HEAD
 
   .notes-summary-textarea {
     min-height: 90px;
@@ -720,4 +736,6 @@
     font-size: 0.68rem;
     padding: 0.15rem 0.45rem;
   }
+=======
+>>>>>>> origin/main
 }

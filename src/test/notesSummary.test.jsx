@@ -52,17 +52,24 @@ describe("NotesSummary", () => {
       expect(getNotesMock).toHaveBeenCalledTimes(1);
     });
 
+<<<<<<< HEAD
     fireEvent.change(screen.getByLabelText("Start writing…"), {
       target: { value: "Body from dashboard" },
     });
 
+=======
+>>>>>>> origin/main
     fireEvent.click(screen.getByRole("button", { name: "Create note" }));
 
     await waitFor(() => {
       expect(createNoteMock).toHaveBeenCalledWith({
         title: "Untitled",
+<<<<<<< HEAD
         content: "Body from dashboard",
         color: "#fef3c7",
+=======
+        content: "",
+>>>>>>> origin/main
       });
       expect(navigateMock).toHaveBeenCalledWith("/notes?noteId=42");
     });

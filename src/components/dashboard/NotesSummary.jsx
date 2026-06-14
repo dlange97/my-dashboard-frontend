@@ -11,6 +11,7 @@ function getPlainTextPreview(value) {
     .trim();
 }
 
+<<<<<<< HEAD
 const DEFAULT_NOTE_COLOR = "#fef3c7";
 const NOTE_COLORS = [
   "#fef3c7",
@@ -38,16 +39,21 @@ function getTextColorForBackground(hexColor) {
   return luminance > 0.65 ? "#0f172a" : "#ffffff";
 }
 
+=======
+>>>>>>> origin/main
 export default function NotesSummary() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [notes, setNotes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
+<<<<<<< HEAD
   const [draftTitle, setDraftTitle] = useState("");
   const [draftContent, setDraftContent] = useState("");
   const [draftColor, setDraftColor] = useState(DEFAULT_NOTE_COLOR);
   const [listExpanded, setListExpanded] = useState(false);
+=======
+>>>>>>> origin/main
 
   const loadNotes = useCallback(() => {
     setLoading(true);
@@ -62,6 +68,7 @@ export default function NotesSummary() {
     loadNotes();
   }, [loadNotes]);
 
+<<<<<<< HEAD
   const handleCreate = async (event) => {
     event?.preventDefault();
     setCreating(true);
@@ -74,6 +81,15 @@ export default function NotesSummary() {
       setDraftTitle("");
       setDraftContent("");
       setDraftColor(DEFAULT_NOTE_COLOR);
+=======
+  const handleCreate = async () => {
+    setCreating(true);
+    try {
+      const created = await api.createNote({
+        title: t("notes.untitled", "Untitled"),
+        content: "",
+      });
+>>>>>>> origin/main
       navigate(`/notes?noteId=${created.id}`);
     } catch {
       // leave tile as-is when backend rejects create
@@ -86,7 +102,11 @@ export default function NotesSummary() {
   const shown = notes.slice(0, 4);
 
   return (
+<<<<<<< HEAD
     <div className="summary-card notes-summary-card">
+=======
+    <div className="summary-card">
+>>>>>>> origin/main
       <div className="summary-card-header">
         <div className="summary-card-title">
           <span className="icon icon-notes">📝</span>
@@ -95,10 +115,20 @@ export default function NotesSummary() {
         <div className="notes-summary-actions">
           <button
             type="button"
+<<<<<<< HEAD
             className="notes-summary-toggle-btn"
             onClick={() => setListExpanded((v) => !v)}
           >
             {listExpanded ? t("common.hide", "Hide") : t("common.show", "Show")}
+=======
+            className="notes-summary-create-btn"
+            onClick={handleCreate}
+            disabled={creating}
+            aria-label={t("notes.createFromDashboard", "Create note")}
+            title={t("notes.createFromDashboard", "Create note")}
+          >
+            {creating ? "…" : "+"}
+>>>>>>> origin/main
           </button>
           <Link to="/notes" className="summary-go-link">
             {t("common.viewAll", "View all")} →
@@ -106,6 +136,7 @@ export default function NotesSummary() {
         </div>
       </div>
 
+<<<<<<< HEAD
       <form className="notes-summary-compose" onSubmit={handleCreate}>
         <input
           className="notes-summary-input"
@@ -154,12 +185,15 @@ export default function NotesSummary() {
         </button>
       </form>
 
+=======
+>>>>>>> origin/main
       {loading ? (
         <div className="empty-state">{t("common.loading", "Loading…")}</div>
       ) : notes.length === 0 ? (
         <div className="empty-state">{t("notes.empty", "No notes yet.")}</div>
       ) : (
         <>
+<<<<<<< HEAD
           {listExpanded && (
             <ul className="notes-summary-list">
               {shown.map((note) => {
@@ -190,6 +224,24 @@ export default function NotesSummary() {
               })}
             </ul>
           )}
+=======
+          <ul className="notes-summary-list">
+            {shown.map((note) => (
+              <li key={note.id} className="notes-summary-item">
+                <Link
+                  to={`/notes?noteId=${note.id}`}
+                  className="notes-summary-link"
+                >
+                  <span className="notes-summary-title">{note.title}</span>
+                  <span className="notes-summary-preview">
+                    {getPlainTextPreview(note.content).substring(0, 60)}
+                    {getPlainTextPreview(note.content).length > 60 ? "…" : ""}
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+>>>>>>> origin/main
           {notes.length > 4 && (
             <div className="summary-stat">
               +{notes.length - 4} {t("common.more", "more")}

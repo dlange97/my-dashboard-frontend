@@ -132,7 +132,10 @@ describe("NotesPage", () => {
       expect(updateNoteMock).toHaveBeenCalledWith(10, {
         title: "Renamed note",
         content: "<p>Updated body</p>",
+<<<<<<< HEAD
         color: "#fef3c7",
+=======
+>>>>>>> origin/main
       });
     });
   });

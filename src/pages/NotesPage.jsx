@@ -10,6 +10,7 @@ import api from "../api/api";
 import { useTranslation } from "../context/TranslationContext";
 import "../components/notes/notes.css";
 
+<<<<<<< HEAD
 const DEFAULT_NOTE_COLOR = "#fef3c7";
 
 function normalizeColor(value) {
@@ -27,6 +28,8 @@ function getTextColorForBackground(hexColor) {
   return luminance > 0.65 ? "#0f172a" : "#ffffff";
 }
 
+=======
+>>>>>>> origin/main
 export default function NotesPage() {
   const { t } = useTranslation();
   const [notes, setNotes] = useState([]);
@@ -34,6 +37,7 @@ export default function NotesPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [creating, setCreating] = useState(false);
+<<<<<<< HEAD
   const [newTitle, setNewTitle] = useState("");
   const [newContent, setNewContent] = useState("");
   const [newColor, setNewColor] = useState(DEFAULT_NOTE_COLOR);
@@ -42,12 +46,19 @@ export default function NotesPage() {
   const [isDirty, setIsDirty] = useState(false);
   const [draftTitle, setDraftTitle] = useState("");
   const [draftColor, setDraftColor] = useState(DEFAULT_NOTE_COLOR);
+=======
+  const [isDirty, setIsDirty] = useState(false);
+  const [draftTitle, setDraftTitle] = useState("");
+>>>>>>> origin/main
   const dirtyRef = useRef(false);
   const titleRef = useRef(null);
   // Refs to avoid stale closures in flushSave
   const activeIdRef = useRef(null);
   const draftTitleRef = useRef("");
+<<<<<<< HEAD
   const draftColorRef = useRef(DEFAULT_NOTE_COLOR);
+=======
+>>>>>>> origin/main
 
   useEffect(() => {
     activeIdRef.current = activeId;
@@ -55,9 +66,12 @@ export default function NotesPage() {
   useEffect(() => {
     draftTitleRef.current = draftTitle;
   }, [draftTitle]);
+<<<<<<< HEAD
   useEffect(() => {
     draftColorRef.current = draftColor;
   }, [draftColor]);
+=======
+>>>>>>> origin/main
 
   // ── Tiptap editor ─────────────────────────────────────────
   const editor = useEditor({
@@ -99,6 +113,7 @@ export default function NotesPage() {
     const title =
       draftTitleRef.current.trim() || t("notes.untitled", "Untitled");
     const content = editor.getHTML();
+<<<<<<< HEAD
     const color = normalizeColor(draftColorRef.current);
 
     setSaving(true);
@@ -107,6 +122,14 @@ export default function NotesPage() {
       setNotes((prev) => prev.map((n) => (n.id === updated.id ? updated : n)));
       setDraftTitle(updated.title ?? title);
       setDraftColor(normalizeColor(updated.color ?? color));
+=======
+
+    setSaving(true);
+    try {
+      const updated = await api.updateNote(noteId, { title, content });
+      setNotes((prev) => prev.map((n) => (n.id === updated.id ? updated : n)));
+      setDraftTitle(updated.title ?? title);
+>>>>>>> origin/main
       dirtyRef.current = false;
       setIsDirty(false);
     } catch {
@@ -131,7 +154,10 @@ export default function NotesPage() {
     const note = notes.find((n) => n.id === activeId) ?? null;
     editor.commands.setContent(note?.content || "");
     setDraftTitle(note?.title ?? "");
+<<<<<<< HEAD
     setDraftColor(normalizeColor(note?.color));
+=======
+>>>>>>> origin/main
     dirtyRef.current = false;
     setIsDirty(false);
   }, [activeId, editor]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -141,6 +167,7 @@ export default function NotesPage() {
     setCreating(true);
     try {
       const created = await api.createNote({
+<<<<<<< HEAD
         title: newTitle.trim() || t("notes.untitled", "Untitled"),
         content: newContent,
         color: normalizeColor(newColor),
@@ -149,6 +176,11 @@ export default function NotesPage() {
       setNewContent("");
       setNewColor(DEFAULT_NOTE_COLOR);
       setShowCreateForm(false);
+=======
+        title: t("notes.untitled", "Untitled"),
+        content: "",
+      });
+>>>>>>> origin/main
       setNotes((prev) => [created, ...prev]);
       setActiveId(created.id);
     } catch {
@@ -199,6 +231,7 @@ export default function NotesPage() {
             <>
               {/* ── Tab bar ──────────────────────────────── */}
               <div className="notes-tab-bar">
+<<<<<<< HEAD
                 <button
                   type="button"
                   className="notes-list-toggle"
@@ -211,6 +244,9 @@ export default function NotesPage() {
                 <div
                   className={`notes-tabs-scroll${listExpanded ? " expanded" : ""}`}
                 >
+=======
+                <div className="notes-tabs-scroll">
+>>>>>>> origin/main
                   {notes.map((note) => (
                     <button
                       key={note.id}
@@ -218,6 +254,7 @@ export default function NotesPage() {
                       className={`notes-tab${note.id === activeId ? " active" : ""}`}
                       onClick={() => switchTab(note.id)}
                     >
+<<<<<<< HEAD
                       <span
                         className="notes-tab-title notes-tab-title-badge"
                         style={{
@@ -227,6 +264,9 @@ export default function NotesPage() {
                       >
                         {note.title}
                       </span>
+=======
+                      <span className="notes-tab-title">{note.title}</span>
+>>>>>>> origin/main
                       <span
                         className="notes-tab-close"
                         role="button"
@@ -251,7 +291,11 @@ export default function NotesPage() {
                 <button
                   type="button"
                   className="notes-tab-new"
+<<<<<<< HEAD
                   onClick={() => setShowCreateForm((v) => !v)}
+=======
+                  onClick={handleCreate}
+>>>>>>> origin/main
                   disabled={creating}
                   title={t("notes.newNote", "New note")}
                 >
@@ -259,6 +303,7 @@ export default function NotesPage() {
                 </button>
               </div>
 
+<<<<<<< HEAD
               {showCreateForm && (
                 <div className="notes-inline-create">
                   <input
@@ -295,6 +340,8 @@ export default function NotesPage() {
                 </div>
               )}
 
+=======
+>>>>>>> origin/main
               {/* ── Editor area ──────────────────────────── */}
               {activeNote ? (
                 <div className="notes-editor-wrap" onMouseLeave={flushSave}>
@@ -312,6 +359,7 @@ export default function NotesPage() {
                       }}
                       onBlur={() => void flushSave()}
                     />
+<<<<<<< HEAD
                     <input
                       type="color"
                       className="notes-title-color"
@@ -323,6 +371,8 @@ export default function NotesPage() {
                       }}
                       title={t("notes.color", "Note color")}
                     />
+=======
+>>>>>>> origin/main
                     <span className="notes-save-indicator">
                       {saving
                         ? t("notes.saving", "Saving…")
@@ -494,7 +544,11 @@ export default function NotesPage() {
                   <button
                     type="button"
                     className="notes-create-btn"
+<<<<<<< HEAD
                     onClick={() => setShowCreateForm(true)}
+=======
+                    onClick={handleCreate}
+>>>>>>> origin/main
                     disabled={creating}
                   >
                     + {t("notes.createFirst", "Create your first note")}

@@ -111,14 +111,7 @@ export default function MapPage() {
   };
 
   return (
-<<<<<<< HEAD
     <div className="page-shell map-page-shell">
-=======
-    <div
-      className="page-shell map-page-shell"
-      style={{ display: "flex", flexDirection: "column", overflow: "hidden" }}
-    >
->>>>>>> origin/main
       <NavBar />
       <div className="app-shell-with-inbox">
         <InboxSidebar />

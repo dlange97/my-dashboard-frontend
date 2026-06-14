@@ -684,7 +684,6 @@
 }
 
 /* ── Map page ─────────────────────────────────────────────── */
-<<<<<<< HEAD
 .map-page-shell {
   display: flex;
   flex-direction: column;
@@ -696,8 +695,6 @@
   color: #64748b;
 }
 
-=======
->>>>>>> origin/main
 /* Override global min-height on the inbox wrapper so the flex chain
    NavBar → remaining-space works inside the fixed-height page shell. */
 .map-page-shell .app-shell-with-inbox {

@@ -1,6 +1,7 @@
 import React from "react";
 import { format } from "date-fns";
 import { pl } from "date-fns/locale";
+import { hasValidCoords } from "./coords";
 
 function formatEventDate(dateStr) {
   if (!dateStr) return null;
@@ -49,7 +50,7 @@ export default React.memo(function EventItem({
         </div>
       </div>
       <div className="event-item-actions">
-        {event.location && (
+        {hasValidCoords(event.location) && (
           <button
             className="event-action-btn map-btn"
             onClick={() => onViewMap(event)}

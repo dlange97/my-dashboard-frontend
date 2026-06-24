@@ -1,22 +1,13 @@
 import React from "react";
 import { useTranslation } from "../../context/TranslationContext";
+import { hasValidCoords } from "./coords";
+import EventLocationMap from "./EventLocationMap";
 
 function formatDateTime(value, locale) {
   if (!value) return "-";
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return "-";
   return date.toLocaleString(locale === "pl" ? "pl-PL" : "en-US");
-}
-
-function hasCoords(location) {
-  const lat = Number(location?.lat);
-  const lon = Number(location?.lon);
-  return Number.isFinite(lat) && Number.isFinite(lon);
-}
-
-function buildEmbedUrl(lat, lon) {
-  const delta = 0.015;
-  return `https://www.openstreetmap.org/export/embed.html?bbox=${lon - delta}%2C${lat - delta}%2C${lon + delta}%2C${lat + delta}&layer=mapnik&marker=${lat}%2C${lon}`;
 }
 
 export default function EventPreviewModal({
@@ -31,9 +22,7 @@ export default function EventPreviewModal({
 
   if (!event) return null;
 
-  const hasLocation = hasCoords(event.location);
-  const lat = hasLocation ? Number(event.location.lat) : null;
-  const lon = hasLocation ? Number(event.location.lon) : null;
+  const hasLocation = hasValidCoords(event.location);
 
   return (
     <div className="event-form-overlay" onClick={onClose}>
@@ -117,21 +106,11 @@ export default function EventPreviewModal({
               </div>
             </div>
             <div className="event-preview-minimap">
-              <iframe
-                title="Event minimap"
-                src={buildEmbedUrl(lat, lon)}
-                loading="lazy"
-                style={{
-                  border: 0,
-                  width: "100%",
-                  height: "100%",
-                  borderRadius: "10px",
-                }}
-              />
+              <EventLocationMap location={event.location} title={event.title} />
               {onShowMap && (
                 <button
                   className="event-preview-expand-map"
-                  onClick={onShowMap}
+                  onClick={() => onShowMap(event)}
                   type="button"
                 >
                   🗺 {t("events.openFullMap", "Open full map")}

@@ -6,13 +6,14 @@ import api from "../../api/api";
 import { useTranslation } from "../../context/TranslationContext";
 import EventPreviewModal from "./EventPreviewModal";
 import MapModal from "./MapModal";
+import { hasValidCoords } from "./coords";
 
 export default function EventsSummary() {
   const { t } = useTranslation();
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedEvent, setSelectedEvent] = useState(null);
-  const [showMap, setShowMap] = useState(false);
+  const [mapEvent, setMapEvent] = useState(null);
 
   useEffect(() => {
     api
@@ -27,12 +28,6 @@ export default function EventsSummary() {
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
-
-  function hasLocation(ev) {
-    const lat = Number(ev?.location?.lat);
-    const lon = Number(ev?.location?.lon);
-    return Number.isFinite(lat) && Number.isFinite(lon);
-  }
 
   return (
     <>
@@ -70,7 +65,7 @@ export default function EventsSummary() {
                     })}
                   </div>
                 </div>
-                {hasLocation(ev) && (
+                {hasValidCoords(ev.location) && (
                   <span className="events-summary-pin" title="Has location">
                     📍
                   </span>
@@ -88,17 +83,20 @@ export default function EventsSummary() {
           canManageEvents={false}
           onClose={() => {
             setSelectedEvent(null);
-            setShowMap(false);
+            setMapEvent(null);
           }}
-          onShowMap={() => setShowMap(true)}
+          onShowMap={(event) => {
+            setMapEvent(event ?? selectedEvent);
+            setSelectedEvent(null);
+          }}
         />
       )}
 
-      {showMap && selectedEvent && (
+      {mapEvent && (
         <MapModal
-          location={selectedEvent.location}
-          title={selectedEvent.title}
-          onClose={() => setShowMap(false)}
+          location={mapEvent.location}
+          title={mapEvent.title}
+          onClose={() => setMapEvent(null)}
         />
       )}
     </>

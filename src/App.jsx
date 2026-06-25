@@ -30,10 +30,13 @@ const SettingsPage = lazy(() => import("./pages/SettingsPage"));
 const NotesPage = lazy(() => import("./pages/NotesPage"));
 
 function ProtectedRoute({ children }) {
-  const { isAuthenticated, isReady, needsInstanceSelection } = useAuth();
+  const { isAuthenticated, isReady, needsInstanceSelection, user } = useAuth();
   if (!isReady) return <div className="app-page-loading">Loading…</div>;
   if (!isAuthenticated) return <Navigate to="/login" replace />;
   if (needsInstanceSelection) return <Navigate to="/select-instance" replace />;
+  // Ensure instanceId is available before rendering protected content
+  if (!user?.instanceId)
+    return <div className="app-page-loading">Loading…</div>;
   return children;
 }
 

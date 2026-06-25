@@ -12,7 +12,7 @@ import { useAuth } from "./AuthContext";
 const InboxContext = createContext(null);
 
 export function InboxProvider({ children }) {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const [items, setItems] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -20,7 +20,9 @@ export function InboxProvider({ children }) {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const loadInbox = useCallback(async () => {
-    if (!isAuthenticated) return;
+    // Don't fetch until user has an instanceId from AuthContext
+    // This prevents requests without X-Instance-Id header on page refresh
+    if (!isAuthenticated || !user?.instanceId) return;
     try {
       const data = await api.getInboxNotifications();
       setItems(Array.isArray(data?.items) ? data.items : []);
@@ -31,7 +33,7 @@ export function InboxProvider({ children }) {
     } finally {
       setLoading(false);
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, user?.instanceId]);
 
   useEffect(() => {
     loadInbox();

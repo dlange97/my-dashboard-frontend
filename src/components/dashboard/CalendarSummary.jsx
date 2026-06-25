@@ -7,18 +7,21 @@ import { useAuth } from "../../context/AuthContext";
 
 export default function CalendarSummary() {
   const { t } = useTranslation();
-  const { hasPermission } = useAuth();
+  const { hasPermission, user } = useAuth();
   const canManageEvents = hasPermission("events.manage");
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Don't fetch until user has an instanceId from AuthContext
+    if (!user?.instanceId) return;
+
     api
       .getEvents()
       .then((data) => setEvents(data ?? []))
       .catch(() => {})
       .finally(() => setLoading(false));
-  }, []);
+  }, [user?.instanceId]);
 
   const currentMonthEvents = useMemo(() => {
     const now = new Date();

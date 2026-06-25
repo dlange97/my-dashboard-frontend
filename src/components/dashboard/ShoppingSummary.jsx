@@ -16,7 +16,6 @@ function getStatusStyle(status) {
 
 function shortName(name) {
   if (!name) return "—";
-  // Strip ugly seed prefix like "seed20260329201222 "
   return name.replace(/^seed\d+\s+/i, "");
 }
 

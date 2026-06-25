@@ -101,7 +101,7 @@ export default function NavBar() {
   return (
     <header className="top-nav">
       <NavLink to="/" end className="nav-brand">
-        <span className="nav-brand-icon">📊</span>
+        <img src="/icon.png" alt="Logo" className="nav-brand-icon" />
         <span className="nav-brand-name">{t("nav.brand", "My Dashboard")}</span>
       </NavLink>
 

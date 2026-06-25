@@ -45,7 +45,6 @@ export function TranslationProvider({ children }) {
     [user?.instanceId],
   );
 
-  // Load translations when locale changes
   useEffect(() => {
     loadedLocale.current = null; // force reload on locale change
     loadTranslations(locale);

@@ -61,6 +61,7 @@ export default function NotesSummary() {
   }, []);
 
   useEffect(() => {
+    // Don't fetch until user has an instanceId from AuthContext
     if (!user?.instanceId) {
       setLoading(false);
       return;

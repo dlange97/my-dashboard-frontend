@@ -26,6 +26,8 @@ export function TranslationProvider({ children }) {
   const loadTranslations = useCallback(
     async (lang) => {
       if (loadedLocale.current === lang) return;
+      // Don't fetch until user has an instanceId from AuthContext
+      // This prevents requests without X-Instance-Id header on page refresh
       if (!user?.instanceId) return;
       setLoading(true);
       try {

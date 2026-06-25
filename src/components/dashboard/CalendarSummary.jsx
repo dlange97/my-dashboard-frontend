@@ -13,6 +13,7 @@ export default function CalendarSummary() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Don't fetch until user has an instanceId from AuthContext
     if (!user?.instanceId) return;
 
     api

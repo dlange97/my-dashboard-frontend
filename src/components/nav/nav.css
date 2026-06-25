@@ -23,7 +23,9 @@
 }
 
 .nav-brand-icon {
-  font-size: 1.3rem;
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
 }
 
 .nav-brand-name {

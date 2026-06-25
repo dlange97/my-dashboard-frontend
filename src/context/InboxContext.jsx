@@ -20,8 +20,6 @@ export function InboxProvider({ children }) {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const loadInbox = useCallback(async () => {
-    // Don't fetch until user has an instanceId from AuthContext
-    // This prevents requests without X-Instance-Id header on page refresh
     if (!isAuthenticated || !user?.instanceId) return;
     try {
       const data = await api.getInboxNotifications();

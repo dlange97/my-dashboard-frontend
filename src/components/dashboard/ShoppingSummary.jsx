@@ -16,7 +16,6 @@ function getStatusStyle(status) {
 
 function shortName(name) {
   if (!name) return "—";
-  // Strip ugly seed prefix like "seed20260329201222 "
   return name.replace(/^seed\d+\s+/i, "");
 }
 
@@ -27,7 +26,6 @@ export default function ShoppingSummary() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Don't fetch until user has an instanceId from AuthContext
     if (!user?.instanceId) return;
 
     api

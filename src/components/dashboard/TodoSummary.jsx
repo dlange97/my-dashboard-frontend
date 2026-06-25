@@ -18,7 +18,6 @@ export default function TodoSummary() {
   const [confirmTodo, setConfirmTodo] = useState(null);
 
   useEffect(() => {
-    // Don't fetch until user has an instanceId from AuthContext
     if (!user?.instanceId) return;
 
     api

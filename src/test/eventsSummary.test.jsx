@@ -33,6 +33,12 @@ vi.mock("../context/TranslationContext", () => ({
   }),
 }));
 
+vi.mock("../context/AuthContext", () => ({
+  useAuth: () => ({
+    user: { instanceId: "instance-1" },
+  }),
+}));
+
 vi.mock("../components/events/EventPreviewModal", () => ({
   default: ({ event, onClose, onShowMap }) => (
     <div role="dialog">

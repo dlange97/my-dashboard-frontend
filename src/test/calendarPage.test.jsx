@@ -10,6 +10,7 @@ const { apiMock, authMock } = vi.hoisted(() => ({
   },
   authMock: {
     hasPermission: vi.fn(),
+    user: { instanceId: "instance-1" },
   },
 }));
 

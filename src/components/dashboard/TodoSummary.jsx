@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import ConfirmModal from "../ui/ConfirmModal";
 import api from "../../api/api";
 import { useTranslation } from "../../context/TranslationContext";
+import { useAuth } from "../../context/AuthContext";
 
 function shortText(text) {
   if (!text) return "—";
@@ -11,17 +12,21 @@ function shortText(text) {
 
 export default function TodoSummary() {
   const { t } = useTranslation();
+  const { user } = useAuth();
   const [todos, setTodos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [confirmTodo, setConfirmTodo] = useState(null);
 
   useEffect(() => {
+    // Don't fetch until user has an instanceId from AuthContext
+    if (!user?.instanceId) return;
+
     api
       .getTodos()
       .then(setTodos)
       .catch(() => {})
       .finally(() => setLoading(false));
-  }, []);
+  }, [user?.instanceId]);
 
   const done = todos.filter((t) => t.done).length;
   const total = todos.length;

@@ -166,9 +166,16 @@ export function AuthProvider({ children }) {
       .then((data) => {
         if (!data?.user) {
           setUser(null);
+          setIsReady(true);
           return;
         }
+
         const fresh = data.user;
+        // Prefer instanceId already stored in localStorage (set during previous
+        // session or by subdomain resolver) over whatever /auth/me may return.
+        const resolvedInstanceId =
+          user?.instanceId ?? localStorage.getItem(INSTANCE_KEY) ?? null;
+
         const updated = {
           id: fresh.id,
           email: fresh.email,
@@ -179,20 +186,46 @@ export function AuthProvider({ children }) {
           language: fresh.language,
           dashboardLayout: fresh.dashboardLayout,
           permissions: fresh.permissions ?? [],
-          instanceId: user?.instanceId ?? localStorage.getItem(INSTANCE_KEY),
+          instanceId: resolvedInstanceId,
         };
+
         localStorage.setItem(USER_KEY, JSON.stringify(updated));
         if (updated.language) {
           localStorage.setItem(LANG_KEY, updated.language);
         }
         setUser(updated);
+
+        // If instanceId is still missing, auto-discover it before marking the
+        // app as ready. This mirrors the same logic in login() so that a page
+        // refresh never results in API requests missing X-Instance-Id header.
+        if (!resolvedInstanceId) {
+          api
+            .getMyInstances()
+            .then((instances) => {
+              if (instances && instances.length === 1) {
+                localStorage.setItem(INSTANCE_KEY, instances[0].id);
+                setUser((prev) =>
+                  prev ? { ...prev, instanceId: instances[0].id } : prev,
+                );
+                setNeedsInstanceSelection(false);
+              } else if (instances && instances.length > 1) {
+                setNeedsInstanceSelection(true);
+              }
+            })
+            .catch(() => {
+              // Instance discovery is best-effort.
+            })
+            .finally(() => {
+              setIsReady(true);
+            });
+        } else {
+          setIsReady(true);
+        }
       })
       .catch(() => {
         // Cookie expired or invalid — treat as logged out.
         localStorage.removeItem(USER_KEY);
         setUser(null);
-      })
-      .finally(() => {
         setIsReady(true);
       });
   }, []); // eslint-disable-line react-hooks/exhaustive-deps

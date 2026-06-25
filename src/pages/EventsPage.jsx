@@ -37,12 +37,16 @@ export default function EventsPage() {
   } = useShareModal();
 
   useEffect(() => {
+    // Don't fetch events until user has an instanceId from AuthContext
+    // This prevents requests without X-Instance-Id header on page refresh
+    if (!user?.instanceId) return;
+
     api
       .getEvents()
       .then((data) => setEvents(data ?? []))
       .catch(() => {})
       .finally(() => setLoading(false));
-  }, []);
+  }, [user?.instanceId]);
 
   const sorted = [...events].sort(
     (a, b) => new Date(a.startAt) - new Date(b.startAt),

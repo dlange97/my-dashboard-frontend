@@ -4,18 +4,24 @@ import { format } from "date-fns";
 import { pl } from "date-fns/locale";
 import api from "../../api/api";
 import { useTranslation } from "../../context/TranslationContext";
+import { useAuth } from "../../context/AuthContext";
 import EventPreviewModal from "./EventPreviewModal";
 import MapModal from "./MapModal";
 import { hasValidCoords } from "./coords";
 
 export default function EventsSummary() {
   const { t } = useTranslation();
+  const { user } = useAuth();
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [mapEvent, setMapEvent] = useState(null);
 
   useEffect(() => {
+    // Don't fetch events until user has an instanceId from AuthContext
+    // This prevents requests without X-Instance-Id header on page refresh
+    if (!user?.instanceId) return;
+
     api
       .getEvents()
       .then((data) => {
@@ -27,7 +33,7 @@ export default function EventsSummary() {
       })
       .catch(() => {})
       .finally(() => setLoading(false));
-  }, []);
+  }, [user?.instanceId]);
 
   return (
     <>

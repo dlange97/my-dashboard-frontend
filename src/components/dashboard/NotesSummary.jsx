@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import api from "../../api/api";
 import { useTranslation } from "../../context/TranslationContext";
+import { useAuth } from "../../context/AuthContext";
 
 function getPlainTextPreview(value) {
   return String(value ?? "")
@@ -40,6 +41,7 @@ function getTextColorForBackground(hexColor) {
 
 export default function NotesSummary() {
   const { t } = useTranslation();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [notes, setNotes] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -59,8 +61,13 @@ export default function NotesSummary() {
   }, []);
 
   useEffect(() => {
+    // Don't fetch until user has an instanceId from AuthContext
+    if (!user?.instanceId) {
+      setLoading(false);
+      return;
+    }
     loadNotes();
-  }, [loadNotes]);
+  }, [loadNotes, user?.instanceId]);
 
   const handleCreate = async (event) => {
     event?.preventDefault();

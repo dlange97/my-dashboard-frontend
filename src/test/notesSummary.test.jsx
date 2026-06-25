@@ -21,6 +21,12 @@ vi.mock("../context/TranslationContext", () => ({
   }),
 }));
 
+vi.mock("../context/AuthContext", () => ({
+  useAuth: () => ({
+    user: { instanceId: "instance-1" },
+  }),
+}));
+
 vi.mock("react-router-dom", async () => {
   const actual = await vi.importActual("react-router-dom");
   return {

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import api from "../../api/api";
 import { useTranslation } from "../../context/TranslationContext";
+import { useAuth } from "../../context/AuthContext";
 
 const STATUS_STYLES = {
   active: { bg: "#d1fae5", color: "#065f46" },
@@ -21,10 +22,14 @@ function shortName(name) {
 
 export default function ShoppingSummary() {
   const { t } = useTranslation();
+  const { user } = useAuth();
   const [lists, setLists] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Don't fetch until user has an instanceId from AuthContext
+    if (!user?.instanceId) return;
+
     api
       .getLists()
       .then((data) =>
@@ -32,7 +37,7 @@ export default function ShoppingSummary() {
       )
       .catch(() => {})
       .finally(() => setLoading(false));
-  }, []);
+  }, [user?.instanceId]);
 
   const shown = lists.slice(0, 4);
 

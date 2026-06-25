@@ -7,6 +7,7 @@ import React, {
   useState,
 } from "react";
 import api from "../api/api";
+import { useAuth } from "./AuthContext";
 
 const TranslationContext = createContext(null);
 
@@ -14,6 +15,7 @@ const STORAGE_KEY = "dashboard_lang";
 const DEFAULT_LOCALE = "en";
 
 export function TranslationProvider({ children }) {
+  const { user } = useAuth();
   const [locale, setLocale] = useState(
     () => localStorage.getItem(STORAGE_KEY) || DEFAULT_LOCALE,
   );
@@ -21,21 +23,27 @@ export function TranslationProvider({ children }) {
   const [loading, setLoading] = useState(false);
   const loadedLocale = useRef(null);
 
-  const loadTranslations = useCallback(async (lang) => {
-    if (loadedLocale.current === lang) return;
-    setLoading(true);
-    try {
-      const data = await api.getTranslations(lang);
-      if (data && typeof data === "object" && !Array.isArray(data)) {
-        setTranslations(data);
-        loadedLocale.current = lang;
+  const loadTranslations = useCallback(
+    async (lang) => {
+      if (loadedLocale.current === lang) return;
+      // Don't fetch until user has an instanceId from AuthContext
+      // This prevents requests without X-Instance-Id header on page refresh
+      if (!user?.instanceId) return;
+      setLoading(true);
+      try {
+        const data = await api.getTranslations(lang);
+        if (data && typeof data === "object" && !Array.isArray(data)) {
+          setTranslations(data);
+          loadedLocale.current = lang;
+        }
+      } catch {
+        // silently fall back to keys if translation service is unavailable
+      } finally {
+        setLoading(false);
       }
-    } catch {
-      // silently fall back to keys if translation service is unavailable
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+    },
+    [user?.instanceId],
+  );
 
   // Load translations when locale changes
   useEffect(() => {

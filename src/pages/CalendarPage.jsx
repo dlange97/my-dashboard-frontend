@@ -8,19 +8,23 @@ import { useTranslation } from "../context/TranslationContext";
 import "../components/events/events.css";
 
 export default function CalendarPage() {
-  const { hasPermission } = useAuth();
+  const { hasPermission, user } = useAuth();
   const { t } = useTranslation();
   const canManageEvents = hasPermission("events.manage");
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Don't fetch events until user has an instanceId from AuthContext
+    // This prevents requests without X-Instance-Id header on page refresh
+    if (!user?.instanceId) return;
+
     api
       .getEvents()
       .then((data) => setEvents(data ?? []))
       .catch(() => {})
       .finally(() => setLoading(false));
-  }, []);
+  }, [user?.instanceId]);
 
   return (
     <div className="page-shell">

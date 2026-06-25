@@ -10,7 +10,7 @@ export default defineConfig({
   server: {
     port: 3000,
     host: process.env.DOCKER ? "0.0.0.0" : "127.0.0.1",
-    allowedHosts: ["localhost", "127.0.0.1", ".mydashboard.local"],
+    allowedHosts: ["localhost", "127.0.0.1", ".mydashboard.local", "nginx"],
     proxy: {
       "/auth": {
         target: proxyTarget,

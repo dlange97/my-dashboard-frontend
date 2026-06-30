@@ -178,10 +178,16 @@ export const api = {
   clearInboxNotifications: () => request("DELETE", "/notification/inbox"),
   markInboxRead: (notificationId) =>
     request("PATCH", `/notification/inbox/${notificationId}/read`),
-  getNotificationTemplate: () =>
-    request("GET", "/notification/settings/template/request-access"),
-  updateNotificationTemplate: (payload) =>
-    request("PUT", "/notification/settings/template/request-access", payload),
+  getNotificationTemplates: () =>
+    request("GET", "/notification/settings/templates"),
+  getNotificationTemplate: (templateKey) =>
+    request("GET", `/notification/settings/templates/${encodeURIComponent(templateKey)}`),
+  updateNotificationTemplate: (templateKey, payload) =>
+    request(
+      "PUT",
+      `/notification/settings/templates/${encodeURIComponent(templateKey)}`,
+      payload,
+    ),
 
   // ── Translation Service ───────────────────────────────────────────────
   getTranslations: (locale = "en") =>

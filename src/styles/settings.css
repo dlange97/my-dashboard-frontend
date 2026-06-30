@@ -502,6 +502,44 @@
   padding: 20px;
 }
 
+.notification-template-section {
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 14px;
+  margin-bottom: 14px;
+  background: #ffffff;
+}
+
+.notification-template-header h3 {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.notification-template-key {
+  font-size: 0.75rem;
+  color: #64748b;
+  border: 1px solid #cbd5e1;
+  border-radius: 999px;
+  padding: 2px 8px;
+  background: #f8fafc;
+}
+
+.notification-template-grid {
+  margin-top: 12px;
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.notification-template-actions {
+  margin-top: 12px;
+  display: flex;
+  justify-content: flex-end;
+}
+
 /* ── Mobile Adjustments ────────────────────────────────────── */
 @media (max-width: 600px) {
   .settings-page {
@@ -519,6 +557,10 @@
 
   .notification-settings-inner {
     padding: 12px;
+  }
+
+  .notification-template-section {
+    padding: 10px;
   }
 }
 

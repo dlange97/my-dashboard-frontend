@@ -53,28 +53,33 @@ export default function NewUserForm({ onCancel, onCreated }) {
     setError("");
     setSuccess("");
 
-    if (form.password !== form.confirm) {
-      setError(t("users.form.error.passwordMismatch", "Passwords do not match."));
-      return;
-    }
+    if (!form.inviteUser) {
+      if (form.password !== form.confirm) {
+        setError(t("users.form.error.passwordMismatch", "Passwords do not match."));
+        return;
+      }
 
-    if (form.password.length < 8) {
-      setError(
-        t("users.form.error.passwordLength", "Password must be at least 8 characters."),
-      );
-      return;
+      if (form.password.length < 8) {
+        setError(
+          t("users.form.error.passwordLength", "Password must be at least 8 characters."),
+        );
+        return;
+      }
     }
 
     setLoading(true);
     try {
-      const data = await api.createUser({
+      const payload = {
         email: form.email.trim(),
-        password: form.password,
         firstName: form.firstName.trim(),
         lastName: form.lastName.trim(),
         role: form.role,
         inviteUser: !!form.inviteUser,
-      });
+      };
+      if (!form.inviteUser) {
+        payload.password = form.password;
+      }
+      const data = await api.createUser(payload);
 
       setSuccess(
         t("users.form.success", "User {{email}} created successfully.").replace(
@@ -117,7 +122,9 @@ export default function NewUserForm({ onCancel, onCreated }) {
 
           <div className="form-row">
             <div className="form-group">
-              <label htmlFor="firstName">First name</label>
+              <label htmlFor="firstName">
+                {t("users.form.firstName", "First name")}
+              </label>
               <input
                 id="firstName"
                 name="firstName"
@@ -129,7 +136,9 @@ export default function NewUserForm({ onCancel, onCreated }) {
               />
             </div>
             <div className="form-group">
-              <label htmlFor="lastName">Last name</label>
+              <label htmlFor="lastName">
+                {t("users.form.lastName", "Last name")}
+              </label>
               <input
                 id="lastName"
                 name="lastName"
@@ -156,35 +165,39 @@ export default function NewUserForm({ onCancel, onCreated }) {
             />
           </div>
 
-          <div className="form-group">
-            <label htmlFor="password">{t("users.form.password", "Password")}</label>
-            <input
-              id="password"
-              name="password"
-              type="password"
-              placeholder={t("users.form.passwordPlaceholder", "Min. 8 characters")}
-              value={form.password}
-              onChange={handleChange}
-              autoComplete="new-password"
-              required
-            />
-          </div>
+          {!form.inviteUser && (
+            <div className="form-group">
+              <label htmlFor="password">{t("users.form.password", "Password")}</label>
+              <input
+                id="password"
+                name="password"
+                type="password"
+                placeholder={t("users.form.passwordPlaceholder", "Min. 8 characters")}
+                value={form.password}
+                onChange={handleChange}
+                autoComplete="new-password"
+                required
+              />
+            </div>
+          )}
 
-          <div className="form-group">
-            <label htmlFor="confirm">
-              {t("users.form.confirmPassword", "Confirm password")}
-            </label>
-            <input
-              id="confirm"
-              name="confirm"
-              type="password"
-              placeholder={t("users.form.confirmPasswordPlaceholder", "Repeat password")}
-              value={form.confirm}
-              onChange={handleChange}
-              autoComplete="new-password"
-              required
-            />
-          </div>
+          {!form.inviteUser && (
+            <div className="form-group">
+              <label htmlFor="confirm">
+                {t("users.form.confirmPassword", "Confirm password")}
+              </label>
+              <input
+                id="confirm"
+                name="confirm"
+                type="password"
+                placeholder={t("users.form.confirmPasswordPlaceholder", "Repeat password")}
+                value={form.confirm}
+                onChange={handleChange}
+                autoComplete="new-password"
+                required
+              />
+            </div>
+          )}
 
           <div className="form-group">
             <label htmlFor="role">{t("users.form.role", "Role")}</label>
@@ -219,7 +232,7 @@ export default function NewUserForm({ onCancel, onCreated }) {
             <span>
               {t(
                 "users.form.inviteToggle",
-                "Send invitation email to this user after creation",
+                "Send a secure invitation link so the user sets their own password",
               )}
             </span>
           </label>
@@ -227,7 +240,7 @@ export default function NewUserForm({ onCancel, onCreated }) {
           <p className="auth-manage-subtitle" style={{ marginTop: -8 }}>
             {t(
               "users.form.inviteHint",
-              "When enabled, the user receives an invitation notification (email/push depends on notification settings).",
+              "When enabled, the user receives an invitation with a secure link to set their password and activate the account. No password is set here.",
             )}
           </p>
 

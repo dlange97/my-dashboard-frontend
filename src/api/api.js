@@ -130,6 +130,10 @@ export const api = {
   register: (email, password, firstName, lastName) =>
     request("POST", "/auth/register", { email, password, firstName, lastName }),
   requestAccess: (payload) => request("POST", "/auth/request-access", payload),
+  validateInvite: (token) =>
+    request("GET", `/auth/invite/${encodeURIComponent(token)}/validate`),
+  acceptInvite: (token, password) =>
+    request("POST", `/auth/invite/${encodeURIComponent(token)}`, { password }),
   me: () => request("GET", "/auth/me"),
 
   getUsers: ({ page = 1, perPage = 10, search = "" } = {}) => {
@@ -181,7 +185,10 @@ export const api = {
   getNotificationTemplates: () =>
     request("GET", "/notification/settings/templates"),
   getNotificationTemplate: (templateKey) =>
-    request("GET", `/notification/settings/templates/${encodeURIComponent(templateKey)}`),
+    request(
+      "GET",
+      `/notification/settings/templates/${encodeURIComponent(templateKey)}`,
+    ),
   updateNotificationTemplate: (templateKey, payload) =>
     request(
       "PUT",

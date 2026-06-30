@@ -233,4 +233,41 @@ describe("api method shapes", () => {
     expect(opts.method).toBe("GET");
     expect(opts.url).toContain("/auth/users/options");
   });
+
+  it("validateInvite sends GET to /auth/invite/{token}/validate", async () => {
+    const opts = await spyRequest(
+      "validateInvite",
+      "/auth/invite/tok-123/validate",
+      ["tok-123"],
+    );
+    expect(opts.method).toBe("GET");
+    expect(opts.url).toContain("/auth/invite/tok-123/validate");
+  });
+
+  it("acceptInvite sends POST to /auth/invite/{token} with password", async () => {
+    const opts = await spyRequest("acceptInvite", "/auth/invite/tok-123", [
+      "tok-123",
+      "SecurePass123",
+    ]);
+    expect(opts.method).toBe("POST");
+    expect(opts.url).toContain("/auth/invite/tok-123");
+    expect(JSON.parse(opts.body)).toEqual({ password: "SecurePass123" });
+  });
+
+  it("acceptInvite url-encodes the token", async () => {
+    const opts = await spyRequest("acceptInvite", "/auth/invite/a%2Fb", [
+      "a/b",
+      "SecurePass123",
+    ]);
+    expect(opts.url).toContain("/auth/invite/a%2Fb");
+  });
+
+  it("createUser omits password when inviting", async () => {
+    const opts = await spyRequest("createUser", "/auth/users", [
+      { email: "x@y.pl", role: "ROLE_USER", inviteUser: true },
+    ]);
+    const body = JSON.parse(opts.body);
+    expect(body.inviteUser).toBe(true);
+    expect(body.password).toBeUndefined();
+  });
 });

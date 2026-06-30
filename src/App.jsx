@@ -17,6 +17,7 @@ import "./components/notes/notes.css";
 import Login from "./components/auth/Login";
 import NotFoundPage from "./pages/NotFoundPage";
 import CheckoutPage from "./pages/CheckoutPage";
+import SetPasswordPage from "./pages/SetPasswordPage";
 import InstancePickerPage from "./pages/InstancePickerPage";
 
 const DashboardPage = lazy(() => import("./pages/DashboardPage"));
@@ -165,6 +166,7 @@ function App() {
           }
         />
         <Route path="/checkout/:hash" element={<CheckoutPage />} />
+        <Route path="/set-password/:token" element={<SetPasswordPage />} />
         <Route
           path="/select-instance"
           element={

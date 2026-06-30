@@ -17,6 +17,7 @@ const TEMPLATE_NAMES = {
   "resource-shared-todo": "Udostępnienie zadania",
   "resource-shared-shopping-list": "Udostępnienie listy zakupów",
   "resource-shared-event": "Udostępnienie wydarzenia",
+  "user-invited": "Zaproszenie użytkownika",
 };
 
 function getTemplateDisplayName(templateKey) {
@@ -150,7 +151,9 @@ export default function NotificationSettings() {
               className="notification-template-toggle"
               aria-expanded={isOpen}
               onClick={() =>
-                setOpenTemplateKey((prev) => (prev === template.key ? null : template.key))
+                setOpenTemplateKey((prev) =>
+                  prev === template.key ? null : template.key,
+                )
               }
             >
               <h3 className="notification-template-title">
@@ -169,18 +172,27 @@ export default function NotificationSettings() {
                     ["email", "Email"],
                     ["push", "Push"],
                   ].map(([channelKey, label]) => {
-                    const channel = template.channels?.[channelKey] ||
+                    const channel =
+                      template.channels?.[channelKey] ||
                       EMPTY_TEMPLATE.channels[channelKey];
 
                     return (
-                      <article className="auth-access-card" key={`${template.key}-${channelKey}`}>
+                      <article
+                        className="auth-access-card"
+                        key={`${template.key}-${channelKey}`}
+                      >
                         <h3>{label}</h3>
                         <label className="auth-checkbox-row">
                           <input
                             type="checkbox"
                             checked={!!channel.enabled}
                             onChange={(e) =>
-                              setChannel(template.key, channelKey, "enabled", e.target.checked)
+                              setChannel(
+                                template.key,
+                                channelKey,
+                                "enabled",
+                                e.target.checked,
+                              )
                             }
                           />
                           <span>Enabled</span>
@@ -192,7 +204,12 @@ export default function NotificationSettings() {
                             type="text"
                             value={channel.title ?? ""}
                             onChange={(e) =>
-                              setChannel(template.key, channelKey, "title", e.target.value)
+                              setChannel(
+                                template.key,
+                                channelKey,
+                                "title",
+                                e.target.value,
+                              )
                             }
                           />
                         </div>
@@ -203,7 +220,12 @@ export default function NotificationSettings() {
                             className="auth-textarea"
                             value={channel.body ?? ""}
                             onChange={(e) =>
-                              setChannel(template.key, channelKey, "body", e.target.value)
+                              setChannel(
+                                template.key,
+                                channelKey,
+                                "body",
+                                e.target.value,
+                              )
                             }
                           />
                         </div>
@@ -218,7 +240,9 @@ export default function NotificationSettings() {
                     disabled={saving && savingKey === template.key}
                     onClick={() => saveTemplate(template.key)}
                   >
-                    {saving && savingKey === template.key ? "Saving..." : "Save Template"}
+                    {saving && savingKey === template.key
+                      ? "Saving..."
+                      : "Save Template"}
                   </button>
                 </div>
               </>

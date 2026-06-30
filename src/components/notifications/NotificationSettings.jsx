@@ -12,15 +12,27 @@ const EMPTY_TEMPLATE = {
 };
 
 const TEMPLATE_NAMES = {
-  "request-access": "Request access",
+  "request-access": "Prośba o dostęp",
   "resource-shared-note": "Udostępnienie notatki",
   "resource-shared-todo": "Udostępnienie zadania",
   "resource-shared-shopping-list": "Udostępnienie listy zakupów",
   "resource-shared-event": "Udostępnienie wydarzenia",
 };
 
+function getTemplateDisplayName(templateKey) {
+  if (TEMPLATE_NAMES[templateKey]) {
+    return TEMPLATE_NAMES[templateKey];
+  }
+
+  return templateKey
+    .split("-")
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
+}
+
 export default function NotificationSettings() {
   const [templates, setTemplates] = useState([]);
+  const [openTemplateKey, setOpenTemplateKey] = useState(null);
   const [loading, setLoading] = useState(true);
   const [savingKey, setSavingKey] = useState("");
   const [saving, setSaving] = useState(false);
@@ -125,75 +137,95 @@ export default function NotificationSettings() {
         </p>
       )}
 
-      {templates.map((template) => (
-        <section key={template.key} className="notification-template-section">
-          <div className="notification-template-header">
-            <h3>
-              {TEMPLATE_NAMES[template.key] || template.key}
-              <span className="notification-template-key">{template.key}</span>
-            </h3>
-          </div>
+      {templates.map((template) => {
+        const isOpen = openTemplateKey === template.key;
 
-          <div className="notification-template-grid">
-            {[
-              ["inbox", "Inbox"],
-              ["email", "Email"],
-              ["push", "Push"],
-            ].map(([channelKey, label]) => {
-              const channel = template.channels?.[channelKey] ||
-                EMPTY_TEMPLATE.channels[channelKey];
-
-              return (
-                <article className="auth-access-card" key={`${template.key}-${channelKey}`}>
-                  <h3>{label}</h3>
-                  <label className="auth-checkbox-row">
-                    <input
-                      type="checkbox"
-                      checked={!!channel.enabled}
-                      onChange={(e) =>
-                        setChannel(template.key, channelKey, "enabled", e.target.checked)
-                      }
-                    />
-                    <span>Enabled</span>
-                  </label>
-
-                  <div className="form-group auth-form-dark-text">
-                    <label>Title</label>
-                    <input
-                      type="text"
-                      value={channel.title ?? ""}
-                      onChange={(e) =>
-                        setChannel(template.key, channelKey, "title", e.target.value)
-                      }
-                    />
-                  </div>
-
-                  <div className="form-group auth-form-dark-text">
-                    <label>Body</label>
-                    <textarea
-                      className="auth-textarea"
-                      value={channel.body ?? ""}
-                      onChange={(e) =>
-                        setChannel(template.key, channelKey, "body", e.target.value)
-                      }
-                    />
-                  </div>
-                </article>
-              );
-            })}
-          </div>
-
-          <div className="notification-template-actions">
+        return (
+          <section
+            key={template.key}
+            className={`notification-template-section ${isOpen ? "open" : ""}`}
+          >
             <button
-              className="auth-btn auth-btn-dark"
-              disabled={saving && savingKey === template.key}
-              onClick={() => saveTemplate(template.key)}
+              type="button"
+              className="notification-template-toggle"
+              aria-expanded={isOpen}
+              onClick={() =>
+                setOpenTemplateKey((prev) => (prev === template.key ? null : template.key))
+              }
             >
-              {saving && savingKey === template.key ? "Saving..." : "Save Template"}
+              <h3 className="notification-template-title">
+                {getTemplateDisplayName(template.key)}
+              </h3>
+              <span className="notification-template-arrow" aria-hidden="true">
+                ▾
+              </span>
             </button>
-          </div>
-        </section>
-      ))}
+
+            {isOpen && (
+              <>
+                <div className="notification-template-grid">
+                  {[
+                    ["inbox", "Inbox"],
+                    ["email", "Email"],
+                    ["push", "Push"],
+                  ].map(([channelKey, label]) => {
+                    const channel = template.channels?.[channelKey] ||
+                      EMPTY_TEMPLATE.channels[channelKey];
+
+                    return (
+                      <article className="auth-access-card" key={`${template.key}-${channelKey}`}>
+                        <h3>{label}</h3>
+                        <label className="auth-checkbox-row">
+                          <input
+                            type="checkbox"
+                            checked={!!channel.enabled}
+                            onChange={(e) =>
+                              setChannel(template.key, channelKey, "enabled", e.target.checked)
+                            }
+                          />
+                          <span>Enabled</span>
+                        </label>
+
+                        <div className="form-group auth-form-dark-text">
+                          <label>Title</label>
+                          <input
+                            type="text"
+                            value={channel.title ?? ""}
+                            onChange={(e) =>
+                              setChannel(template.key, channelKey, "title", e.target.value)
+                            }
+                          />
+                        </div>
+
+                        <div className="form-group auth-form-dark-text">
+                          <label>Body</label>
+                          <textarea
+                            className="auth-textarea"
+                            value={channel.body ?? ""}
+                            onChange={(e) =>
+                              setChannel(template.key, channelKey, "body", e.target.value)
+                            }
+                          />
+                        </div>
+                      </article>
+                    );
+                  })}
+                </div>
+
+                <div className="notification-template-actions">
+                  <button
+                    className="auth-btn auth-btn-dark"
+                    disabled={saving && savingKey === template.key}
+                    onClick={() => saveTemplate(template.key)}
+                  >
+                    {saving && savingKey === template.key ? "Saving..." : "Save Template"}
+                  </button>
+                </div>
+              </>
+            )}
+          </section>
+        );
+      })}
     </div>
   );
 }

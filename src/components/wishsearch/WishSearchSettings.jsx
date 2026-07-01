@@ -33,7 +33,11 @@ export default function WishSearchSettings() {
           setDefaultLimit(data.config.defaultLimit);
         }
       })
-      .catch((err) => setError(err.message || "Failed to load."))
+      .catch((err) =>
+        setError(
+          err.message || t("wishSearch.settingsLoadFailed", "Failed to load."),
+        ),
+      )
       .finally(() => setLoading(false));
   }, []);
 
@@ -108,7 +112,13 @@ export default function WishSearchSettings() {
             </strong>{" "}
             {config.provider}
             {config.configuredProvider !== config.provider
-              ? ` (configured: ${config.configuredProvider} — falling back)`
+              ? t(
+                  "wishSearch.configuredFallback",
+                  "(configured: {{configured}} - falling back)",
+                ).replace(
+                  "{{configured}}",
+                  String(config.configuredProvider ?? ""),
+                )
               : ""}
           </div>
           <div>

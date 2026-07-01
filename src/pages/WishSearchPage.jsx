@@ -60,7 +60,11 @@ export default function WishSearchPage() {
           setSelectedKey(list[0].key);
         }
       })
-      .catch((err) => setError(err.message || "Failed to load topics."))
+      .catch((err) =>
+        setError(
+          err.message || t("wishSearch.loadFailed", "Failed to load topics."),
+        ),
+      )
       .finally(() => setLoadingTopics(false));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.instanceId]);
@@ -94,7 +98,7 @@ export default function WishSearchPage() {
       });
       setResult(data);
     } catch (err) {
-      setError(err.message || "Search failed.");
+      setError(err.message || t("wishSearch.searchFailed", "Search failed."));
     } finally {
       setSearching(false);
     }

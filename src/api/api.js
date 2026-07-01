@@ -235,6 +235,11 @@ export const api = {
     ),
   clearSecurityLogs: (service) =>
     request("DELETE", `/${service}/admin/security-log/clear`),
+
+  // ── Wish Search (AI) ──────────────────────────────────────────────────
+  getWishTopics: () => request("GET", "/dashboard/wish-search/topics"),
+  runWishSearch: (payload) =>
+    request("POST", "/dashboard/wish-search", payload),
 };
 
 export default api;

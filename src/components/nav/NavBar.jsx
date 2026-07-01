@@ -50,6 +50,13 @@ const NAV_LINKS = [
     permission: "map.view",
   },
   {
+    to: "/wish-search",
+    labelKey: "nav.wishSearch",
+    label: "Wish Search",
+    icon: "🪄",
+    permission: "dashboard.view",
+  },
+  {
     to: "/users",
     labelKey: "nav.users",
     label: "Users",

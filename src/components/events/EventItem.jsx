@@ -2,6 +2,7 @@ import React from "react";
 import { format } from "date-fns";
 import { pl } from "date-fns/locale";
 import { hasValidCoords } from "./coords";
+import { MapIcon } from "../icons/FeatureIcons";
 
 function formatEventDate(dateStr) {
   if (!dateStr) return null;
@@ -55,7 +56,7 @@ export default React.memo(function EventItem({
             className="event-action-btn map-btn"
             onClick={() => onViewMap(event)}
           >
-            🗺 View Map
+            <MapIcon size={14} /> View Map
           </button>
         )}
         {canManage && (

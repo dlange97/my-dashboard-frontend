@@ -4,6 +4,16 @@ import { useAuth } from "../../context/AuthContext";
 import { useTranslation } from "../../context/TranslationContext";
 import { useInbox } from "../../context/InboxContext";
 import api from "../../api/api";
+import {
+  EventIcon,
+  HomeIcon,
+  MapIcon,
+  SettingsIcon,
+  ShoppingIcon,
+  TodoIcon,
+  UsersIcon,
+  WishIcon,
+} from "../icons/FeatureIcons";
 import "./nav.css";
 
 const NAV_LINKS = [
@@ -11,63 +21,63 @@ const NAV_LINKS = [
     to: "/",
     labelKey: "nav.dashboard",
     label: "Dashboard",
-    icon: "🏠",
+    icon: HomeIcon,
     permission: "dashboard.view",
   },
   {
     to: "/todos",
     labelKey: "nav.todos",
     label: "To-Do",
-    icon: "✅",
+    icon: TodoIcon,
     permission: "todos.view",
   },
   {
     to: "/shopping",
     labelKey: "nav.shopping",
     label: "Shopping",
-    icon: "🛒",
+    icon: ShoppingIcon,
     permission: "shopping.view",
   },
   {
     to: "/events",
     labelKey: "nav.events",
     label: "My Events",
-    icon: "📅",
+    icon: EventIcon,
     permission: "events.view",
   },
   {
     to: "/calendar",
     labelKey: "nav.calendar",
     label: "Calendar",
-    icon: "🗓️",
+    icon: EventIcon,
     permission: "events.view",
   },
   {
     to: "/map",
     labelKey: "nav.map",
     label: "Map",
-    icon: "🗺️",
+    icon: MapIcon,
     permission: "map.view",
   },
   {
     to: "/wish-search",
     labelKey: "nav.wishSearch",
     label: "Wish Search",
-    icon: "🪄",
+    icon: WishIcon,
     permission: "dashboard.view",
   },
   {
     to: "/users",
     labelKey: "nav.users",
     label: "Users",
-    icon: "👥",
+    icon: UsersIcon,
     permission: "users.view",
   },
   {
     to: "/settings",
     labelKey: "nav.settings",
     label: "Settings",
-    icon: "⚙️",
+    icon: SettingsIcon,
     permission: "settings.view",
   },
 ];
@@ -114,14 +124,16 @@ export default function NavBar() {
 
       {/* Desktop links */}
       <nav className="nav-links" aria-label="Main navigation">
-        {visibleLinks.map(({ to, labelKey, label, icon }) => (
+        {visibleLinks.map(({ to, labelKey, label, icon: Icon }) => (
           <NavLink
             key={to}
             to={to}
             end={to === "/"}
             className={({ isActive }) => `nav-link${isActive ? " active" : ""}`}
           >
-            <span className="nav-link-icon">{icon}</span>
+            <span className="nav-link-icon">
+              <Icon size={18} />
+            </span>
             <span className="nav-link-label">{t(labelKey, label)}</span>
           </NavLink>
         ))}
@@ -196,7 +208,7 @@ export default function NavBar() {
       {/* Mobile dropdown */}
       {menuOpen && (
         <nav className="nav-mobile-menu" onClick={() => setMenuOpen(false)}>
-          {visibleLinks.map(({ to, labelKey, label, icon }) => (
+          {visibleLinks.map(({ to, labelKey, label, icon: Icon }) => (
             <NavLink
               key={to}
               to={to}
@@ -205,7 +217,7 @@ export default function NavBar() {
                 `nav-mobile-link${isActive ? " active" : ""}`
               }
             >
-              {icon} {t(labelKey, label)}
+              <Icon size={18} /> {t(labelKey, label)}
             </NavLink>
           ))}
           {SUPPORTED_LOCALES.filter((loc) => loc !== locale).map((loc) => (

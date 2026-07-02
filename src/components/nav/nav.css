@@ -73,6 +73,14 @@
 
 .nav-link-icon {
   font-size: 1rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 0;
+}
+
+.nav-link-icon svg {
+  display: block;
 }
 
 /* ── User Area ─────────────────────────────────────────────── */

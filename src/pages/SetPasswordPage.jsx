@@ -64,18 +64,13 @@ export default function SetPasswordPage() {
 
     if (password.length < 8) {
       setError(
-        t(
-          "setPassword.tooShort",
-          "Password must be at least 8 characters.",
-        ),
+        t("setPassword.tooShort", "Password must be at least 8 characters."),
       );
       return;
     }
 
     if (password !== confirmPassword) {
-      setError(
-        t("setPassword.mismatch", "Passwords do not match."),
-      );
+      setError(t("setPassword.mismatch", "Passwords do not match."));
       return;
     }
 
@@ -86,7 +81,10 @@ export default function SetPasswordPage() {
     } catch (err) {
       setError(
         err.message ||
-          t("setPassword.error", "Could not set your password. Please try again."),
+          t(
+            "setPassword.error",
+            "Could not set your password. Please try again.",
+          ),
       );
     } finally {
       setLoading(false);

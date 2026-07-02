@@ -55,13 +55,18 @@ export default function NewUserForm({ onCancel, onCreated }) {
 
     if (!form.inviteUser) {
       if (form.password !== form.confirm) {
-        setError(t("users.form.error.passwordMismatch", "Passwords do not match."));
+        setError(
+          t("users.form.error.passwordMismatch", "Passwords do not match."),
+        );
         return;
       }
 
       if (form.password.length < 8) {
         setError(
-          t("users.form.error.passwordLength", "Password must be at least 8 characters."),
+          t(
+            "users.form.error.passwordLength",
+            "Password must be at least 8 characters.",
+          ),
         );
         return;
       }
@@ -99,7 +104,9 @@ export default function NewUserForm({ onCancel, onCreated }) {
 
       onCreated?.(data.user);
     } catch (err) {
-      setError(err.message || t("users.form.error.create", "Failed to create user."));
+      setError(
+        err.message || t("users.form.error.create", "Failed to create user."),
+      );
     } finally {
       setLoading(false);
     }
@@ -157,7 +164,10 @@ export default function NewUserForm({ onCancel, onCreated }) {
               id="email"
               name="email"
               type="email"
-              placeholder={t("users.form.emailPlaceholder", "new.user@example.com")}
+              placeholder={t(
+                "users.form.emailPlaceholder",
+                "new.user@example.com",
+              )}
               value={form.email}
               onChange={handleChange}
               autoComplete="email"
@@ -167,12 +177,17 @@ export default function NewUserForm({ onCancel, onCreated }) {
 
           {!form.inviteUser && (
             <div className="form-group">
-              <label htmlFor="password">{t("users.form.password", "Password")}</label>
+              <label htmlFor="password">
+                {t("users.form.password", "Password")}
+              </label>
               <input
                 id="password"
                 name="password"
                 type="password"
-                placeholder={t("users.form.passwordPlaceholder", "Min. 8 characters")}
+                placeholder={t(
+                  "users.form.passwordPlaceholder",
+                  "Min. 8 characters",
+                )}
                 value={form.password}
                 onChange={handleChange}
                 autoComplete="new-password"
@@ -190,7 +205,10 @@ export default function NewUserForm({ onCancel, onCreated }) {
                 id="confirm"
                 name="confirm"
                 type="password"
-                placeholder={t("users.form.confirmPasswordPlaceholder", "Repeat password")}
+                placeholder={t(
+                  "users.form.confirmPasswordPlaceholder",
+                  "Repeat password",
+                )}
                 value={form.confirm}
                 onChange={handleChange}
                 autoComplete="new-password"

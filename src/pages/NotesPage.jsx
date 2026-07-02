@@ -6,8 +6,11 @@ import { TextStyle } from "@tiptap/extension-text-style";
 import Link from "@tiptap/extension-link";
 import NavBar from "../components/nav/NavBar";
 import InboxSidebar from "../components/notifications/InboxSidebar";
+import ShareUserModal from "../components/ui/ShareUserModal";
 import api from "../api/api";
 import { useTranslation } from "../context/TranslationContext";
+import { useAuth } from "../context/AuthContext";
+import { useShareModal } from "../hooks/useShareModal";
 import "../components/notes/notes.css";
 
 const DEFAULT_NOTE_COLOR = "#fef3c7";
@@ -29,6 +32,7 @@ function getTextColorForBackground(hexColor) {
 
 export default function NotesPage() {
   const { t } = useTranslation();
+  const { user } = useAuth();
   const [notes, setNotes] = useState([]);
   const [activeId, setActiveId] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -42,6 +46,15 @@ export default function NotesPage() {
   const [isDirty, setIsDirty] = useState(false);
   const [draftTitle, setDraftTitle] = useState("");
   const [draftColor, setDraftColor] = useState(DEFAULT_NOTE_COLOR);
+  const {
+    shareTarget,
+    shareSearch,
+    shareUsers,
+    shareUsersLoading,
+    openShareModal,
+    closeShareModal,
+    setShareSearch,
+  } = useShareModal();
   const dirtyRef = useRef(false);
   const titleRef = useRef(null);
   // Refs to avoid stale closures in flushSave
@@ -169,6 +182,22 @@ export default function NotesPage() {
       });
     } catch {
       // ignore
+    }
+  };
+
+  const handleShareNote = async (selectedUser) => {
+    if (!shareTarget?.id || !selectedUser?.id) {
+      return;
+    }
+
+    try {
+      const updated = await api.shareNote(shareTarget.id, selectedUser.id);
+      setNotes((prev) =>
+        prev.map((note) => (note.id === updated.id ? updated : note)),
+      );
+      closeShareModal();
+    } catch {
+      // share error is non-critical; modal stays open so user can retry
     }
   };
 
@@ -323,6 +352,16 @@ export default function NotesPage() {
                       }}
                       title={t("notes.color", "Note color")}
                     />
+                    {activeNote.ownerId === user?.id && (
+                      <button
+                        type="button"
+                        className="notes-share-btn"
+                        onClick={() => openShareModal(activeNote)}
+                        title={t("notes.share", "Share note")}
+                      >
+                        {t("notes.share", "Share")}
+                      </button>
+                    )}
                     <span className="notes-save-indicator">
                       {saving
                         ? t("notes.saving", "Saving…")
@@ -505,6 +544,19 @@ export default function NotesPage() {
           )}
         </main>
       </div>
+
+      <ShareUserModal
+        isOpen={Boolean(shareTarget)}
+        title={t("notes.shareTitle", "Share note")}
+        loading={shareUsersLoading}
+        users={shareUsers}
+        search={shareSearch}
+        onSearchChange={setShareSearch}
+        currentUserId={user?.id}
+        alreadySharedUserIds={shareTarget?.sharedWithUserIds ?? []}
+        onClose={closeShareModal}
+        onConfirm={handleShareNote}
+      />
     </div>
   );
 }

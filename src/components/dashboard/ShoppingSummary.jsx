@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import api from "../../api/api";
+import { ShoppingIcon } from "../icons/FeatureIcons";
 import { useTranslation } from "../../context/TranslationContext";
 import { useAuth } from "../../context/AuthContext";
 
@@ -44,7 +45,9 @@ export default function ShoppingSummary() {
     <div className="summary-card">
       <div className="summary-card-header">
         <div className="summary-card-title">
-          <span className="icon icon-shop">🛒</span>
+          <span className="icon icon-shop">
+            <ShoppingIcon size={18} />
+          </span>
           {t("shopping.title", "Shopping Lists")}
         </div>
         <Link to="/shopping" className="summary-go-link">
@@ -71,7 +74,9 @@ export default function ShoppingSummary() {
                   className="shop-summary-item shop-summary-link"
                   title={l.name}
                 >
-                  <span className="shop-item-icon">🛒</span>
+                  <span className="shop-item-icon">
+                    <ShoppingIcon size={17} />
+                  </span>
                   <span className="shop-item-name">{shortName(l.name)}</span>
                   <span
                     className="shop-item-count"

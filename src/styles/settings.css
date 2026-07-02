@@ -62,6 +62,36 @@
   transform: rotate(180deg);
 }
 
+.notification-template-toggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  border: none;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+  text-align: left;
+}
+
+.notification-template-title {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.notification-template-arrow {
+  color: #64748b;
+  font-size: 0.95rem;
+  transition: transform 0.2s ease;
+}
+
+.notification-template-section.open .notification-template-arrow {
+  transform: rotate(180deg);
+}
+
 .settings-section-body {
   padding: 0;
   animation: settingsFadeIn 0.15s ease;
@@ -502,6 +532,27 @@
   padding: 20px;
 }
 
+.notification-template-section {
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 14px;
+  margin-bottom: 14px;
+  background: #ffffff;
+}
+
+.notification-template-grid {
+  margin-top: 12px;
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.notification-template-actions {
+  margin-top: 12px;
+  display: flex;
+  justify-content: flex-end;
+}
+
 /* ── Mobile Adjustments ────────────────────────────────────── */
 @media (max-width: 600px) {
   .settings-page {
@@ -519,6 +570,10 @@
 
   .notification-settings-inner {
     padding: 12px;
+  }
+
+  .notification-template-section {
+    padding: 10px;
   }
 }
 
@@ -595,6 +650,17 @@
   margin-bottom: 12px;
 }
 
+.security-log-summary span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 0 10px;
+  border-radius: 999px;
+  border: 1px solid #dbe3ef;
+  background: #f8fafc;
+  color: #334155;
+}
+
 .security-log-empty {
   color: var(--text-secondary, #6b7280);
   font-style: italic;
@@ -653,6 +719,24 @@
   font-size: 0.75rem;
   font-weight: 600;
   color: #fff;
+}
+
+.security-log-tab {
+  padding: 5px 12px;
+  border-radius: 999px;
+  border: 1px solid #cbd5e1;
+  background: #f8fafc;
+  color: #334155;
+  cursor: pointer;
+  font-size: 0.82rem;
+  text-transform: capitalize;
+  transition: border-color 0.15s;
+}
+
+.security-log-tab:hover {
+  border-color: #94a3b8;
+  background: #f8fafc;
+  color: #334155;
 }
 
 .method-get {

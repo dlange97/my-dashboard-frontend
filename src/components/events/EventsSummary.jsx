@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { format } from "date-fns";
 import { pl } from "date-fns/locale";
 import api from "../../api/api";
+import { EventIcon, MapIcon } from "../icons/FeatureIcons";
 import { useTranslation } from "../../context/TranslationContext";
 import { useAuth } from "../../context/AuthContext";
 import EventPreviewModal from "./EventPreviewModal";
@@ -40,6 +41,9 @@ export default function EventsSummary() {
       <div className="summary-card">
         <div className="summary-card-header">
           <div className="summary-card-title">
+            <span className="icon icon-events">
+              <EventIcon size={18} />
+            </span>
             {t("events.pageTitle", "My Events")}
           </div>
           <Link to="/events" className="summary-go-link">
@@ -73,7 +77,7 @@ export default function EventsSummary() {
                 </div>
                 {hasValidCoords(ev.location) && (
                   <span className="events-summary-pin" title="Has location">
-                    📍
+                    <MapIcon size={14} />
                   </span>
                 )}
               </button>

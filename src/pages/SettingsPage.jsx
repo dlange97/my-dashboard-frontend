@@ -6,6 +6,7 @@ import SecurityLogSettings from "../components/auth/SecurityLogSettings";
 import NotificationSettings from "../components/notifications/NotificationSettings";
 import TranslationSettings from "../components/translations/TranslationSettings";
 import InboxSidebar from "../components/notifications/InboxSidebar";
+import WishSearchSettings from "../components/wishsearch/WishSearchSettings";
 import { useAuth } from "../context/AuthContext";
 import { useTranslation } from "../context/TranslationContext";
 import "../styles/settings.css";
@@ -45,6 +46,15 @@ export default function SettingsPage() {
         "Message templates and delivery channels",
       ),
       component: <NotificationSettings />,
+    },
+    {
+      id: "wish-search",
+      label: t("settings.wishSearch", "🪄 Wish Search (AI)"),
+      subtitle: t(
+        "settings.wishSearchSubtitle",
+        "Default topic, result limit and active AI provider",
+      ),
+      component: <WishSearchSettings />,
     },
     ...(isAdmin
       ? [

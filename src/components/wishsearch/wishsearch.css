@@ -1,0 +1,218 @@
+/* ─── Wish Search (AI) ─────────────────────────────────────── */
+
+.wishsearch {
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+.wishsearch-header h1 {
+  margin: 0 0 0.25rem;
+  font-size: 1.6rem;
+}
+
+.wishsearch-subtitle {
+  margin: 0 0 0.5rem;
+  color: #64748b;
+  font-size: 0.95rem;
+}
+
+.wishsearch-provider-badge {
+  display: inline-block;
+  padding: 0.15rem 0.6rem;
+  border-radius: 999px;
+  background: #eef2ff;
+  color: #4338ca;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.wishsearch-loading,
+.wishsearch-empty {
+  color: #64748b;
+  padding: 1rem 0;
+}
+
+/* ─── Topic picker ─────────────────────────────────────────── */
+.wishsearch-topics {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 0.75rem;
+  margin: 1.25rem 0;
+}
+
+.wishsearch-topic-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 1rem;
+  border: 2px solid #e2e8f0;
+  border-radius: 14px;
+  background: #fff;
+  cursor: pointer;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s,
+    transform 0.15s;
+}
+
+.wishsearch-topic-card:hover {
+  border-color: #c7d2fe;
+  transform: translateY(-2px);
+}
+
+.wishsearch-topic-card.selected {
+  border-color: #6366f1;
+  box-shadow: 0 4px 14px rgba(99, 102, 241, 0.18);
+}
+
+.wishsearch-topic-icon {
+  font-size: 1.8rem;
+}
+
+.wishsearch-topic-label {
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+/* ─── Criteria form ────────────────────────────────────────── */
+.wishsearch-form {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.wishsearch-fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 0.9rem;
+}
+
+.wishsearch-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.wishsearch-field-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #475569;
+}
+
+.wishsearch-field input,
+.wishsearch-field select {
+  padding: 0.5rem 0.65rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  background: #fff;
+}
+
+.wishsearch-controls {
+  display: flex;
+  align-items: flex-end;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.wishsearch-limit {
+  max-width: 160px;
+}
+
+.wishsearch-submit {
+  height: 40px;
+}
+
+.wishsearch-error {
+  padding: 0.75rem 1rem;
+  border-radius: 10px;
+  background: #fef2f2;
+  color: #b91c1c;
+  margin-bottom: 1rem;
+}
+
+/* ─── Results ──────────────────────────────────────────────── */
+.wishsearch-results h2 {
+  font-size: 1.15rem;
+  margin: 0 0 0.75rem;
+}
+
+.wishsearch-result-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.85rem;
+}
+
+.wishsearch-card {
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 1rem 1.1rem;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
+}
+
+.wishsearch-card-title {
+  margin: 0 0 0.5rem;
+  font-size: 1.05rem;
+}
+
+.wishsearch-card-title a {
+  color: #4338ca;
+  text-decoration: none;
+}
+
+.wishsearch-card-title a:hover {
+  text-decoration: underline;
+}
+
+.wishsearch-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 0.5rem;
+}
+
+.wishsearch-chip {
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  background: #f1f5f9;
+  color: #334155;
+  font-size: 0.78rem;
+}
+
+.wishsearch-chip strong {
+  color: #0f172a;
+  text-transform: capitalize;
+}
+
+.wishsearch-card-desc {
+  margin: 0.25rem 0 0.5rem;
+  color: #475569;
+  font-size: 0.9rem;
+}
+
+.wishsearch-card-source {
+  font-size: 0.75rem;
+  color: #94a3b8;
+}
+
+/* ─── Settings section ─────────────────────────────────────── */
+.wishsearch-settings-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.wishsearch-settings-info {
+  display: grid;
+  gap: 0.35rem;
+  margin-top: 0.75rem;
+  font-size: 0.85rem;
+  color: #475569;
+}

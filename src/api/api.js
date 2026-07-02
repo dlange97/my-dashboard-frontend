@@ -130,6 +130,10 @@ export const api = {
   register: (email, password, firstName, lastName) =>
     request("POST", "/auth/register", { email, password, firstName, lastName }),
   requestAccess: (payload) => request("POST", "/auth/request-access", payload),
+  validateInvite: (token) =>
+    request("GET", `/auth/invite/${encodeURIComponent(token)}/validate`),
+  acceptInvite: (token, password) =>
+    request("POST", `/auth/invite/${encodeURIComponent(token)}`, { password }),
   me: () => request("GET", "/auth/me"),
 
   getUsers: ({ page = 1, perPage = 10, search = "" } = {}) => {
@@ -178,10 +182,19 @@ export const api = {
   clearInboxNotifications: () => request("DELETE", "/notification/inbox"),
   markInboxRead: (notificationId) =>
     request("PATCH", `/notification/inbox/${notificationId}/read`),
-  getNotificationTemplate: () =>
-    request("GET", "/notification/settings/template/request-access"),
-  updateNotificationTemplate: (payload) =>
-    request("PUT", "/notification/settings/template/request-access", payload),
+  getNotificationTemplates: () =>
+    request("GET", "/notification/settings/templates"),
+  getNotificationTemplate: (templateKey) =>
+    request(
+      "GET",
+      `/notification/settings/templates/${encodeURIComponent(templateKey)}`,
+    ),
+  updateNotificationTemplate: (templateKey, payload) =>
+    request(
+      "PUT",
+      `/notification/settings/templates/${encodeURIComponent(templateKey)}`,
+      payload,
+    ),
 
   // ── Translation Service ───────────────────────────────────────────────
   getTranslations: (locale = "en") =>
@@ -222,6 +235,11 @@ export const api = {
     ),
   clearSecurityLogs: (service) =>
     request("DELETE", `/${service}/admin/security-log/clear`),
+
+  // ── Wish Search (AI) ──────────────────────────────────────────────────
+  getWishTopics: () => request("GET", "/dashboard/wish-search/topics"),
+  runWishSearch: (payload) =>
+    request("POST", "/dashboard/wish-search", payload),
 };
 
 export default api;

@@ -13,10 +13,12 @@ import "./components/todolist/todo.css";
 import "./components/events/events.css";
 import "./components/notifications/notifications.css";
 import "./components/notes/notes.css";
+import "./components/wishsearch/wishsearch.css";
 
 import Login from "./components/auth/Login";
 import NotFoundPage from "./pages/NotFoundPage";
 import CheckoutPage from "./pages/CheckoutPage";
+import SetPasswordPage from "./pages/SetPasswordPage";
 import InstancePickerPage from "./pages/InstancePickerPage";
 
 const DashboardPage = lazy(() => import("./pages/DashboardPage"));
@@ -28,6 +30,7 @@ const MapPage = lazy(() => import("./pages/MapPage"));
 const UsersPage = lazy(() => import("./pages/UsersPage"));
 const SettingsPage = lazy(() => import("./pages/SettingsPage"));
 const NotesPage = lazy(() => import("./pages/NotesPage"));
+const WishSearchPage = lazy(() => import("./pages/WishSearchPage"));
 
 function ProtectedRoute({ children }) {
   const { isAuthenticated, isReady, needsInstanceSelection, user } = useAuth();
@@ -164,7 +167,18 @@ function App() {
             </ProtectedRoute>
           }
         />
+        <Route
+          path="/wish-search"
+          element={
+            <ProtectedRoute>
+              <PermissionRoute permission="dashboard.view">
+                <WishSearchPage />
+              </PermissionRoute>
+            </ProtectedRoute>
+          }
+        />
         <Route path="/checkout/:hash" element={<CheckoutPage />} />
+        <Route path="/set-password/:token" element={<SetPasswordPage />} />
         <Route
           path="/select-instance"
           element={

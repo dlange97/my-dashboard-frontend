@@ -345,18 +345,30 @@
   font-size: 1rem;
 }
 
+.summary-card-title .icon svg {
+  display: block;
+}
+
 .icon-todo {
   background: #ede9fe;
 }
 .icon-shop {
   background: #d1fae5;
+  color: #15803d;
 }
 .icon-events {
   background: #dbeafe;
+  color: #1d4ed8;
 }
 
 .icon-calendar {
   background: #e0f2fe;
+  color: #0369a1;
+}
+
+.icon-notes {
+  background: #fef3c7;
+  color: #b45309;
 }
 
 .summary-card-calendar {

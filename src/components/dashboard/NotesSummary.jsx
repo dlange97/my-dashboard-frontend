@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import api from "../../api/api";
+import { NotesIcon } from "../icons/FeatureIcons";
 import { useTranslation } from "../../context/TranslationContext";
 import { useAuth } from "../../context/AuthContext";
 
@@ -96,7 +97,9 @@ export default function NotesSummary() {
     <div className="summary-card notes-summary-card">
       <div className="summary-card-header">
         <div className="summary-card-title">
-          <span className="icon icon-notes">📝</span>
+          <span className="icon icon-notes">
+            <NotesIcon size={18} />
+          </span>
           {t("notes.title", "Notes")}
         </div>
         <div className="notes-summary-actions">

@@ -2,6 +2,7 @@ import React from "react";
 import { useTranslation } from "../../context/TranslationContext";
 import { hasValidCoords } from "./coords";
 import EventLocationMap from "./EventLocationMap";
+import { MapIcon, NotesIcon } from "../icons/FeatureIcons";
 
 function formatDateTime(value, locale) {
   if (!value) return "-";
@@ -77,7 +78,9 @@ export default function EventPreviewModal({
         {/* Description */}
         {event.description && (
           <div className="event-preview-row">
-            <span className="event-preview-icon">📝</span>
+            <span className="event-preview-icon">
+              <NotesIcon size={16} />
+            </span>
             <div>
               <div className="event-preview-label">
                 {t("events.form.descriptionLabel", "Description")}
@@ -113,7 +116,7 @@ export default function EventPreviewModal({
                   onClick={() => onShowMap(event)}
                   type="button"
                 >
-                  🗺 {t("events.openFullMap", "Open full map")}
+                  <MapIcon size={14} /> {t("events.openFullMap", "Open full map")}
                 </button>
               )}
             </div>

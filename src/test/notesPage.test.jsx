@@ -81,6 +81,13 @@ vi.mock("../context/TranslationContext", () => ({
   }),
 }));
 
+vi.mock("../context/AuthContext", () => ({
+  useAuth: () => ({
+    user: { id: 1, email: "test@example.com" },
+    hasPermission: () => true,
+  }),
+}));
+
 vi.mock("../api/api", () => ({
   default: {
     getNotes: (...args) => getNotesMock(...args),

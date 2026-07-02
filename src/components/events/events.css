@@ -579,6 +579,20 @@
   border: none;
   padding: 0.45rem 0;
   cursor: pointer;
+
+.events-summary-pin svg,
+.events-page-title-icon svg,
+.map-page-title-icon svg {
+  display: block;
+}
+
+.events-page-title-icon,
+.map-page-title-icon {
+  display: inline-flex;
+  align-items: center;
+  margin-right: 0.35rem;
+  vertical-align: middle;
+}
   border-radius: 8px;
   transition: background 0.12s;
 }

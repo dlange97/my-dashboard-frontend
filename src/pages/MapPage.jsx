@@ -7,6 +7,7 @@ import ShareUserModal from "../components/ui/ShareUserModal";
 import api from "../api/api";
 import { useAuth } from "../context/AuthContext";
 import { useShareModal } from "../hooks/useShareModal";
+import { MapIcon } from "../components/icons/FeatureIcons";
 import "../components/events/events.css";
 
 export default function MapPage() {
@@ -121,7 +122,12 @@ export default function MapPage() {
         <InboxSidebar />
         <div className="map-page app-shell-main">
           <div className="map-page-header">
-            <h1>🗺 Map</h1>
+            <h1>
+              <span className="map-page-title-icon">
+                <MapIcon size={22} />
+              </span>{" "}
+              Map
+            </h1>
             <span className="map-page-event-count">
               {events.filter((e) => e.location?.lat).length} event(s) on map
             </span>

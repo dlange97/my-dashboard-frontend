@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import api from "../../api/api";
+import { useTranslation } from "../../context/TranslationContext";
 import { Button } from "../ui";
 import "./auth.css";
 
@@ -8,6 +9,7 @@ function getDefaultRole(roles) {
 }
 
 export default function NewUserForm({ onCancel, onCreated }) {
+  const { t } = useTranslation();
   const [roles, setRoles] = useState(["ROLE_USER"]);
   const [form, setForm] = useState({
     firstName: "",
@@ -16,6 +18,7 @@ export default function NewUserForm({ onCancel, onCreated }) {
     password: "",
     confirm: "",
     role: "ROLE_USER",
+    inviteUser: true,
   });
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -50,27 +53,45 @@ export default function NewUserForm({ onCancel, onCreated }) {
     setError("");
     setSuccess("");
 
-    if (form.password !== form.confirm) {
-      setError("Passwords do not match.");
-      return;
-    }
+    if (!form.inviteUser) {
+      if (form.password !== form.confirm) {
+        setError(
+          t("users.form.error.passwordMismatch", "Passwords do not match."),
+        );
+        return;
+      }
 
-    if (form.password.length < 8) {
-      setError("Password must be at least 8 characters.");
-      return;
+      if (form.password.length < 8) {
+        setError(
+          t(
+            "users.form.error.passwordLength",
+            "Password must be at least 8 characters.",
+          ),
+        );
+        return;
+      }
     }
 
     setLoading(true);
     try {
-      const data = await api.createUser({
+      const payload = {
         email: form.email.trim(),
-        password: form.password,
         firstName: form.firstName.trim(),
         lastName: form.lastName.trim(),
         role: form.role,
-      });
+        inviteUser: !!form.inviteUser,
+      };
+      if (!form.inviteUser) {
+        payload.password = form.password;
+      }
+      const data = await api.createUser(payload);
 
-      setSuccess(`User ${form.email.trim()} created successfully.`);
+      setSuccess(
+        t("users.form.success", "User {{email}} created successfully.").replace(
+          "{{email}}",
+          form.email.trim(),
+        ),
+      );
       setForm({
         firstName: "",
         lastName: "",
@@ -78,11 +99,14 @@ export default function NewUserForm({ onCancel, onCreated }) {
         password: "",
         confirm: "",
         role: getDefaultRole(roles),
+        inviteUser: true,
       });
 
       onCreated?.(data.user);
     } catch (err) {
-      setError(err.message || "Failed to create user.");
+      setError(
+        err.message || t("users.form.error.create", "Failed to create user."),
+      );
     } finally {
       setLoading(false);
     }
@@ -91,10 +115,12 @@ export default function NewUserForm({ onCancel, onCreated }) {
   return (
     <section className="auth-manage-section">
       <div className="auth-manage-card auth-manage-card-embedded">
-        <h1>Create New User</h1>
+        <h1>{t("users.form.title", "Create New User")}</h1>
         <p className="auth-manage-subtitle">
-          Add a new application account only when you need it, then return to
-          the selected profile view.
+          {t(
+            "users.form.subtitle",
+            "Add a new application account only when you need it, then return to the selected profile view.",
+          )}
         </p>
 
         <form className="auth-form" onSubmit={handleSubmit}>
@@ -103,24 +129,28 @@ export default function NewUserForm({ onCancel, onCreated }) {
 
           <div className="form-row">
             <div className="form-group">
-              <label htmlFor="firstName">First name</label>
+              <label htmlFor="firstName">
+                {t("users.form.firstName", "First name")}
+              </label>
               <input
                 id="firstName"
                 name="firstName"
                 type="text"
-                placeholder="Jan"
+                placeholder={t("users.form.firstNamePlaceholder", "Jan")}
                 value={form.firstName}
                 onChange={handleChange}
                 autoComplete="given-name"
               />
             </div>
             <div className="form-group">
-              <label htmlFor="lastName">Last name</label>
+              <label htmlFor="lastName">
+                {t("users.form.lastName", "Last name")}
+              </label>
               <input
                 id="lastName"
                 name="lastName"
                 type="text"
-                placeholder="Kowalski"
+                placeholder={t("users.form.lastNamePlaceholder", "Kowalski")}
                 value={form.lastName}
                 onChange={handleChange}
                 autoComplete="family-name"
@@ -129,12 +159,15 @@ export default function NewUserForm({ onCancel, onCreated }) {
           </div>
 
           <div className="form-group">
-            <label htmlFor="email">Email</label>
+            <label htmlFor="email">{t("users.form.email", "Email")}</label>
             <input
               id="email"
               name="email"
               type="email"
-              placeholder="new.user@example.com"
+              placeholder={t(
+                "users.form.emailPlaceholder",
+                "new.user@example.com",
+              )}
               value={form.email}
               onChange={handleChange}
               autoComplete="email"
@@ -142,36 +175,50 @@ export default function NewUserForm({ onCancel, onCreated }) {
             />
           </div>
 
-          <div className="form-group">
-            <label htmlFor="password">Password</label>
-            <input
-              id="password"
-              name="password"
-              type="password"
-              placeholder="Min. 8 characters"
-              value={form.password}
-              onChange={handleChange}
-              autoComplete="new-password"
-              required
-            />
-          </div>
+          {!form.inviteUser && (
+            <div className="form-group">
+              <label htmlFor="password">
+                {t("users.form.password", "Password")}
+              </label>
+              <input
+                id="password"
+                name="password"
+                type="password"
+                placeholder={t(
+                  "users.form.passwordPlaceholder",
+                  "Min. 8 characters",
+                )}
+                value={form.password}
+                onChange={handleChange}
+                autoComplete="new-password"
+                required
+              />
+            </div>
+          )}
+
+          {!form.inviteUser && (
+            <div className="form-group">
+              <label htmlFor="confirm">
+                {t("users.form.confirmPassword", "Confirm password")}
+              </label>
+              <input
+                id="confirm"
+                name="confirm"
+                type="password"
+                placeholder={t(
+                  "users.form.confirmPasswordPlaceholder",
+                  "Repeat password",
+                )}
+                value={form.confirm}
+                onChange={handleChange}
+                autoComplete="new-password"
+                required
+              />
+            </div>
+          )}
 
           <div className="form-group">
-            <label htmlFor="confirm">Confirm password</label>
-            <input
-              id="confirm"
-              name="confirm"
-              type="password"
-              placeholder="Repeat password"
-              value={form.confirm}
-              onChange={handleChange}
-              autoComplete="new-password"
-              required
-            />
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="role">Role</label>
+            <label htmlFor="role">{t("users.form.role", "Role")}</label>
             <select
               id="role"
               name="role"
@@ -187,12 +234,42 @@ export default function NewUserForm({ onCancel, onCreated }) {
             </select>
           </div>
 
+          <label className="auth-checkbox-row" htmlFor="inviteUser">
+            <input
+              id="inviteUser"
+              name="inviteUser"
+              type="checkbox"
+              checked={!!form.inviteUser}
+              onChange={(event) =>
+                setForm((current) => ({
+                  ...current,
+                  inviteUser: event.target.checked,
+                }))
+              }
+            />
+            <span>
+              {t(
+                "users.form.inviteToggle",
+                "Send a secure invitation link so the user sets their own password",
+              )}
+            </span>
+          </label>
+
+          <p className="auth-manage-subtitle" style={{ marginTop: -8 }}>
+            {t(
+              "users.form.inviteHint",
+              "When enabled, the user receives an invitation with a secure link to set their password and activate the account. No password is set here.",
+            )}
+          </p>
+
           <div className="auth-manage-actions">
             <Button variant="secondary" onClick={onCancel} type="button">
-              Cancel
+              {t("common.cancel", "Cancel")}
             </Button>
             <Button loading={loading} type="submit">
-              {loading ? "Creating user…" : "Create user"}
+              {loading
+                ? t("users.form.creating", "Creating user…")
+                : t("users.form.submit", "Create user")}
             </Button>
           </div>
         </form>

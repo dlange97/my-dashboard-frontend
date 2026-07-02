@@ -10,6 +10,7 @@ import api from "../api/api";
 import { useAuth } from "../context/AuthContext";
 import { useTranslation } from "../context/TranslationContext";
 import { useShareModal } from "../hooks/useShareModal";
+import { EventIcon } from "../components/icons/FeatureIcons";
 import "../components/events/events.css";
 
 const MapModal = lazy(() => import("../components/events/MapModal"));
@@ -124,7 +125,12 @@ export default function EventsPage() {
         <InboxSidebar />
         <main className="page-content app-shell-main events-page">
           <div className="events-page-header">
-            <h1>{t("events.pageTitle", "📅 My Events")}</h1>
+            <h1>
+              <span className="events-page-title-icon">
+                <EventIcon size={22} />
+              </span>{" "}
+              {t("events.pageTitle", "My Events")}
+            </h1>
             <div className="events-view-tabs">
               <button
                 className={`tab-btn${view === "list" ? " active" : ""}`}

@@ -121,9 +121,32 @@ export function EventIcon(props) {
         strokeWidth="1.8"
         strokeLinecap="round"
       />
-      <rect x="7" y="11.5" width="3.2" height="3.2" rx="0.8" fill="currentColor" />
-      <rect x="11.4" y="11.5" width="3.2" height="3.2" rx="0.8" fill="currentColor" opacity="0.75" />
-      <rect x="15.8" y="11.5" width="1.2" height="1.2" rx="0.3" fill="currentColor" opacity="0.55" />
+      <rect
+        x="7"
+        y="11.5"
+        width="3.2"
+        height="3.2"
+        rx="0.8"
+        fill="currentColor"
+      />
+      <rect
+        x="11.4"
+        y="11.5"
+        width="3.2"
+        height="3.2"
+        rx="0.8"
+        fill="currentColor"
+        opacity="0.75"
+      />
+      <rect
+        x="15.8"
+        y="11.5"
+        width="1.2"
+        height="1.2"
+        rx="0.3"
+        fill="currentColor"
+        opacity="0.55"
+      />
     </BaseIcon>
   );
 }
@@ -137,7 +160,12 @@ export function NotesIcon(props) {
         strokeWidth="1.8"
         strokeLinejoin="round"
       />
-      <path d="M14 3v4h4" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
+      <path
+        d="M14 3v4h4"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinejoin="round"
+      />
       <path
         d="M8.5 11h7M8.5 14h7M8.5 17h4.5"
         stroke="currentColor"
@@ -160,8 +188,18 @@ export function MapIcon(props) {
         strokeWidth="1.8"
         strokeLinejoin="round"
       />
-      <path d="M9 5v12" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-      <path d="M15 7.5v12" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+      <path
+        d="M9 5v12"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+      />
+      <path
+        d="M15 7.5v12"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+      />
       <path
         d="M12 8.5c-1.5 0-2.7 1.2-2.7 2.7 0 2.2 2.7 5.1 2.7 5.1s2.7-2.9 2.7-5.1c0-1.5-1.2-2.7-2.7-2.7z"
         fill="currentColor"
@@ -182,7 +220,13 @@ export function UsersIcon(props) {
         strokeLinecap="round"
         strokeLinejoin="round"
       />
-      <circle cx="16.5" cy="9.2" r="2.2" stroke="currentColor" strokeWidth="1.6" />
+      <circle
+        cx="16.5"
+        cy="9.2"
+        r="2.2"
+        stroke="currentColor"
+        strokeWidth="1.6"
+      />
       <path
         d="M13.8 18.4c.45-2.08 1.9-3.55 3.6-3.55 1.44 0 2.75.9 3.4 2.4"
         stroke="currentColor"

@@ -23,14 +23,15 @@ export default function TodoSummary() {
 
     api
       .getTodos()
-      .then(setTodos)
+      .then((data) => setTodos(Array.isArray(data) ? data : []))
       .catch(() => {})
       .finally(() => setLoading(false));
   }, [user?.instanceId]);
 
-  const done = todos.filter((t) => t.done).length;
-  const total = todos.length;
-  const shown = todos.slice(0, 4);
+  const todoItems = Array.isArray(todos) ? todos : [];
+  const done = todoItems.filter((todo) => todo?.done).length;
+  const total = todoItems.length;
+  const shown = todoItems.slice(0, 4);
 
   const handleConfirmToggle = async () => {
     if (!confirmTodo?.id) {

@@ -104,12 +104,14 @@ export function AuthProvider({ children }) {
             localStorage.setItem(INSTANCE_KEY, instances[0].id);
             setUser((prev) => ({ ...prev, instanceId: instances[0].id }));
             setNeedsInstanceSelection(false);
-          } else if (instances && instances.length > 1) {
+          } else {
+            // For 0 or multiple instances, user should see the selection page.
             setNeedsInstanceSelection(true);
           }
         })
         .catch(() => {
-          // Ignore — instance selection can be retried
+          // If discovery fails, route to selector where a clear error is shown.
+          setNeedsInstanceSelection(true);
         });
     }
   }, []);
@@ -208,12 +210,14 @@ export function AuthProvider({ children }) {
                   prev ? { ...prev, instanceId: instances[0].id } : prev,
                 );
                 setNeedsInstanceSelection(false);
-              } else if (instances && instances.length > 1) {
+              } else {
+                // For 0 or multiple instances, user should see the selection page.
                 setNeedsInstanceSelection(true);
               }
             })
             .catch(() => {
-              // Instance discovery is best-effort.
+              // If discovery fails, route to selector where a clear error is shown.
+              setNeedsInstanceSelection(true);
             })
             .finally(() => {
               setIsReady(true);

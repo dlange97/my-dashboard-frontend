@@ -133,6 +133,23 @@ function getDueDateStatus(value) {
   return null;
 }
 
+function normalizeList(list) {
+  if (!list || typeof list !== "object") return null;
+  return {
+    ...list,
+    products: Array.isArray(list.products)
+      ? list.products.filter(
+          (product) => product && typeof product === "object",
+        )
+      : [],
+  };
+}
+
+function normalizeListCollection(data) {
+  if (!Array.isArray(data)) return [];
+  return data.map(normalizeList).filter(Boolean);
+}
+
 export default function ShoppingLists({
   onSelectionChange,
   initialSelectedListId = null,
@@ -170,7 +187,7 @@ export default function ShoppingLists({
     api
       .getLists()
       .then((data) => {
-        const lists = data ?? [];
+        const lists = normalizeListCollection(data);
         setLocalLists(lists);
 
         if (initialSelectedListId) {
@@ -188,6 +205,8 @@ export default function ShoppingLists({
       .finally(() => setLoading(false));
   }, [initialSelectedListId]);
 
+  const safeLists = normalizeListCollection(localLists);
+
   useEffect(() => {
     if (typeof onSelectionChange === "function") {
       onSelectionChange(selectedIndex !== null);
@@ -201,11 +220,15 @@ export default function ShoppingLists({
 
     try {
       const updated = await api.shareList(shareTarget.id, selectedUser.id);
+      const normalizedUpdated = normalizeList(updated);
+      if (!normalizedUpdated) return;
       setLocalLists((prev) =>
-        prev.map((list) => (list.id === updated.id ? updated : list)),
+        normalizeListCollection(prev).map((list) =>
+          list.id === normalizedUpdated.id ? normalizedUpdated : list,
+        ),
       );
-      if (editingList?.id === updated.id) {
-        setEditingList(JSON.parse(JSON.stringify(updated)));
+      if (editingList?.id === normalizedUpdated.id) {
+        setEditingList(JSON.parse(JSON.stringify(normalizedUpdated)));
       }
       closeShareModal();
     } catch {
@@ -322,11 +345,14 @@ export default function ShoppingLists({
   };
 
   const removeList = (index) => {
-    const list = localLists[index];
+    const list = safeLists[index];
+    if (!list?.id) return;
     api
       .deleteList(list.id)
       .then(() => {
-        setLocalLists((prev) => prev.filter((_, i) => i !== index));
+        setLocalLists((prev) =>
+          normalizeListCollection(prev).filter((_, i) => i !== index),
+        );
         setSelectedIndex(null);
         setEditingList(null);
         setIsDirty(false);
@@ -343,13 +369,11 @@ export default function ShoppingLists({
   };
 
   const handleSelect = (index) => {
+    const selectedList = safeLists[index];
+    if (!selectedList) return;
     setViewClosing(false);
     setSelectedIndex(index);
-    setEditingList(
-      JSON.parse(
-        JSON.stringify(localLists[index] || { name: "", products: [] }),
-      ),
-    );
+    setEditingList(JSON.parse(JSON.stringify(selectedList)));
     setIsDirty(false);
     setEditMode(false);
     setListNameError(false);
@@ -366,7 +390,12 @@ export default function ShoppingLists({
         products: item.products || [],
       })
       .then((created) => {
-        setLocalLists((prev) => [created, ...prev]);
+        const normalizedCreated = normalizeList(created);
+        if (!normalizedCreated) return;
+        setLocalLists((prev) => [
+          normalizedCreated,
+          ...normalizeListCollection(prev),
+        ]);
         setShowNewForm(false);
       })
       .catch((err) => alert(`Failed to create list: ${err.message}`));
@@ -395,12 +424,14 @@ export default function ShoppingLists({
         })),
       })
       .then((updated) => {
+        const normalizedUpdated = normalizeList(updated);
+        if (!normalizedUpdated) return;
         setLocalLists((prev) => {
-          const copy = [...prev];
-          copy[selectedIndex] = updated;
+          const copy = [...normalizeListCollection(prev)];
+          copy[selectedIndex] = normalizedUpdated;
           return copy;
         });
-        setEditingList(JSON.parse(JSON.stringify(updated)));
+        setEditingList(JSON.parse(JSON.stringify(normalizedUpdated)));
         setIsDirty(false);
       })
       .catch((err) => alert(`Failed to save: ${err.message}`))
@@ -414,26 +445,28 @@ export default function ShoppingLists({
     api
       .updateListStatus(editingList.id, status)
       .then((updated) => {
+        const normalizedUpdated = normalizeList(updated);
+        if (!normalizedUpdated) return;
         setLocalLists((prev) => {
-          const copy = [...prev];
-          copy[selectedIndex] = updated;
+          const copy = [...normalizeListCollection(prev)];
+          copy[selectedIndex] = normalizedUpdated;
           return copy;
         });
-        setEditingList(JSON.parse(JSON.stringify(updated)));
+        setEditingList(JSON.parse(JSON.stringify(normalizedUpdated)));
         setIsDirty(false);
       })
       .catch((err) => alert(`Failed to update list status: ${err.message}`))
       .finally(() => setSaving(false));
   };
 
-  const activeCount = localLists.filter(
+  const activeCount = safeLists.filter(
     (list) => (list.status || "active") === "active",
   ).length;
-  const archivedCount = localLists.filter(
+  const archivedCount = safeLists.filter(
     (list) => list.status === "archived",
   ).length;
 
-  const filteredLists = localLists
+  const filteredLists = safeLists
     .filter((list) => {
       if (statusFilter === "active") {
         return (list.status || "active") === "active";
@@ -474,7 +507,14 @@ export default function ShoppingLists({
   }
 
   if (selectedIndex !== null) {
-    const selected = editingList || localLists[selectedIndex];
+    const selected = editingList || safeLists[selectedIndex];
+    if (!selected) {
+      return (
+        <div className="card">
+          <div className="card-body">{t("common.loading", "Loading…")}</div>
+        </div>
+      );
+    }
     const productGroups = groupProductsByCategory(selected.products || [], t);
     const boughtCount = (selected.products || []).filter(
       (p) => p.bought,
@@ -957,7 +997,7 @@ export default function ShoppingLists({
               setPage(1);
             }}
           >
-            {t("shopping.filterAll", "All")} ({localLists.length})
+            {t("shopping.filterAll", "All")} ({safeLists.length})
           </button>
           <button
             type="button"
@@ -993,7 +1033,7 @@ export default function ShoppingLists({
               }}
               onClick={() =>
                 handleSelect(
-                  localLists.findIndex((current) => current.id === list.id),
+                  safeLists.findIndex((current) => current?.id === list.id),
                 )
               }
             >

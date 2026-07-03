@@ -37,9 +37,8 @@ function ProtectedRoute({ children }) {
   if (!isReady) return <div className="app-page-loading">Loading…</div>;
   if (!isAuthenticated) return <Navigate to="/login" replace />;
   if (needsInstanceSelection) return <Navigate to="/select-instance" replace />;
-  // Ensure instanceId is available before rendering protected content
-  if (!user?.instanceId)
-    return <div className="app-page-loading">Loading…</div>;
+  // If instance is still missing, go to selector instead of showing an endless loader.
+  if (!user?.instanceId) return <Navigate to="/select-instance" replace />;
   return children;
 }
 
